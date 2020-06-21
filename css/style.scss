@@ -6,10 +6,24 @@ div {
   border: 1px solid lightskyblue;
 }
 
-.hell {
-  color: red;
+// The wrapping set up.
+#container {
+  position: absolute;
+  display: flex;
+  flex-wrap: wrap;
+  width: 100vw;
+  height: 100vh;
 }
-
-.heaven {
-  color: blue;
+#visual-container {
+  flex-grow: 1;
+  flex-basis: 50%;
+  background-color: lightskyblue;
+}
+#text-container {
+  flex-grow: 1;
+  flex-basis: 49%;
+  background-color: papayawhip;
+}
+.wrapper {
+  min-width: 400px; // the paralell divs will wrap at 800px screensize
 }
