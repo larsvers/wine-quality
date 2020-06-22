@@ -1,3 +1,4 @@
 import '../css/style.scss';
+import init from './app/init';
 
-console.log('Hello');
+init();

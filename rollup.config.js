@@ -21,4 +21,8 @@ export default {
       watch: 'css',
     }),
   ],
+  onwarn(warning, warn) {
+    if (warning.code === 'CIRCULAR_DEPENDENCY') return;
+    warn(warning);
+  },
 };

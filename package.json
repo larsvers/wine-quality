@@ -19,5 +19,8 @@
     "@rollup/plugin-node-resolve": "^8.0.1",
     "rollup": "^2.17.1",
     "rollup-plugin-scss": "^2.5.0"
+  },
+  "dependencies": {
+    "d3-selection": "^1.4.1"
   }
 }
