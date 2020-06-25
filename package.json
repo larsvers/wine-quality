@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "rollup --config",
-    "watch": "rollup --watch --config"
+    "serve": "live-server -q",
+    "watch": "rollup --watch --config",
+    "start": "npm run serve & npm run watch"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +23,8 @@
     "rollup-plugin-scss": "^2.5.0"
   },
   "dependencies": {
-    "d3-selection": "^1.4.1"
+    "d3-selection": "^1.4.1",
+    "flubber": "^0.4.2",
+    "gsap": "file:gsap-bonus.tgz"
   }
 }
