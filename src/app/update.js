@@ -1,11 +1,21 @@
 import { select, selection } from 'd3-selection/src/index';
 import { gsap } from 'gsap/all';
 import { MorphSVGPlugin } from 'gsap/src/MorphSVGPlugin';
+import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 
-gsap.registerPlugin(MorphSVGPlugin);
+gsap.registerPlugin(MorphSVGPlugin, ScrollTrigger);
 
 // Utils
 // -----
+
+/**
+ * Set height of scrollydiv deterministically. It's flex-wrap, which
+ * is a fucker to set otherwise (if at all possible).
+ */
+function setWrapHeight() {
+  const contHeight = select('#text-container').node().offsetHeight;
+  select('#text-wrap').style('height', `${contHeight}px`);
+}
 
 function isSelection(el) {
   if (typeof el === 'string') return false;
@@ -174,6 +184,7 @@ function setListener() {
 
 // Main function.
 function update() {
+  setWrapHeight();
   getGlassTransform();
   getBottleTransform();
   setTransforms();
