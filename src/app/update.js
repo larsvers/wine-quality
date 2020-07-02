@@ -132,7 +132,16 @@ function tweenBottle() {
   const t = transform;
 
   tween.glassBottle.go = gsap
-    .timeline()
+    .timeline({
+      scrollTrigger: {
+        scroller: '#text-wrap',
+        trigger: '.section-1',
+        start: 'top center',
+        end: 'center center',
+        scrub: true,
+        markers: true,
+      },
+    })
     .to('#shape-path', { duration: 2, morphSVG: '#bottle-path' }, 0)
     .to(
       '#bottle-group',
@@ -143,23 +152,7 @@ function tweenBottle() {
         },
       },
       0
-    )
-    .pause();
-
-  tween.glassBottle.reverse = gsap
-    .timeline()
-    .to('#shape-path', { duration: 2, morphSVG: '#wine-glass-path' }, 0)
-    .to(
-      '#bottle-group',
-      {
-        duration: 3,
-        attr: {
-          transform: `translate(${t.glass.x}, ${t.glass.y}) scale(${t.glass.scale}, ${t.glass.scale})`,
-        },
-      },
-      0
-    )
-    .pause();
+    );
 }
 
 function updateTweens() {
@@ -185,11 +178,11 @@ function setListener() {
 // Main function.
 function update() {
   setWrapHeight();
-  // getGlassTransform();
-  // getBottleTransform();
-  // setTransforms();
-  // updateTweens();
-  // setListener();
+  getGlassTransform();
+  getBottleTransform();
+  setTransforms();
+  updateTweens();
+  setListener();
 }
 
 export default update;
