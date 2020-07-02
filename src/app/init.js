@@ -1,15 +1,30 @@
 import { select } from 'd3-selection/src/index';
 import { csv } from 'd3-fetch/src/index';
+import { gsap } from 'gsap/all';
+import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import scape from '../../static/wine-scape-s';
 import glass from '../../static/wine-glass';
 import bottle from '../../static/wine-bottle';
 
 import update from './update';
 
+gsap.registerPlugin(ScrollTrigger);
+
 function buildVisual() {
   const svg = select('#svg-main');
   const scapeGroup = svg.append('g').attr('id', 'scape-group');
   const bottleGroup = svg.append('g').attr('id', 'bottle-group');
+
+  // Test
+  svg
+    .append('rect')
+    .attr('class', 'my-rect')
+    .attr('x', 100)
+    .attr('y', 100)
+    .attr('width', 100)
+    .attr('height', 100)
+    .style('fill', 'none')
+    .style('stroke', 'black');
 
   // Full wine scape svg.
   scapeGroup
@@ -64,6 +79,19 @@ function ready(data) {
   buildStory(data);
 
   update();
+
+  gsap.to('.my-rect', {
+    x: 150,
+    scrollTrigger: {
+      scroller: '#text-wrap',
+      trigger: '.section-2',
+      start: 'top center',
+      end: 'center center',
+      scrub: true,
+      markers: true,
+      onEnter: self => console.log('entered', self),
+    },
+  });
 
   window.addEventListener('resize', update);
 }

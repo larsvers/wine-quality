@@ -185,11 +185,11 @@ function setListener() {
 // Main function.
 function update() {
   setWrapHeight();
-  getGlassTransform();
-  getBottleTransform();
-  setTransforms();
-  updateTweens();
-  setListener();
+  // getGlassTransform();
+  // getBottleTransform();
+  // setTransforms();
+  // updateTweens();
+  // setListener();
 }
 
 export default update;
