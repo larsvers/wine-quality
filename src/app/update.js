@@ -1,9 +1,10 @@
 import { select, selection } from 'd3-selection/src/index';
 import { gsap } from 'gsap/all';
 import { MorphSVGPlugin } from 'gsap/src/MorphSVGPlugin';
+import { DrawSVGPlugin } from 'gsap/src/DrawSVGPlugin';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 
-gsap.registerPlugin(MorphSVGPlugin, ScrollTrigger);
+gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger);
 
 // Utils
 // -----
@@ -99,10 +100,6 @@ const transform = {
   bottle: null,
 };
 
-const tween = {
-  glassBottle: { go: null, reverse: null },
-};
-
 // Update functions.
 // -----------------
 
@@ -115,23 +112,22 @@ function getGlassTransform() {
 
 function getBottleTransform() {
   const box = getBox(select('#bottle-path'));
-  const fit = { width: 0, height: 0.3 };
+  const fit = { width: 0, height: 0.8 };
   const nudge = { x: 0.5, height: null };
   transform.bottle = getTransform(box, fit, nudge);
 }
 
 function setTransforms() {
   setTransform(select('#scape-group'), transform.glass);
-  if (part === 'glass') setTransform(select('#bottle-group'), transform.glass);
-  if (part === 'bottle')
-    setTransform(select('#bottle-group'), transform.bottle);
+  if (part === 'glass') setTransform(select('#shape-group'), transform.glass);
+  if (part === 'bottle') setTransform(select('#shape-group'), transform.bottle);
 }
 
 // Tweens.
 function tweenBottle() {
   const t = transform;
 
-  tween.glassBottle.go = gsap
+  gsap
     .timeline({
       scrollTrigger: {
         scroller: '#text-wrap',
@@ -144,7 +140,7 @@ function tweenBottle() {
     })
     .to('#shape-path', { duration: 2, morphSVG: '#bottle-path' }, 0)
     .to(
-      '#bottle-group',
+      '#shape-group',
       {
         duration: 3,
         attr: {
@@ -155,24 +151,23 @@ function tweenBottle() {
     );
 }
 
+function tweenBottleText() {
+  gsap.from('.bottle-text-path', {
+    scrollTrigger: {
+      scroller: '#text-wrap',
+      trigger: '.section-2',
+      start: 'top center',
+      end: 'center center',
+      scrub: true,
+      markers: true,
+    },
+    drawSVG: '0',
+  });
+}
+
 function updateTweens() {
   tweenBottle();
-}
-
-// Listener/Handler.
-function glassToBottle() {
-  tween.glassBottle.go.restart(); // Make sure it's playing a second+ time.
-  part = 'bottle';
-}
-
-function bottleToGlass() {
-  tween.glassBottle.reverse.restart();
-  part = 'glass';
-}
-
-function setListener() {
-  select('#scape-to-bottle').on('click', glassToBottle);
-  select('#bottle-to-scape').on('click', bottleToGlass);
+  tweenBottleText();
 }
 
 // Main function.
@@ -182,7 +177,6 @@ function update() {
   getBottleTransform();
   setTransforms();
   updateTweens();
-  setListener();
 }
 
 export default update;

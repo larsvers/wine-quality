@@ -1,19 +1,34 @@
 import { select } from 'd3-selection/src/index';
 import { csv } from 'd3-fetch/src/index';
-import { gsap } from 'gsap/all';
-import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
-import scape from '../../static/wine-scape-s';
-import glass from '../../static/wine-glass';
-import bottle from '../../static/wine-bottle';
+import rough from 'roughjs/bundled/rough.esm';
 
+import scape from '../../static/wine-scape-s';
+import glass from '../../static/wine-glass-clean';
+import bottle from '../../static/wine-bottle-1';
+import bottleText from '../../static/text-bottle'; // an array of paths.
 import update from './update';
 
-gsap.registerPlugin(ScrollTrigger);
+// Utils
+
+/**
+ * Splits the path at the M commands.
+ * Much more readable than reduce 🥂.
+ * @param { String } path
+ * @returns { Array } an array of paths
+ */
+function splitPath(path) {
+  return path
+    .split('M')
+    .filter(d => d)
+    .map(d => `M${d}`);
+}
 
 function buildVisual() {
   const svg = select('#svg-main');
   const scapeGroup = svg.append('g').attr('id', 'scape-group');
-  const bottleGroup = svg.append('g').attr('id', 'bottle-group');
+  const shapeGroup = svg.append('g').attr('id', 'shape-group');
+  const rj = rough.svg(svg.node());
+  const rg = rj.generator;
 
   // Full wine scape svg.
   scapeGroup
@@ -24,8 +39,8 @@ function buildVisual() {
     .style('stroke-width', 1)
     .style('stroke', 'grey');
 
-  // Just glass section from wine scape svg.
-  bottleGroup
+  // Only the glass from wine scape svg.
+  shapeGroup
     .append('path')
     .attr('id', 'shape-path')
     .attr('d', glass)
@@ -33,22 +48,32 @@ function buildVisual() {
     .style('stroke-width', 1)
     .style('stroke', 'red');
 
+  // Get a sketchy bottle.
+  const roughBottle = rg.path(bottle, { simplification: 0.6 });
+  const roughBottlePath = rg.toPaths(roughBottle);
+
   // The bottle as morph target (hidden).
   svg
     .append('path')
     .attr('id', 'bottle-path')
-    .attr('d', bottle)
+    .attr('d', roughBottlePath[0].d)
     .style('fill', 'none')
     .style('stroke-width', 1)
     .style('visibility', 'none');
 
-  svg
-    .append('path')
-    .attr('id', 'wine-glass-path')
-    .attr('d', glass)
+  // Add the text to the shape group.
+  // Split the bottle text path for the gsap anim.
+  const bottleTexts = splitPath(bottleText);
+  shapeGroup
+    .selectAll('.bottle-text-path')
+    .data(bottleTexts)
+    .join('path')
+    .attr('class', 'bottle-text-path')
+    .attr('id', (d, i) => `bottle-text-path-${i}`)
+    .attr('d', d => d)
     .style('fill', 'none')
     .style('stroke-width', 1)
-    .style('visibility', 'none');
+    .style('stroke', 'red');
 }
 
 function buildStory(data) {

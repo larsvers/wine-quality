@@ -26,6 +26,7 @@
     "d3-fetch": "^1.2.0",
     "d3-selection": "^1.4.1",
     "flubber": "^0.4.2",
-    "gsap": "file:gsap-bonus.tgz"
+    "gsap": "file:gsap-bonus.tgz",
+    "roughjs": "^4.3.1"
   }
 }
