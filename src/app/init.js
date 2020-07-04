@@ -6,6 +6,8 @@ import scape from '../../static/wine-scape-s';
 import glass from '../../static/wine-glass-clean';
 import bottle from '../../static/wine-bottle-1';
 import bottleText from '../../static/text-bottle'; // an array of paths.
+import wave1 from '../../static/bottle-wave-1';
+import wave2 from '../../static/bottle-wave-2';
 import update from './update';
 
 // Utils
@@ -27,8 +29,8 @@ function buildVisual() {
   const svg = select('#svg-main');
   const scapeGroup = svg.append('g').attr('id', 'scape-group');
   const shapeGroup = svg.append('g').attr('id', 'shape-group');
-  const rj = rough.svg(svg.node());
-  const rg = rj.generator;
+  const stageGroup = svg.append('g').attr('id', 'stage-group');
+  const rg = rough.svg(svg.node()).generator;
 
   // Full wine scape svg.
   scapeGroup
@@ -53,13 +55,13 @@ function buildVisual() {
   const roughBottlePath = rg.toPaths(roughBottle);
 
   // The bottle as morph target (hidden).
-  svg
+  stageGroup
     .append('path')
     .attr('id', 'bottle-path')
     .attr('d', roughBottlePath[0].d)
     .style('fill', 'none')
     .style('stroke-width', 1)
-    .style('visibility', 'none');
+    .style('visibility', 'hidden');
 
   // Add the text to the shape group.
   // Split the bottle text path for the gsap anim.
@@ -74,6 +76,23 @@ function buildVisual() {
     .style('fill', 'none')
     .style('stroke-width', 1)
     .style('stroke', 'red');
+
+  // Add the waves.
+  // Add the first wave to the shape.
+  shapeGroup
+    .append('path')
+    .attr('id', 'wave-1')
+    .attr('d', wave1)
+    .style('fill', 'red')
+    .style('opacity', 0);
+
+  // Add the second wave to the stage.
+  stageGroup
+    .append('path')
+    .attr('id', 'wave-2')
+    .attr('d', wave2)
+    .style('fill', 'red')
+    .style('visibility', 'hidden');
 }
 
 function buildStory(data) {

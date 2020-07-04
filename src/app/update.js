@@ -3,6 +3,7 @@ import { gsap } from 'gsap/all';
 import { MorphSVGPlugin } from 'gsap/src/MorphSVGPlugin';
 import { DrawSVGPlugin } from 'gsap/src/DrawSVGPlugin';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
+import { Power2 } from 'gsap';
 
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger);
 
@@ -165,9 +166,47 @@ function tweenBottleText() {
   });
 }
 
+function tweenBottleWave() {
+  gsap
+    .timeline({
+      scrollTrigger: {
+        scroller: '#text-wrap',
+        trigger: '.section-3',
+        start: 'top center',
+        end: 'center center',
+        scrub: false,
+        markers: true,
+      },
+    })
+    .to('#wave-1', { duration: 1, opacity: 0.5 }, 0)
+    .to(
+      '#wave-1',
+      {
+        duration: 3,
+        morphSVG: '#wave-2',
+        yoyo: true,
+        repeat: 2,
+        ease: 'sine.inOut',
+      },
+      0
+    );
+  // .to(
+  //   '#wave-3',
+  //   {
+  //     duration: 3,
+  //     morphSVG: '#wave-4',
+  //     yoyo: true,
+  //     repeat: 2,
+  //     ease: 'sine.inOut',
+  //   },
+  //   0
+  // );
+}
+
 function updateTweens() {
   tweenBottle();
   tweenBottleText();
+  tweenBottleWave();
 }
 
 // Main function.
