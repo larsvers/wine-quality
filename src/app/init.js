@@ -1,4 +1,5 @@
 import { select } from 'd3-selection/src/index';
+import { scaleBand } from 'd3-scale/src/index';
 import { csv } from 'd3-fetch/src/index';
 import rough from 'roughjs/bundled/rough.esm';
 
@@ -9,6 +10,7 @@ import bottleText from '../../static/text-bottle'; // an array of paths.
 import wave1 from '../../static/bottle-wave-1';
 import wave2 from '../../static/bottle-wave-2';
 import update from './update';
+import { getBox, setScaleX } from './utils';
 
 // Utils
 
@@ -30,6 +32,7 @@ function buildVisual() {
   const scapeGroup = svg.append('g').attr('id', 'scape-group');
   const shapeGroup = svg.append('g').attr('id', 'shape-group');
   const stageGroup = svg.append('g').attr('id', 'stage-group');
+  const lolliGroup = shapeGroup.append('g').attr('id', 'lolli-group');
   const rg = rough.svg(svg.node()).generator;
 
   // Full wine scape svg.
@@ -50,15 +53,16 @@ function buildVisual() {
     .style('stroke-width', 1)
     .style('stroke', 'red');
 
-  // Get a sketchy bottle.
-  const roughBottle = rg.path(bottle, { simplification: 0.6 });
-  const roughBottlePath = rg.toPaths(roughBottle);
+  // // Get a sketchy bottle.
+  // const roughBottle = rg.path(bottle, { simplification: 0.6 });
+  // const roughBottlePath = rg.toPaths(roughBottle);
 
   // The bottle as morph target (hidden).
   stageGroup
     .append('path')
     .attr('id', 'bottle-path')
-    .attr('d', roughBottlePath[0].d)
+    .attr('d', bottle)
+    // .attr('d', roughBottlePath[0].d)
     .style('fill', 'none')
     .style('stroke-width', 1)
     .style('visibility', 'hidden');
@@ -93,6 +97,55 @@ function buildVisual() {
     .attr('d', wave2)
     .style('fill', 'red')
     .style('visibility', 'hidden');
+
+  // Build the chart.
+  // ---------------
+
+  // Data
+  const lolliData = [
+    { property: 'alcohol', text: 'Alcohol' },
+    { property: 'acid', text: 'Citric Acid' },
+    { property: 'chlorides', text: 'Chlorides' },
+    { property: 'quality', text: 'Quality' },
+  ];
+
+  // Scales.
+  const bottleBox = getBox('#bottle-path');
+  // Set the xScale here - use it in update.
+  setScaleX([0, 1], [0, bottleBox.width]);
+  const yScale = scaleBand()
+    .domain(lolliData.map(d => d.property))
+    .range([0, bottleBox.height / 2]);
+
+  // Build.
+  const lolliGroups = lolliGroup
+    .attr(
+      'transform',
+      `translate(${bottleBox.width * 1.1}, ${bottleBox.height * 0.55})`
+    )
+    .selectAll('.lollipop')
+    .data(lolliData)
+    .join('g')
+    .attr('class', d => `lollipop lolli-${d.property}`)
+    .attr('transform', d => `translate(0, ${yScale(d.property)})`);
+
+  lolliGroups
+    .append('text')
+    .text(d => d.text)
+    .attr('dy', '-0.35em');
+
+  lolliGroups
+    .append('line')
+    .attr('x1', 0)
+    .attr('y1', 0)
+    .attr('x2', 0)
+    .attr('y2', 0)
+    .style('stroke', 'black');
+
+  lolliGroups
+    .append('circle')
+    .attr('cx', 0)
+    .attr('r', 2);
 }
 
 function buildStory(data) {

@@ -1,9 +1,9 @@
-import { select, selection } from 'd3-selection/src/index';
+import { select } from 'd3-selection/src/index';
 import { gsap } from 'gsap/all';
 import { MorphSVGPlugin } from 'gsap/src/MorphSVGPlugin';
 import { DrawSVGPlugin } from 'gsap/src/DrawSVGPlugin';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
-import { Power2 } from 'gsap';
+import { isSelection, getBox, xScale } from './utils';
 
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger);
 
@@ -17,17 +17,6 @@ gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger);
 function setWrapHeight() {
   const contHeight = select('#text-container').node().offsetHeight;
   select('#text-wrap').style('height', `${contHeight}px`);
-}
-
-function isSelection(el) {
-  if (typeof el === 'string') return false;
-  if (el instanceof selection) return true;
-  return false;
-}
-
-function getBox(el) {
-  const sel = isSelection(el) ? el : select(el);
-  return sel.node().getBBox();
 }
 
 function setTransform(el, t) {
@@ -101,6 +90,11 @@ const transform = {
   bottle: null,
 };
 
+ScrollTrigger.defaults({
+  scroller: '#text-wrap',
+  markers: true,
+});
+
 // Update functions.
 // -----------------
 
@@ -131,15 +125,20 @@ function tweenBottle() {
   gsap
     .timeline({
       scrollTrigger: {
-        scroller: '#text-wrap',
         trigger: '.section-1',
         start: 'top center',
         end: 'center center',
-        scrub: true,
-        markers: true,
+        toggleActions: 'play none none reverse',
       },
     })
-    .to('#shape-path', { duration: 2, morphSVG: '#bottle-path' }, 0)
+    .to(
+      '#shape-path',
+      {
+        duration: 2,
+        morphSVG: { shape: '#bottle-path' },
+      },
+      0
+    )
     .to(
       '#shape-group',
       {
@@ -155,12 +154,10 @@ function tweenBottle() {
 function tweenBottleText() {
   gsap.from('.bottle-text-path', {
     scrollTrigger: {
-      scroller: '#text-wrap',
       trigger: '.section-2',
       start: 'top center',
       end: 'center center',
       scrub: true,
-      markers: true,
     },
     drawSVG: '0',
   });
@@ -170,43 +167,93 @@ function tweenBottleWave() {
   gsap
     .timeline({
       scrollTrigger: {
-        scroller: '#text-wrap',
         trigger: '.section-3',
         start: 'top center',
         end: 'center center',
-        scrub: false,
-        markers: true,
+        toggleActions: 'play none none reverse',
       },
     })
-    .to('#wave-1', { duration: 1, opacity: 0.5 }, 0)
+    .to('#wave-1', { duration: 1, opacity: 0.5 })
     .to(
       '#wave-1',
       {
         duration: 3,
-        morphSVG: '#wave-2',
-        yoyo: true,
-        repeat: 2,
+        morphSVG: { shape: '#wave-2', shapeIndex: [-14] },
+        // yoyo: true,
+        // repeat: 2,
         ease: 'sine.inOut',
       },
       0
     );
-  // .to(
-  //   '#wave-3',
-  //   {
-  //     duration: 3,
-  //     morphSVG: '#wave-4',
-  //     yoyo: true,
-  //     repeat: 2,
-  //     ease: 'sine.inOut',
-  //   },
-  //   0
-  // );
+}
+
+function tweenChart() {
+  const elements = document.querySelectorAll(
+    '.lolli-alcohol, .lolli-acid, .lolli-chlorides'
+  );
+  gsap
+    .timeline({
+      scrollTrigger: {
+        trigger: '.section-4',
+        start: 'top center',
+        end: 'center center',
+        scrub: true,
+      },
+    })
+    .to(elements, { opacity: 1 }, 0)
+    .to('.lolli-alcohol line', { attr: { x2: xScale(1) } }, 0)
+    .to('.lolli-acid line', { attr: { x2: xScale(0.5) } }, 0)
+    .to('.lolli-chlorides line', { attr: { x2: xScale(0.75) } }, 0)
+    .to('.lolli-alcohol circle', { attr: { cx: xScale(1) } }, 0)
+    .to('.lolli-acid circle', { attr: { cx: xScale(0.5) } }, 0)
+    .to('.lolli-chlorides circle', { attr: { cx: xScale(0.75) } }, 0);
+}
+
+function tweenQuality() {
+  gsap
+    .timeline({
+      scrollTrigger: {
+        trigger: '.section-5',
+        start: 'top center',
+        end: 'center center',
+        toggleActions: 'play none none reverse',
+        scrub: true,
+      },
+    })
+    .to('.lolli-quality', { opacity: 1 }, 0)
+    .to('.lolli-quality text', { attr: { x2: xScale(1) }, fill: 'green' }, 0)
+    .to('.lolli-quality line', { attr: { x2: xScale(1) }, stroke: 'green' }, 0)
+    .to('.lolli-quality circle', { attr: { cx: xScale(1) }, fill: 'green' }, 0);
+}
+
+function tweenQualityChange() {
+  gsap
+    .timeline({
+      scrollTrigger: {
+        trigger: '.section-6',
+        start: 'top center',
+        end: 'center center',
+        scrub: true,
+      },
+    })
+    .to('.lolli-alcohol line', { attr: { x2: xScale(0.2) } }, 0)
+    .to('.lolli-alcohol circle', { attr: { cx: xScale(0.2) } }, 0)
+    .to('.lolli-acid line', { attr: { x2: xScale(0.3) } }, 0)
+    .to('.lolli-acid circle', { attr: { cx: xScale(0.3) } }, 0)
+    .to('.lolli-chlorides line', { attr: { x2: xScale(1) } }, 0)
+    .to('.lolli-chlorides circle', { attr: { cx: xScale(1) } }, 0)
+    .to('.lolli-quality text', { fill: 'red' }, 0)
+    .to('.lolli-quality line', { attr: { x2: xScale(0.3) }, stroke: 'red' }, 0)
+    .to('.lolli-quality circle', { attr: { cx: xScale(0.3) }, fill: 'red' }, 0);
 }
 
 function updateTweens() {
   tweenBottle();
   tweenBottleText();
   tweenBottleWave();
+  tweenChart();
+  tweenQuality();
+  tweenQualityChange();
 }
 
 // Main function.

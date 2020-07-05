@@ -61,6 +61,15 @@ button {
   stroke-miterlimit: 1;
 }
 
+text {
+  font-family: 'Amatic SC', sans-serif;
+}
+
+// Initial state.
+.lollipop {
+  opacity: 0;
+}
+
 // The text
 .section {
   font-family: Arial;
