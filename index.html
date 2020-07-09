@@ -5,20 +5,25 @@
     <title>bottles</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
-    <link
+    <!-- <link
       href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&display=swap"
       rel="stylesheet"
-    />
+    /> -->
     <link rel="stylesheet" href="dist/bundle.css" />
   </head>
   <body>
+    <div id="svg-container">
+      <svg id="svg-hidden"></svg>
+    </div>
     <div id="container">
       <div class="wrapper" id="visual-container">
-        <div id="svg-main-container">
-          <svg id="svg-main"></svg>
+        <div id="canvas-main-container">
+          <canvas id="canvas-main"></canvas>
+          <canvas id="canvas-level-1"></canvas>
         </div>
       </div>
       <div class="wrapper" id="text-container">
+        <button>Pubs</button>
         <div id="text-wrap">
           <!-- <button id="scape-to-bottle">Scape to bottle</button> -->
           <!-- <button id="bottle-to-scape">Bottle to scape</button> -->

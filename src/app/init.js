@@ -1,6 +1,6 @@
 import { select } from 'd3-selection/src/index';
 import { scaleBand } from 'd3-scale/src/index';
-import { csv } from 'd3-fetch/src/index';
+import { csv, image } from 'd3-fetch/src/index';
 import rough from 'roughjs/bundled/rough.esm';
 
 import scape from '../../static/wine-scape-s';
@@ -27,79 +27,11 @@ function splitPath(path) {
     .map(d => `M${d}`);
 }
 
-function buildVisual() {
-  const svg = select('#svg-main');
-  const scapeGroup = svg.append('g').attr('id', 'scape-group');
-  const shapeGroup = svg.append('g').attr('id', 'shape-group');
-  const stageGroup = svg.append('g').attr('id', 'stage-group');
-  const lolliGroup = shapeGroup.append('g').attr('id', 'lolli-group');
-  const rg = rough.svg(svg.node()).generator;
-
-  // Full wine scape svg.
-  scapeGroup
-    .append('path')
-    .attr('id', 'wine-scape-path')
-    .attr('d', scape)
-    .style('fill', 'none')
-    .style('stroke-width', 1)
-    .style('stroke', 'grey');
-
-  // Only the glass from wine scape svg.
-  shapeGroup
-    .append('path')
-    .attr('id', 'shape-path')
-    .attr('d', glass)
-    .style('fill', 'none')
-    .style('stroke-width', 1)
-    .style('stroke', 'red');
-
-  // // Get a sketchy bottle.
-  // const roughBottle = rg.path(bottle, { simplification: 0.6 });
-  // const roughBottlePath = rg.toPaths(roughBottle);
-
-  // The bottle as morph target (hidden).
-  stageGroup
-    .append('path')
-    .attr('id', 'bottle-path')
-    .attr('d', bottle)
-    // .attr('d', roughBottlePath[0].d)
-    .style('fill', 'none')
-    .style('stroke-width', 1)
-    .style('visibility', 'hidden');
-
-  // Add the text to the shape group.
-  // Split the bottle text path for the gsap anim.
-  const bottleTexts = splitPath(bottleText);
-  shapeGroup
-    .selectAll('.bottle-text-path')
-    .data(bottleTexts)
-    .join('path')
-    .attr('class', 'bottle-text-path')
-    .attr('id', (d, i) => `bottle-text-path-${i}`)
-    .attr('d', d => d)
-    .style('fill', 'none')
-    .style('stroke-width', 1)
-    .style('stroke', 'red');
-
-  // Add the waves.
-  // Add the first wave to the shape.
-  shapeGroup
-    .append('path')
-    .attr('id', 'wave-1')
-    .attr('d', wave1)
-    .style('fill', 'red')
-    .style('opacity', 0);
-
-  // Add the second wave to the stage.
-  stageGroup
-    .append('path')
-    .attr('id', 'wave-2')
-    .attr('d', wave2)
-    .style('fill', 'red')
-    .style('visibility', 'hidden');
-
+function buildChart() {
   // Build the chart.
   // ---------------
+
+  const lolliGroup = shapeGroup.append('g').attr('id', 'lolli-group');
 
   // Data
   const lolliData = [
@@ -148,6 +80,27 @@ function buildVisual() {
     .attr('r', 2);
 }
 
+function buildVisual() {
+  const svg = select('#svg-hidden');
+  const stageGroup = svg.append('g').attr('id', 'stage-group');
+
+  stageGroup
+    .append('path')
+    .attr('id', 'glass-path')
+    .attr('d', glass)
+    .style('fill', 'none')
+    .style('stroke-width', 1)
+    .style('stroke', 'grey');
+
+  stageGroup
+    .append('path')
+    .attr('id', 'bottle-path')
+    .attr('d', bottle)
+    .style('fill', 'none')
+    .style('stroke-width', 1)
+    .style('stroke', 'grey');
+}
+
 function buildStory(data) {
   const container = select('#text-wrap');
 
@@ -160,17 +113,20 @@ function buildStory(data) {
     .html(d => d.text);
 }
 
-function ready(data) {
+function ready([scrollData, wineScape]) {
   buildVisual();
-  buildStory(data);
+  // buildStory(scrollData);
 
-  update();
+  update(wineScape);
 
-  window.addEventListener('resize', update);
+  window.addEventListener('resize', () => update(wineScape));
 }
 
 function init() {
-  csv('../../data/scrolldata.csv').then(ready);
+  const scrollData = csv('../../data/scrolldata.csv');
+  const wineScape = image('../../static/wine-scape.png');
+
+  Promise.all([scrollData, wineScape]).then(ready);
 }
 
 export default init;
