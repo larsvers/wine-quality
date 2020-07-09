@@ -115,7 +115,7 @@ function buildStory(data) {
 
 function ready([scrollData, wineScape]) {
   buildVisual();
-  // buildStory(scrollData);
+  buildStory(scrollData);
 
   update(wineScape);
 

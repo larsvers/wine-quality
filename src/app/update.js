@@ -86,6 +86,11 @@ function getTransform(object, fit, nudge) {
 
 let part = 'glass';
 
+let width;
+let height;
+let ctx01;
+let ctx02;
+
 const transform = {
   shape: null,
   bottle: null,
@@ -98,6 +103,22 @@ ScrollTrigger.defaults({
 
 // Update functions.
 // -----------------
+function setVisualStructure() {
+  // Get elements.
+  const container = document.querySelector('#canvas-main-container');
+  const can01 = document.querySelector('#canvas-main');
+  const can02 = document.querySelector('#canvas-level-1');
+  ctx01 = can01.getContext('2d');
+  ctx02 = can02.getContext('2d');
+
+  // Resize canvas.
+  resizeCanvas(can01, container);
+  resizeCanvas(can02, container);
+
+  // Base measures (module scope).
+  width = parseFloat(can01.style.width);
+  height = parseFloat(can01.style.height);
+}
 
 function resizeCanvas(canvas, container) {
   const context = canvas.getContext('2d');
@@ -119,28 +140,34 @@ function resizeCanvas(canvas, container) {
   context.scale(window.devicePixelRatio, window.devicePixelRatio);
 }
 
-function drawImage(ctx, img, t) {
+function updateTransforms(wineScape) {
+  // Update all necessary transforms.
+
+  // Update winescape image (and glass) transform.
+  const scapeDim = { width: wineScape.width, height: wineScape.height };
+  transform.scape = transform.shape = getTransform(scapeDim, {
+    width: 1,
+    height: 0,
+  });
+
+  // Update bottle transform.
+  const bottleDim = getBox(select('#bottle-path'));
+  transform.bottle = getTransform(
+    bottleDim,
+    { width: 0, height: 0.8 },
+    { x: 0.5, height: null }
+  );
+}
+
+function drawImage(ctx, img, t, alpha) {
+  console.log(alpha);
+  ctx.clearRect(0, 0, width, height);
   ctx.save();
+  ctx.globalAlpha = alpha;
   ctx.translate(t.x, t.y);
   ctx.scale(t.scale, t.scale);
   ctx.drawImage(img, 0, 0, img.width, img.height);
   ctx.restore();
-}
-
-// Transforms.
-function getGlassTransform() {
-  const box = getBox(select('#glass-path'));
-  const fit = { width: 1, height: 0 };
-  // transform.glass = getTransform(box, fit);
-  // transform.shape = getTransform(box, fit);
-  // console.log(transform.glass);
-}
-
-function getBottleTransform() {
-  const box = getBox(select('#bottle-path'));
-  const fit = { width: 0, height: 0.8 };
-  const nudge = { x: 0.5, height: null };
-  transform.bottle = getTransform(box, fit, nudge);
 }
 
 // Tweens.
@@ -281,39 +308,40 @@ function updateTweens() {
   tweenQualityChange();
 }
 
+// -------------------
+
+function tweenWineScape(wineScape) {
+  function onUpdate() {
+    const { alpha } = this._targets[0];
+    drawImage(ctx01, wineScape, transform.scape, alpha);
+  }
+
+  gsap.to(
+    { alpha: 0 },
+    {
+      duration: 3,
+      alpha: 1,
+      onUpdate,
+      scrollTrigger: {
+        scroller: '#text-wrap',
+        trigger: '.section-1',
+        start: 'top center',
+        end: 'center center',
+        scrub: true,
+        toggleActions: 'play none none reverse',
+      },
+    }
+  );
+}
+
 // Main function.
 function update(wineScape) {
-  // Get elements.
-  const container = document.querySelector('#canvas-main-container');
-  const can01 = document.querySelector('#canvas-main');
-  const ctx01 = can01.getContext('2d');
-  const can02 = document.querySelector('#canvas-level-1');
-  const ctx02 = can02.getContext('2d');
+  setWrapHeight();
+  setVisualStructure();
+  updateTransforms(wineScape);
 
-  // Resize canvas.
-  resizeCanvas(can01, container);
-  resizeCanvas(can02, container);
-
-  // Base measures.
-  const width = parseFloat(can01.style.width);
-  const height = parseFloat(can01.style.height);
-
-  // Update all necessary transforms.
-  const scapeDim = { width: wineScape.width, height: wineScape.height };
-  transform.scape = transform.shape = getTransform(scapeDim, {
-    width: 1,
-    height: 0,
-  });
-
-  const bottleDim = getBox(select('#bottle-path'));
-  transform.bottle = getTransform(
-    bottleDim,
-    { width: 0, height: 0.8 },
-    { x: 0.5, height: null }
-  );
-
-  // Draw wine Scape.
-  drawImage(ctx01, wineScape, transform.scape);
+  // updateTweens();
+  tweenWineScape(wineScape);
 
   // Morph draw function.
   ctx02.strokeStyle = 'red';
@@ -385,10 +413,6 @@ function update(wineScape) {
   }
 
   document.querySelector('button').addEventListener('click', anim);
-  // setWrapHeight();
-  // getGlassTransform();
-  // getBottleTransform();
-  // setTransforms();
   // updateTweens();
 }
 

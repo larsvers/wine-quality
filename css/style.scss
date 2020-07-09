@@ -48,13 +48,13 @@ button {
 }
 
 // SVG
-
 #svg-container {
   visibility: hidden;
   position: absolute;
   pointer-events: none;
 }
 
+// Canvas
 #canvas-main-container {
   position: absolute;
   height: 100%;
