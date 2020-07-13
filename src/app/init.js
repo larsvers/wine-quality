@@ -83,6 +83,9 @@ function buildChart() {
 function buildVisual() {
   const svg = select('#svg-hidden');
   const stageGroup = svg.append('g').attr('id', 'stage-group');
+  const rg = rough.svg(svg.node()).generator;
+  const roughBottle = rg.path(bottle, { simplification: 0.6 });
+  const roughBottlePath = rg.toPaths(roughBottle);
 
   stageGroup
     .append('path')
@@ -95,7 +98,7 @@ function buildVisual() {
   stageGroup
     .append('path')
     .attr('id', 'bottle-path')
-    .attr('d', bottle)
+    .attr('d', roughBottlePath[0].d)
     .style('fill', 'none')
     .style('stroke-width', 1)
     .style('stroke', 'grey');
@@ -117,6 +120,7 @@ function ready([scrollData, wineScape]) {
   buildVisual();
   buildStory(scrollData);
 
+  // TODO: add flag to bypass redraw of canvases on resize.
   update(wineScape);
 
   window.addEventListener('resize', () => update(wineScape));

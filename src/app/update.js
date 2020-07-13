@@ -4,7 +4,8 @@ import { MorphSVGPlugin } from 'gsap/src/MorphSVGPlugin';
 import { DrawSVGPlugin } from 'gsap/src/DrawSVGPlugin';
 import { GSDevTools } from 'gsap/src/GSDevTools';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
-import { isSelection, getBox, xScale } from './utils';
+import cloneDeep from 'lodash.clonedeep';
+import { getBox } from './utils';
 
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
 
@@ -18,16 +19,6 @@ gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
 function setWrapHeight() {
   const contHeight = select('#text-container').node().offsetHeight;
   select('#text-wrap').style('height', `${contHeight}px`);
-}
-
-function setTransform(el, t) {
-  const sel = isSelection(el) ? el : select(el);
-  sel
-    .attr(
-      'transform',
-      `translate(${t.x}, ${t.y}), scale(${t.scale}, ${t.scale})`
-    )
-    .attr('data-svg-origin', '0 0');
 }
 
 /**
@@ -84,25 +75,39 @@ function getTransform(object, fit, nudge) {
 // State.
 // ------
 
-let part = 'glass';
-
+let wineScape;
 let width;
 let height;
 let ctx01;
 let ctx02;
 
 const transform = {
-  shape: null,
+  scape: null,
+  glass: null,
   bottle: null,
+  shape: null,
+};
+
+const tween = {
+  wineScape: null,
+  glassBottle: null,
+};
+
+const scroll = {
+  wineScape: null,
+  glassBottle: null,
 };
 
 ScrollTrigger.defaults({
   scroller: '#text-wrap',
+  start: 'top center',
+  end: 'center center',
   markers: true,
 });
 
 // Update functions.
 // -----------------
+
 function setVisualStructure() {
   // Get elements.
   const container = document.querySelector('#canvas-main-container');
@@ -140,15 +145,17 @@ function resizeCanvas(canvas, container) {
   context.scale(window.devicePixelRatio, window.devicePixelRatio);
 }
 
-function updateTransforms(wineScape) {
+function updateTransforms() {
   // Update all necessary transforms.
 
   // Update winescape image (and glass) transform.
   const scapeDim = { width: wineScape.width, height: wineScape.height };
-  transform.scape = transform.shape = getTransform(scapeDim, {
+  transform.scape = getTransform(scapeDim, {
     width: 1,
     height: 0,
   });
+  transform.glass = cloneDeep(transform.scape);
+  transform.shape = cloneDeep(transform.scape);
 
   // Update bottle transform.
   const bottleDim = getBox(select('#bottle-path'));
@@ -159,8 +166,8 @@ function updateTransforms(wineScape) {
   );
 }
 
+// Generic canvas image draw fn.
 function drawImage(ctx, img, t, alpha) {
-  console.log(alpha);
   ctx.clearRect(0, 0, width, height);
   ctx.save();
   ctx.globalAlpha = alpha;
@@ -170,250 +177,157 @@ function drawImage(ctx, img, t, alpha) {
   ctx.restore();
 }
 
-// Tweens.
-function tweenBottle() {
-  const t = transform;
-
-  gsap
-    .timeline({
-      scrollTrigger: {
-        trigger: '.section-1',
-        start: 'top center',
-        end: 'center center',
-        toggleActions: 'play none none reverse',
-      },
-    })
-    .to(
-      '#shape-path',
-      {
-        duration: 2,
-        morphSVG: { shape: '#bottle-path' },
-      },
-      0
-    )
-    .to(
-      '#shape-group',
-      {
-        duration: 3,
-        attr: {
-          transform: `translate(${t.bottle.x}, ${t.bottle.y}) scale(${t.bottle.scale}, ${t.bottle.scale})`,
-        },
-      },
-      0
-    );
+// Generic morph draw function.
+function drawPath(ctx, path, t) {
+  ctx.clearRect(0, 0, width, height);
+  ctx.save();
+  ctx.translate(t.x, t.y);
+  ctx.scale(t.scale, t.scale);
+  ctx.beginPath();
+  for (let i = 0; i < path.length; i++) {
+    const segment = path[i];
+    const l = segment.length;
+    ctx.moveTo(segment[0], segment[1]);
+    for (let j = 2; j < l; j += 6) {
+      ctx.bezierCurveTo(
+        segment[j],
+        segment[j + 1],
+        segment[j + 2],
+        segment[j + 3],
+        segment[j + 4],
+        segment[j + 5]
+      );
+    }
+    if (segment.closed) {
+      ctx.closePath();
+    }
+  }
+  ctx.stroke();
+  ctx.restore();
 }
 
-function tweenBottleText() {
-  gsap.from('.bottle-text-path', {
-    scrollTrigger: {
-      trigger: '.section-2',
-      start: 'top center',
-      end: 'center center',
-      scrub: true,
-    },
-    drawSVG: '0',
+// Wine Scape set up
+// -----------------
+
+// Draw wine scape.
+function drawWineScape() {
+  const { alpha } = this.targets()[0];
+  drawImage(ctx01, wineScape, transform.scape, alpha);
+}
+
+function defineTweenWineScape() {
+  return gsap.to(
+    { alpha: 0 },
+    { duration: 5, alpha: 1, onUpdate: drawWineScape }
+  );
+}
+
+function definedScrollWineScape() {
+  // Create the scroll trigger.
+  return ScrollTrigger.create({
+    animation: tween.wineScape,
+    trigger: '.section-1',
+    scrub: true,
+    toggleActions: 'play none none reverse',
   });
 }
 
-function tweenBottleWave() {
-  gsap
-    .timeline({
-      scrollTrigger: {
-        trigger: '.section-3',
-        start: 'top center',
-        end: 'center center',
-        toggleActions: 'play none none reverse',
-      },
-    })
-    .to('#wave-1', { duration: 1, opacity: 0.5 })
-    .to(
-      '#wave-1',
-      {
-        duration: 3,
-        morphSVG: { shape: '#wave-2', shapeIndex: [-14] },
-        // yoyo: true,
-        // repeat: 2,
-        ease: 'sine.inOut',
-      },
-      0
-    );
+// Glass to bottle set up
+// ----------------------
+
+// Draw glass to bottle morph.
+function drawGlassBottlePath(rawPath) {
+  ctx02.strokeStyle = 'coral';
+  drawPath(ctx02, rawPath, transform.shape);
 }
 
-function tweenChart() {
-  const elements = document.querySelectorAll(
-    '.lolli-alcohol, .lolli-acid, .lolli-chlorides'
-  );
-  gsap
-    .timeline({
-      scrollTrigger: {
-        trigger: '.section-4',
-        start: 'top center',
-        end: 'center center',
-        scrub: true,
-      },
-    })
-    .to(elements, { opacity: 1 }, 0)
-    .to('.lolli-alcohol line', { attr: { x2: xScale(1) } }, 0)
-    .to('.lolli-acid line', { attr: { x2: xScale(0.5) } }, 0)
-    .to('.lolli-chlorides line', { attr: { x2: xScale(0.75) } }, 0)
-    .to('.lolli-alcohol circle', { attr: { cx: xScale(1) } }, 0)
-    .to('.lolli-acid circle', { attr: { cx: xScale(0.5) } }, 0)
-    .to('.lolli-chlorides circle', { attr: { cx: xScale(0.75) } }, 0);
+// Change image transform function.
+function updateTransform() {
+  transform.shape = this.targets()[0];
 }
 
-function tweenQuality() {
-  gsap
-    .timeline({
-      scrollTrigger: {
-        trigger: '.section-5',
-        start: 'top center',
-        end: 'center center',
-        toggleActions: 'play none none reverse',
-        scrub: true,
-      },
-    })
-    .to('.lolli-quality', { opacity: 1 }, 0)
-    .to('.lolli-quality text', { attr: { x2: xScale(1) }, fill: 'green' }, 0)
-    .to('.lolli-quality line', { attr: { x2: xScale(1) }, stroke: 'green' }, 0)
-    .to('.lolli-quality circle', { attr: { cx: xScale(1) }, fill: 'green' }, 0);
-}
+function defineTweenGlassBottle() {
+  const tl = gsap.timeline({ paused: true });
 
-function tweenQualityChange() {
-  gsap
-    .timeline({
-      scrollTrigger: {
-        trigger: '.section-6',
-        start: 'top center',
-        end: 'center center',
-        scrub: true,
-      },
-    })
-    .to('.lolli-alcohol line', { attr: { x2: xScale(0.2) } }, 0)
-    .to('.lolli-alcohol circle', { attr: { cx: xScale(0.2) } }, 0)
-    .to('.lolli-acid line', { attr: { x2: xScale(0.3) } }, 0)
-    .to('.lolli-acid circle', { attr: { cx: xScale(0.3) } }, 0)
-    .to('.lolli-chlorides line', { attr: { x2: xScale(1) } }, 0)
-    .to('.lolli-chlorides circle', { attr: { cx: xScale(1) } }, 0)
-    .to('.lolli-quality text', { fill: 'red' }, 0)
-    .to('.lolli-quality line', { attr: { x2: xScale(0.3) }, stroke: 'red' }, 0)
-    .to('.lolli-quality circle', { attr: { cx: xScale(0.3) }, fill: 'red' }, 0);
-}
-
-function updateTweens() {
-  tweenBottle();
-  tweenBottleText();
-  tweenBottleWave();
-  tweenChart();
-  tweenQuality();
-  tweenQualityChange();
-}
-
-// -------------------
-
-function tweenWineScape(wineScape) {
-  function onUpdate() {
-    const { alpha } = this._targets[0];
-    drawImage(ctx01, wineScape, transform.scape, alpha);
-  }
-
-  gsap.to(
-    { alpha: 0 },
-    {
-      duration: 3,
-      alpha: 1,
-      onUpdate,
-      scrollTrigger: {
-        scroller: '#text-wrap',
-        trigger: '.section-1',
-        start: 'top center',
-        end: 'center center',
-        scrub: true,
-        toggleActions: 'play none none reverse',
-      },
-    }
-  );
-}
-
-// Main function.
-function update(wineScape) {
-  setWrapHeight();
-  setVisualStructure();
-  updateTransforms(wineScape);
-
-  // updateTweens();
-  tweenWineScape(wineScape);
-
-  // Morph draw function.
-  ctx02.strokeStyle = 'red';
-  function draw(rawPath) {
-    ctx02.clearRect(0, 0, width, height);
-    ctx02.save();
-    ctx02.translate(transform.shape.x, transform.shape.y);
-    ctx02.scale(transform.shape.scale, transform.shape.scale);
-    ctx02.beginPath();
-    for (let i = 0; i < rawPath.length; i++) {
-      const segment = rawPath[i];
-      const l = segment.length;
-      ctx02.moveTo(segment[0], segment[1]);
-      for (let j = 2; j < l; j += 6) {
-        ctx02.bezierCurveTo(
-          segment[j],
-          segment[j + 1],
-          segment[j + 2],
-          segment[j + 3],
-          segment[j + 4],
-          segment[j + 5]
-        );
-      }
-      if (segment.closed) {
-        ctx02.closePath();
-      }
-    }
-    ctx02.stroke();
-    ctx02.restore();
-  }
-
-  // Change transform function.
-  function updateTransform() {
-    transform.shape = this._targets[0];
-  }
-
-  // Animation.
-  const tl = gsap.timeline({ defaults: { duration: 2 }, paused: true });
-  tl.to('#glass-path', {
+  const morph = gsap.to('#glass-path', {
     morphSVG: {
       shape: '#bottle-path',
-      render: draw,
+      render: drawGlassBottlePath,
+      updateTarget: false,
     },
-  }).to(
+  });
+
+  const retransform = gsap.fromTo(
     transform.shape,
+    {
+      x: transform.glass.x,
+      y: transform.glass.y,
+      scale: transform.glass.scale,
+    },
     {
       x: transform.bottle.x,
       y: transform.bottle.y,
       scale: transform.bottle.scale,
       onUpdate: updateTransform,
-    },
-    0
+    }
   );
 
-  tl.progress(0.0001);
+  tl.add(morph, 0).add(retransform, 0);
 
-  // GSDevTools.create({ animation: tl });
+  return tl;
+}
 
-  let flag = true;
-  function anim() {
-    if (flag) {
-      tl.play();
-      this.innerHTML = 'Reverse';
-    } else {
-      tl.reverse();
-      this.innerHTML = 'Play';
-    }
-    flag = !flag;
-  }
+function defineScrollGlassBottle() {
+  return ScrollTrigger.create({
+    animation: tween.glassBottle,
+    trigger: '.section-2',
+    scrub: true,
+    toggleActions: 'play none none reverse',
+  });
+}
 
-  document.querySelector('button').addEventListener('click', anim);
-  // updateTweens();
+// Tween functions
+// ---------------
+
+function tweenWineScape() {
+  // Set this up for resize (get time and kill running timeline).
+  // Note, this queries the timeline dangling off scrolltrigger, Doesn't work otherwise.
+  const time = tween.wineScape ? scroll.wineScape.animation.time() : 0;
+  if (tween.wineScape) tween.wineScape.kill();
+
+  // Define timeline.
+  tween.wineScape = gsap.timeline({ paused: true }).add(defineTweenWineScape());
+
+  // Set time if we're on resize.
+  tween.wineScape.time(time);
+
+  // Create the scroll trigger.
+  scroll.wineScape = scroll.wineScape || definedScrollWineScape();
+}
+
+function tweenGlassBottle() {
+  // Capture current progress.
+  const progress = scroll.glassBottle ? scroll.glassBottle.progress : 0;
+
+  // Kill old - set up new timeline.
+  if (tween.glassBottle) tween.glassBottle.kill();
+  tween.glassBottle = defineTweenGlassBottle();
+  tween.glassBottle.totalProgress(progress);
+
+  // Kill old - set up new scroll instance.
+  if (scroll.glassBottle) scroll.glassBottle.kill();
+  scroll.glassBottle = defineScrollGlassBottle();
+}
+
+// Main function.
+function update(wineScapeImg) {
+  wineScape = wineScapeImg;
+  setWrapHeight();
+  setVisualStructure();
+  updateTransforms();
+
+  tweenWineScape();
+  tweenGlassBottle();
 }
 
 export default update;
