@@ -89,7 +89,7 @@ const transform = {
 };
 
 const colour = {
-  shape: { value: 'rgba(0,0,0,0)' },
+  shape: { value: null },
 };
 
 const tween = {
@@ -231,9 +231,7 @@ function defineTweenWineScape() {
     }
   );
 
-  const colourvalue = gsap.to(colour.shape, { value: 'rgba(0,0,0,0.5)' });
-
-  tl.add(imagealpha, 0).add(colourvalue, 0);
+  tl.add(imagealpha, 0);
 
   return tl;
 }
@@ -254,8 +252,16 @@ function defineScrollWineScape() {
 // Draw glass to bottle morph.
 function drawGlassBottlePath(rawPath) {
   ctx02.strokeStyle = colour.shape.value;
-  console.log(ctx02.strokeStyle);
+  // ctx02.strokeStyle = 'black';
   drawPath(ctx02, rawPath, transform.shape);
+
+  // Remove visual when before start trigger.
+  if (
+    !scroll.glassBottle ||
+    scroll.glassBottle.scroll() <= scroll.glassBottle.start
+  ) {
+    ctx02.clearRect(0, 0, width, height);
+  }
 }
 
 // Change image transform function.
@@ -275,6 +281,12 @@ function defineTweenGlassBottle() {
     },
   });
 
+  const colourvalue = gsap.fromTo(
+    colour.shape,
+    { value: 'rgba(0, 0, 0, 0.2)' },
+    { value: 'rgba(0, 0, 0, 1)' }
+  );
+
   const retransform = gsap.fromTo(
     transform.shape,
     {
@@ -290,16 +302,18 @@ function defineTweenGlassBottle() {
     }
   );
 
-  const colourvalue = gsap.to(colour.shape, {
-    value: 'rgba(0, 0, 0, 1)',
-    onUpdate() {
-      console.log(this.targets()[0]);
-    },
-  });
+  const imagealpha = gsap.to(
+    { alpha: 1 },
+    {
+      alpha: 0.2,
+      onUpdate: drawWineScape,
+    }
+  );
 
   tl.add(morph, 0)
+    .add(colourvalue, 0)
     .add(retransform, 0)
-    .add(colourvalue, 0);
+    .add(imagealpha, 0);
 
   return tl;
 }
