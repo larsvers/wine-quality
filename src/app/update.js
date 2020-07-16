@@ -88,6 +88,10 @@ const transform = {
   shape: null,
 };
 
+const colour = {
+  shape: { value: 'rgba(0,0,0,0)' },
+};
+
 const tween = {
   wineScape: null,
   glassBottle: null,
@@ -216,13 +220,25 @@ function drawWineScape() {
 }
 
 function defineTweenWineScape() {
-  return gsap.to(
+  const tl = gsap.timeline();
+
+  const imagealpha = gsap.to(
     { alpha: 0 },
-    { duration: 5, alpha: 1, onUpdate: drawWineScape }
+    {
+      duration: 5,
+      alpha: 1,
+      onUpdate: drawWineScape,
+    }
   );
+
+  const colourvalue = gsap.to(colour.shape, { value: 'rgba(0,0,0,0.5)' });
+
+  tl.add(imagealpha, 0).add(colourvalue, 0);
+
+  return tl;
 }
 
-function definedScrollWineScape() {
+function defineScrollWineScape() {
   // Create the scroll trigger.
   return ScrollTrigger.create({
     animation: tween.wineScape,
@@ -237,7 +253,8 @@ function definedScrollWineScape() {
 
 // Draw glass to bottle morph.
 function drawGlassBottlePath(rawPath) {
-  ctx02.strokeStyle = 'coral';
+  ctx02.strokeStyle = colour.shape.value;
+  console.log(ctx02.strokeStyle);
   drawPath(ctx02, rawPath, transform.shape);
 }
 
@@ -247,11 +264,12 @@ function updateTransform() {
 }
 
 function defineTweenGlassBottle() {
-  const tl = gsap.timeline({ paused: true });
+  const tl = gsap.timeline();
 
   const morph = gsap.to('#glass-path', {
     morphSVG: {
       shape: '#bottle-path',
+      map: 'complexity',
       render: drawGlassBottlePath,
       updateTarget: false,
     },
@@ -272,7 +290,16 @@ function defineTweenGlassBottle() {
     }
   );
 
-  tl.add(morph, 0).add(retransform, 0);
+  const colourvalue = gsap.to(colour.shape, {
+    value: 'rgba(0, 0, 0, 1)',
+    onUpdate() {
+      console.log(this.targets()[0]);
+    },
+  });
+
+  tl.add(morph, 0)
+    .add(retransform, 0)
+    .add(colourvalue, 0);
 
   return tl;
 }
@@ -290,19 +317,17 @@ function defineScrollGlassBottle() {
 // ---------------
 
 function tweenWineScape() {
-  // Set this up for resize (get time and kill running timeline).
-  // Note, this queries the timeline dangling off scrolltrigger, Doesn't work otherwise.
-  const time = tween.wineScape ? scroll.wineScape.animation.time() : 0;
+  // Capture current progress.
+  const progress = scroll.wineScape ? scroll.wineScape.progress : 0;
+
+  // Kill old - set up new timeline.
   if (tween.wineScape) tween.wineScape.kill();
+  tween.wineScape = defineTweenWineScape();
+  tween.wineScape.totalProgress(progress);
 
-  // Define timeline.
-  tween.wineScape = gsap.timeline({ paused: true }).add(defineTweenWineScape());
-
-  // Set time if we're on resize.
-  tween.wineScape.time(time);
-
-  // Create the scroll trigger.
-  scroll.wineScape = scroll.wineScape || definedScrollWineScape();
+  // Kill old - set up new scroll instance.
+  if (scroll.wineScape) scroll.wineScape.kill();
+  scroll.wineScape = defineScrollWineScape();
 }
 
 function tweenGlassBottle() {
