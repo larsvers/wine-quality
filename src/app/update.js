@@ -81,15 +81,15 @@ let height;
 let ctx01;
 let ctx02;
 
-const transform = {
-  scape: null,
-  glass: null,
-  bottle: null,
-  shape: null,
-};
-
-const colour = {
-  shape: { value: null },
+const state = {
+  path: null,
+  colour: null,
+  transform: {
+    scape: null,
+    bottle: null,
+    shape: null,
+  },
+  alpha: null,
 };
 
 const tween = {
@@ -110,8 +110,6 @@ ScrollTrigger.defaults({
 });
 
 // Update functions.
-// -----------------
-
 function setVisualStructure() {
   // Get elements.
   const container = document.querySelector('#canvas-main-container');
@@ -154,23 +152,25 @@ function updateTransforms() {
 
   // Update winescape image (and glass) transform.
   const scapeDim = { width: wineScape.width, height: wineScape.height };
-  transform.scape = getTransform(scapeDim, {
+  state.transform.scape = getTransform(scapeDim, {
     width: 1,
     height: 0,
   });
-  transform.glass = cloneDeep(transform.scape);
-  transform.shape = cloneDeep(transform.scape);
+  // transform.glass = cloneDeep(transform.scape);
+  // transform.shape = cloneDeep(transform.scape);
+  state.transform.shape = cloneDeep(state.transform.scape);
 
   // Update bottle transform.
   const bottleDim = getBox(select('#bottle-path'));
-  transform.bottle = getTransform(
+  // transform.bottle = getTransform(
+  state.transform.bottle = getTransform(
     bottleDim,
     { width: 0, height: 0.8 },
     { x: 0.5, height: null }
   );
 }
 
-// Generic canvas image draw fn.
+// Canvas draw functions.
 function drawImage(ctx, img, t, alpha) {
   ctx.clearRect(0, 0, width, height);
   ctx.save();
@@ -181,7 +181,6 @@ function drawImage(ctx, img, t, alpha) {
   ctx.restore();
 }
 
-// Generic morph draw function.
 function drawPath(ctx, path, t) {
   ctx.clearRect(0, 0, width, height);
   ctx.save();
@@ -210,50 +209,19 @@ function drawPath(ctx, path, t) {
   ctx.restore();
 }
 
-// Wine Scape set up
-// -----------------
-
-// Draw wine scape.
-function drawWineScape() {
-  const { alpha } = this.targets()[0];
-  drawImage(ctx01, wineScape, transform.scape, alpha);
-}
-
-function defineTweenWineScape() {
-  const tl = gsap.timeline();
-
-  const imagealpha = gsap.to(
-    { alpha: 0 },
-    {
-      duration: 5,
-      alpha: 1,
-      onUpdate: drawWineScape,
-    }
+// Render functions.
+function drawScape() {
+  requestAnimationFrame(() =>
+    drawImage(ctx01, wineScape, state.transform.scape, state.alpha)
   );
-
-  tl.add(imagealpha, 0);
-
-  return tl;
 }
 
-function defineScrollWineScape() {
-  // Create the scroll trigger.
-  return ScrollTrigger.create({
-    animation: tween.wineScape,
-    trigger: '.section-1',
-    scrub: true,
-    toggleActions: 'play none none reverse',
+function drawBottle() {
+  ctx02.strokeStyle = state.colour;
+  requestAnimationFrame(() => {
+    drawImage(ctx01, wineScape, state.transform.scape, state.alpha);
+    drawPath(ctx02, state.path, state.transform.shape);
   });
-}
-
-// Glass to bottle set up
-// ----------------------
-
-// Draw glass to bottle morph.
-function drawGlassBottlePath(rawPath) {
-  ctx02.strokeStyle = colour.shape.value;
-  // ctx02.strokeStyle = 'black';
-  drawPath(ctx02, rawPath, transform.shape);
 
   // Remove visual when before start trigger.
   if (
@@ -264,58 +232,80 @@ function drawGlassBottlePath(rawPath) {
   }
 }
 
-// Change image transform function.
-function updateTransform() {
-  transform.shape = this.targets()[0];
+// Timeline set up.
+function defineTweenWineScape() {
+  const tl = gsap.timeline({ onUpdate: drawScape });
+
+  const imagealpha = gsap.fromTo(state, { alpha: 0 }, { alpha: 1 });
+
+  tl.add(imagealpha, 0);
+
+  return tl;
 }
 
 function defineTweenGlassBottle() {
-  const tl = gsap.timeline();
+  const tl = gsap.timeline({ onUpdate: drawBottle });
 
   const morph = gsap.to('#glass-path', {
     morphSVG: {
       shape: '#bottle-path',
       map: 'complexity',
-      render: drawGlassBottlePath,
+      render: path => (state.path = path),
       updateTarget: false,
     },
+    id: 'morph',
   });
 
   const colourvalue = gsap.fromTo(
-    colour.shape,
-    { value: 'rgba(0, 0, 0, 0.2)' },
-    { value: 'rgba(0, 0, 0, 1)' }
+    state,
+    { colour: 'rgba(0, 0, 0, 0.2)' },
+    {
+      colour: 'rgba(0, 0, 0, 1)',
+      id: 'colour',
+    }
   );
 
   const retransform = gsap.fromTo(
-    transform.shape,
+    state.transform.shape,
     {
-      x: transform.glass.x,
-      y: transform.glass.y,
-      scale: transform.glass.scale,
+      x: state.transform.scape.x,
+      y: state.transform.scape.y,
+      scale: state.transform.scape.scale,
     },
     {
-      x: transform.bottle.x,
-      y: transform.bottle.y,
-      scale: transform.bottle.scale,
-      onUpdate: updateTransform,
+      x: state.transform.bottle.x,
+      y: state.transform.bottle.y,
+      scale: state.transform.bottle.scale,
+      id: 'transform',
     }
   );
 
-  const imagealpha = gsap.to(
+  const imagealpha = gsap.fromTo(
+    state,
     { alpha: 1 },
     {
       alpha: 0.2,
-      onUpdate: drawWineScape,
+      id: 'alpha',
     }
   );
 
-  tl.add(morph, 0)
+  tl.add(retransform, 0)
     .add(colourvalue, 0)
-    .add(retransform, 0)
+    .add(morph, 0)
     .add(imagealpha, 0);
 
   return tl;
+}
+
+// ScrollTrigger set up
+function defineScrollWineScape() {
+  // Create the scroll trigger.
+  return ScrollTrigger.create({
+    animation: tween.wineScape,
+    trigger: '.section-1',
+    scrub: true,
+    toggleActions: 'play none none reverse',
+  });
 }
 
 function defineScrollGlassBottle() {
@@ -327,9 +317,7 @@ function defineScrollGlassBottle() {
   });
 }
 
-// Tween functions
-// ---------------
-
+// Animation kill and rebuild.
 function tweenWineScape() {
   // Capture current progress.
   const progress = scroll.wineScape ? scroll.wineScape.progress : 0;
@@ -356,6 +344,7 @@ function tweenGlassBottle() {
   // Kill old - set up new scroll instance.
   if (scroll.glassBottle) scroll.glassBottle.kill();
   scroll.glassBottle = defineScrollGlassBottle();
+  ScrollTrigger.refresh();
 }
 
 // Main function.
@@ -367,6 +356,7 @@ function update(wineScapeImg) {
 
   tweenWineScape();
   tweenGlassBottle();
+  console.log(state);
 }
 
 export default update;

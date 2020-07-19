@@ -3,6 +3,7 @@ import { scaleBand } from 'd3-scale/src/index';
 import { csv, image } from 'd3-fetch/src/index';
 import rough from 'roughjs/bundled/rough.esm';
 
+import debounce from 'lodash.debounce';
 import scape from '../../static/wine-scape-s';
 import glass from '../../static/wine-glass-clean';
 import bottle from '../../static/wine-bottle-1';
@@ -123,7 +124,9 @@ function ready([scrollData, wineScape]) {
   // TODO: add flag to bypass redraw of canvases on resize.
   update(wineScape);
 
-  window.addEventListener('resize', () => update(wineScape));
+  // Debounced resize.
+  const debounced = debounce(() => update(wineScape), 500);
+  window.addEventListener('resize', debounced);
 }
 
 function init() {
