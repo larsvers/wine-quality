@@ -222,22 +222,12 @@ function drawBottle() {
     drawImage(ctx01, wineScape, state.transform.scape, state.alpha);
     drawPath(ctx02, state.path, state.transform.shape);
   });
-
-  // Remove visual when before start trigger.
-  if (
-    !scroll.glassBottle ||
-    scroll.glassBottle.scroll() <= scroll.glassBottle.start
-  ) {
-    ctx02.clearRect(0, 0, width, height);
-  }
 }
 
 // Timeline set up.
 function defineTweenWineScape() {
   const tl = gsap.timeline({ onUpdate: drawScape });
-
   const imagealpha = gsap.fromTo(state, { alpha: 0 }, { alpha: 1 });
-
   tl.add(imagealpha, 0);
 
   return tl;
@@ -253,15 +243,14 @@ function defineTweenGlassBottle() {
       render: path => (state.path = path),
       updateTarget: false,
     },
-    id: 'morph',
   });
 
   const colourvalue = gsap.fromTo(
     state,
-    { colour: 'rgba(0, 0, 0, 0.2)' },
+    { colour: 'rgba(0, 0, 0, 0)' },
     {
       colour: 'rgba(0, 0, 0, 1)',
-      id: 'colour',
+      ease: 'circ.out',
     }
   );
 
@@ -276,18 +265,11 @@ function defineTweenGlassBottle() {
       x: state.transform.bottle.x,
       y: state.transform.bottle.y,
       scale: state.transform.bottle.scale,
-      id: 'transform',
+      ease: 'none',
     }
   );
 
-  const imagealpha = gsap.fromTo(
-    state,
-    { alpha: 1 },
-    {
-      alpha: 0.2,
-      id: 'alpha',
-    }
-  );
+  const imagealpha = gsap.fromTo(state, { alpha: 1 }, { alpha: 0.2 });
 
   tl.add(retransform, 0)
     .add(colourvalue, 0)
@@ -326,10 +308,6 @@ function tweenWineScape() {
   if (tween.wineScape) tween.wineScape.kill();
   tween.wineScape = defineTweenWineScape();
   tween.wineScape.totalProgress(progress);
-
-  // Kill old - set up new scroll instance.
-  if (scroll.wineScape) scroll.wineScape.kill();
-  scroll.wineScape = defineScrollWineScape();
 }
 
 function tweenGlassBottle() {
@@ -340,10 +318,17 @@ function tweenGlassBottle() {
   if (tween.glassBottle) tween.glassBottle.kill();
   tween.glassBottle = defineTweenGlassBottle();
   tween.glassBottle.totalProgress(progress);
+}
 
+function setScroll() {
   // Kill old - set up new scroll instance.
+  if (scroll.wineScape) scroll.wineScape.kill();
+  scroll.wineScape = defineScrollWineScape();
+
   if (scroll.glassBottle) scroll.glassBottle.kill();
   scroll.glassBottle = defineScrollGlassBottle();
+
+  // Refresh all.
   ScrollTrigger.refresh();
 }
 
@@ -356,7 +341,7 @@ function update(wineScapeImg) {
 
   tweenWineScape();
   tweenGlassBottle();
-  console.log(state);
+  setScroll();
 }
 
 export default update;
