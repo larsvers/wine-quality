@@ -1,3 +1,5 @@
+/* eslint-disable no-plusplus */
+/* eslint-disable no-param-reassign */
 import { select } from 'd3-selection/src/index';
 import { gsap } from 'gsap/all';
 import { MorphSVGPlugin } from 'gsap/src/MorphSVGPlugin';
@@ -109,6 +111,26 @@ ScrollTrigger.defaults({
   markers: true,
 });
 
+function resizeCanvas(canvas, container) {
+  const context = canvas.getContext('2d');
+
+  // Get the desired dimensions.
+  width = container.offsetWidth;
+  height = container.offsetHeight;
+
+  // Give each device pixel an element and drawing surface pixel.
+  // This should make it bigger for retina displays for example.
+  canvas.width = width * window.devicePixelRatio;
+  canvas.height = height * window.devicePixelRatio;
+
+  // Scale only the element's size down to the given width on the site.
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+
+  // Scale the drawing surface (up).
+  context.scale(window.devicePixelRatio, window.devicePixelRatio);
+}
+
 // Update functions.
 function setVisualStructure() {
   // Get elements.
@@ -125,26 +147,6 @@ function setVisualStructure() {
   // Base measures (module scope).
   width = parseFloat(can01.style.width);
   height = parseFloat(can01.style.height);
-}
-
-function resizeCanvas(canvas, container) {
-  const context = canvas.getContext('2d');
-
-  // Get the desired dimensions.
-  const width = container.offsetWidth;
-  const height = container.offsetHeight;
-
-  // Give each device pixel an element and drawing surface pixel.
-  // This should make it bigger for retina displays for example.
-  canvas.width = width * window.devicePixelRatio;
-  canvas.height = height * window.devicePixelRatio;
-
-  // Scale only the element's size down to the given width on the site.
-  canvas.style.width = `${width}px`;
-  canvas.style.height = `${height}px`;
-
-  // Scale the drawing surface (up).
-  context.scale(window.devicePixelRatio, window.devicePixelRatio);
 }
 
 function updateTransforms() {
@@ -240,7 +242,9 @@ function defineTweenGlassBottle() {
     morphSVG: {
       shape: '#bottle-path',
       map: 'complexity',
-      render: path => (state.path = path),
+      render(path) {
+        state.path = path;
+      },
       updateTarget: false,
     },
   });
