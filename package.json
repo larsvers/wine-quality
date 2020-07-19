@@ -30,7 +30,6 @@
     "gsap": "file:gsap-bonus.tgz",
     "lodash.clonedeep": "^4.5.0",
     "lodash.debounce": "^4.0.8",
-    "lodash.throttle": "^4.1.1",
     "roughjs": "^4.3.1"
   }
 }
