@@ -73,6 +73,25 @@ function getTransform(object, fit, nudge) {
   };
 }
 
+/**
+ * Splits the path at the M commands.
+ * Much more readable than reduce 🥂.
+ * @param { String } path
+ * @returns { Array } an array of paths
+ */
+function splitPath(path) {
+  return path
+    .split('M')
+    .filter(d => d)
+    .map(d => `M${d}`);
+}
+
+function getPathLength(pathData) {
+  let path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', pathData);
+  return path.getTotalLength() || 0;
+}
+
 // Need xScale in init and update
 // but only want to set it once (in init).
 let xScale;
@@ -82,4 +101,13 @@ function setScaleX(domain, range) {
     .range(range);
 }
 
-export { isSelection, getBox, setWrapHeight, getTransform, setScaleX, xScale };
+export {
+  isSelection,
+  getBox,
+  setWrapHeight,
+  getTransform,
+  splitPath,
+  getPathLength,
+  setScaleX,
+  xScale,
+};

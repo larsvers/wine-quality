@@ -7,6 +7,7 @@ import { DrawSVGPlugin } from 'gsap/src/DrawSVGPlugin';
 import { GSDevTools } from 'gsap/src/GSDevTools';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import cloneDeep from 'lodash.clonedeep';
+import state from './state';
 import { getBox, setWrapHeight, getTransform } from './utils';
 
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
@@ -19,21 +20,12 @@ let width;
 let height;
 let ctx01;
 let ctx02;
-
-const state = {
-  path: null,
-  colour: null,
-  transform: {
-    scape: null,
-    bottle: null,
-    shape: null,
-  },
-  alpha: null,
-};
+let ctx03;
 
 const tween = {
   wineScape: null,
   glassBottle: null,
+  textBottle: null,
 };
 
 ScrollTrigger.defaults({
@@ -69,12 +61,15 @@ function setVisualStructure() {
   const container = document.querySelector('#canvas-main-container');
   const can01 = document.querySelector('#canvas-main');
   const can02 = document.querySelector('#canvas-level-1');
+  const can03 = document.querySelector('#canvas-level-2');
   ctx01 = can01.getContext('2d');
   ctx02 = can02.getContext('2d');
+  ctx03 = can03.getContext('2d');
 
   // Resize canvas.
   resizeCanvas(can01, container);
   resizeCanvas(can02, container);
+  resizeCanvas(can03, container);
 
   // Base measures (module scope).
   width = parseFloat(can01.style.width);
@@ -143,6 +138,17 @@ function drawPath(ctx, path, t) {
   ctx.restore();
 }
 
+function drawText(ctx, path, t, length, offset) {
+  console.log('draw', length - offset, offset);
+  ctx.clearRect(0, 0, width, height);
+  ctx.save();
+  ctx.translate(t.x, t.y);
+  ctx.scale(t.scale, t.scale);
+  ctx.setLineDash([length - offset, offset]);
+  ctx.stroke(path);
+  ctx.restore();
+}
+
 // Render functions.
 function drawScape() {
   requestAnimationFrame(() =>
@@ -155,6 +161,21 @@ function drawBottle() {
   requestAnimationFrame(() => {
     drawImage(ctx01, wineScape, state.transform.scape, state.alpha);
     drawPath(ctx02, state.path, state.transform.shape);
+  });
+}
+
+function drawBottleText() {
+  console.log('render', state.pathTextlength, state.dash.offset);
+  requestAnimationFrame(() => {
+    drawImage(ctx01, wineScape, state.transform.scape, state.alpha);
+    drawPath(ctx02, state.path, state.transform.shape);
+    drawText(
+      ctx03,
+      state.pathText,
+      state.transform.shape,
+      state.pathTextlength,
+      state.dash.offset
+    );
   });
 }
 
@@ -215,6 +236,13 @@ function defineTweenGlassBottle() {
   return tl;
 }
 
+function defineTweenTextBottle() {
+  const tl = gsap.timeline({ onUpdate: drawBottleText });
+  const offset = gsap.to(state.dash, { offset: 0 });
+  tl.add(offset, 0);
+  return tl;
+}
+
 // Animation kill and rebuild.
 function tweenWineScape() {
   // Capture current progress.
@@ -238,6 +266,17 @@ function tweenGlassBottle() {
   tween.glassBottle.totalProgress(progress);
 }
 
+function tweenTextBottle() {
+  // Capture current progress.
+  const scroll = ScrollTrigger.getById('textBottle');
+  const progress = scroll ? scroll.progress : 0;
+
+  // Kill old - set up new timeline.
+  if (tween.textBottle) tween.textBottle.kill();
+  tween.textBottle = defineTweenTextBottle();
+  tween.textBottle.totalProgress(progress);
+}
+
 function setScroll() {
   // Create the scroll triggers.
   ScrollTrigger.create({
@@ -255,6 +294,14 @@ function setScroll() {
     toggleActions: 'play none none reverse',
     id: 'glassBottle',
   });
+
+  ScrollTrigger.create({
+    animation: tween.textBottle,
+    trigger: '.section-3',
+    scrub: true,
+    toggleActions: 'play none none reverse',
+    id: 'textBottle',
+  });
 }
 
 // Main function.
@@ -266,6 +313,8 @@ function update(wineScapeImg) {
 
   tweenWineScape();
   tweenGlassBottle();
+  tweenTextBottle();
+
   setScroll();
 }
 

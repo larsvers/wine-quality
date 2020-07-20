@@ -3,30 +3,17 @@ import { scaleBand } from 'd3-scale/src/index';
 import { csv, image } from 'd3-fetch/src/index';
 import rough from 'roughjs/bundled/rough.esm';
 
+import cloneDeep from 'lodash.clonedeep';
 import debounce from 'lodash.debounce';
 import scape from '../../static/wine-scape-s';
 import glass from '../../static/wine-glass-clean';
 import bottle from '../../static/wine-bottle-1';
-import bottleText from '../../static/text-bottle'; // an array of paths.
+import textBottle from '../../static/text-bottle'; // an array of paths.
 import wave1 from '../../static/bottle-wave-1';
 import wave2 from '../../static/bottle-wave-2';
+import state from './state';
 import update from './update';
-import { getBox, setScaleX } from './utils';
-
-// Utils
-
-/**
- * Splits the path at the M commands.
- * Much more readable than reduce 🥂.
- * @param { String } path
- * @returns { Array } an array of paths
- */
-function splitPath(path) {
-  return path
-    .split('M')
-    .filter(d => d)
-    .map(d => `M${d}`);
-}
+import { getBox, splitPath, getPathLength, setScaleX } from './utils';
 
 function buildChart() {
   // Build the chart.
@@ -85,6 +72,8 @@ function buildVisual() {
   const svg = select('#svg-hidden');
   const stageGroup = svg.append('g').attr('id', 'stage-group');
   const rg = rough.svg(svg.node()).generator;
+
+  // Add glass/bottle morph paths.
   const roughBottle = rg.path(bottle, { simplification: 0.6 });
   const roughBottlePath = rg.toPaths(roughBottle);
 
@@ -103,6 +92,12 @@ function buildVisual() {
     .style('fill', 'none')
     .style('stroke-width', 1)
     .style('stroke', 'grey');
+
+  // Prep text bottle.
+  const example = splitPath(textBottle)[0];
+  state.pathTextlength = getPathLength(example);
+  state.dash.offset = cloneDeep(state.pathTextlength);
+  state.pathText = new Path2D(example);
 }
 
 function buildStory(data) {
