@@ -36,11 +36,6 @@ const tween = {
   glassBottle: null,
 };
 
-const scroll = {
-  wineScape: null,
-  glassBottle: null,
-};
-
 ScrollTrigger.defaults({
   scroller: '#text-wrap',
   start: 'top center',
@@ -220,30 +215,11 @@ function defineTweenGlassBottle() {
   return tl;
 }
 
-// ScrollTrigger set up
-function defineScrollWineScape() {
-  // Create the scroll trigger.
-  return ScrollTrigger.create({
-    animation: tween.wineScape,
-    trigger: '.section-1',
-    scrub: true,
-    toggleActions: 'play none none reverse',
-  });
-}
-
-function defineScrollGlassBottle() {
-  return ScrollTrigger.create({
-    animation: tween.glassBottle,
-    trigger: '.section-2',
-    scrub: true,
-    toggleActions: 'play none none reverse',
-  });
-}
-
 // Animation kill and rebuild.
 function tweenWineScape() {
   // Capture current progress.
-  const progress = scroll.wineScape ? scroll.wineScape.progress : 0;
+  const scroll = ScrollTrigger.getById('wineScape');
+  const progress = scroll ? scroll.progress : 0;
 
   // Kill old - set up new timeline.
   if (tween.wineScape) tween.wineScape.kill();
@@ -253,7 +229,8 @@ function tweenWineScape() {
 
 function tweenGlassBottle() {
   // Capture current progress.
-  const progress = scroll.glassBottle ? scroll.glassBottle.progress : 0;
+  const scroll = ScrollTrigger.getById('glassBottle');
+  const progress = scroll ? scroll.progress : 0;
 
   // Kill old - set up new timeline.
   if (tween.glassBottle) tween.glassBottle.kill();
@@ -262,15 +239,22 @@ function tweenGlassBottle() {
 }
 
 function setScroll() {
-  // Kill old - set up new scroll instance.
-  if (scroll.wineScape) scroll.wineScape.kill();
-  scroll.wineScape = defineScrollWineScape();
+  // Create the scroll triggers.
+  ScrollTrigger.create({
+    animation: tween.wineScape,
+    trigger: '.section-1',
+    scrub: true,
+    toggleActions: 'play none none reverse',
+    id: 'wineScape',
+  });
 
-  if (scroll.glassBottle) scroll.glassBottle.kill();
-  scroll.glassBottle = defineScrollGlassBottle();
-
-  // Refresh all.
-  ScrollTrigger.refresh();
+  ScrollTrigger.create({
+    animation: tween.glassBottle,
+    trigger: '.section-2',
+    scrub: true,
+    toggleActions: 'play none none reverse',
+    id: 'glassBottle',
+  });
 }
 
 // Main function.
