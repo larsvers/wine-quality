@@ -138,14 +138,15 @@ function drawPath(ctx, path, t) {
   ctx.restore();
 }
 
-function drawText(ctx, path, t, length, offset) {
-  console.log('draw', length - offset, offset);
+function drawText(ctx, paths, t, length, offset) {
   ctx.clearRect(0, 0, width, height);
   ctx.save();
   ctx.translate(t.x, t.y);
   ctx.scale(t.scale, t.scale);
   ctx.setLineDash([length - offset, offset]);
-  ctx.stroke(path);
+  Array.isArray(paths)
+    ? paths.forEach(path => ctx.stroke(path))
+    : ctx.stroke(paths);
   ctx.restore();
 }
 
@@ -165,15 +166,15 @@ function drawBottle() {
 }
 
 function drawBottleText() {
-  console.log('render', state.pathTextlength, state.dash.offset);
+  ctx03.strokeStyle = state.colour;
   requestAnimationFrame(() => {
     drawImage(ctx01, wineScape, state.transform.scape, state.alpha);
     drawPath(ctx02, state.path, state.transform.shape);
     drawText(
       ctx03,
-      state.pathText,
+      state.bottleTexts,
       state.transform.shape,
-      state.pathTextlength,
+      state.maxBottlePathLength,
       state.dash.offset
     );
   });
@@ -183,9 +184,7 @@ function drawBottleText() {
 function defineTweenWineScape() {
   const tl = gsap.timeline({ onUpdate: drawScape });
   const imagealpha = gsap.fromTo(state, { alpha: 0 }, { alpha: 1 });
-  tl.add(imagealpha, 0);
-
-  return tl;
+  return tl.add(imagealpha, 0);
 }
 
 function defineTweenGlassBottle() {
@@ -228,19 +227,32 @@ function defineTweenGlassBottle() {
 
   const imagealpha = gsap.fromTo(state, { alpha: 1 }, { alpha: 0.2 });
 
-  tl.add(retransform, 0)
+  return tl
+    .add(retransform, 0)
     .add(colourvalue, 0)
     .add(morph, 0)
     .add(imagealpha, 0);
-
-  return tl;
 }
 
 function defineTweenTextBottle() {
   const tl = gsap.timeline({ onUpdate: drawBottleText });
-  const offset = gsap.to(state.dash, { offset: 0 });
-  tl.add(offset, 0);
-  return tl;
+
+  const offset = gsap.fromTo(
+    state.dash,
+    { offset: state.maxBottlePathLength },
+    { offset: 0 }
+  );
+
+  const colourvalue = gsap.fromTo(
+    state,
+    { colour: 'rgba(0, 0, 0, 0)' },
+    {
+      colour: 'rgba(0, 0, 0, 1)',
+      ease: 'circ.out',
+    }
+  );
+
+  return tl.add(offset, 0).add(colourvalue, 0);
 }
 
 // Animation kill and rebuild.
@@ -302,6 +314,9 @@ function setScroll() {
     toggleActions: 'play none none reverse',
     id: 'textBottle',
   });
+
+  // Recalculate all scroll positions.
+  ScrollTrigger.refresh();
 }
 
 // Main function.

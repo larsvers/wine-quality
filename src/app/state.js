@@ -8,6 +8,6 @@ export default {
   },
   alpha: null,
   dash: { offset: null },
-  pathText: null,
-  pathTextLength: null,
+  bottleTexts: null,
+  maxBottlePathLength: null,
 };

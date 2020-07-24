@@ -5,6 +5,7 @@ import rough from 'roughjs/bundled/rough.esm';
 
 import cloneDeep from 'lodash.clonedeep';
 import debounce from 'lodash.debounce';
+import { max } from 'd3-array/src/index';
 import scape from '../../static/wine-scape-s';
 import glass from '../../static/wine-glass-clean';
 import bottle from '../../static/wine-bottle-1';
@@ -94,10 +95,10 @@ function buildVisual() {
     .style('stroke', 'grey');
 
   // Prep text bottle.
-  const example = splitPath(textBottle)[0];
-  state.pathTextlength = getPathLength(example);
-  state.dash.offset = cloneDeep(state.pathTextlength);
-  state.pathText = new Path2D(example);
+  const bottleTexts = splitPath(textBottle);
+  state.maxBottlePathLength = max(bottleTexts.map(getPathLength));
+  state.dash.offset = cloneDeep(state.maxBottlePathLength);
+  state.bottleTexts = bottleTexts.map(p => new Path2D(p));
 }
 
 function buildStory(data) {

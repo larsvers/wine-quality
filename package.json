@@ -23,6 +23,7 @@
     "rollup-plugin-scss": "^2.5.0"
   },
   "dependencies": {
+    "d3-array": "^1.2.4",
     "d3-fetch": "^1.2.0",
     "d3-scale": "^3.2.1",
     "d3-selection": "^1.4.1",
