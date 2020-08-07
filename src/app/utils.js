@@ -101,6 +101,13 @@ function setScaleX(domain, range) {
     .range(range);
 }
 
+function getWavePoints(r, alpha, beta, x0, y0, t) {
+  let arg = alpha * x0 + beta * t;
+  let x = x0 + r * Math.cos(arg);
+  let y = y0 + r * Math.sin(arg);
+  return [x, y];
+}
+
 export {
   isSelection,
   getBox,
@@ -110,4 +117,5 @@ export {
   getPathLength,
   setScaleX,
   xScale,
+  getWavePoints,
 };

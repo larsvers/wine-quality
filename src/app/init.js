@@ -6,12 +6,9 @@ import rough from 'roughjs/bundled/rough.esm';
 import cloneDeep from 'lodash.clonedeep';
 import debounce from 'lodash.debounce';
 import { max } from 'd3-array/src/index';
-import scape from '../../static/wine-scape-s';
 import glass from '../../static/wine-glass-clean';
 import bottle from '../../static/wine-bottle-1';
 import textBottle from '../../static/text-bottle'; // an array of paths.
-import wave1 from '../../static/bottle-wave-1';
-import wave2 from '../../static/bottle-wave-2';
 import state from './state';
 import update from './update';
 import { getBox, splitPath, getPathLength, setScaleX } from './utils';
@@ -99,6 +96,9 @@ function buildVisual() {
   state.maxBottlePathLength = max(bottleTexts.map(getPathLength));
   state.dash.offset = cloneDeep(state.maxBottlePathLength);
   state.bottleTexts = bottleTexts.map(p => new Path2D(p));
+
+  // Prep bottle wave.
+  state.bottlePath = new Path2D(bottle);
 }
 
 function buildStory(data) {

@@ -27,6 +27,7 @@
     "d3-fetch": "^1.2.0",
     "d3-scale": "^3.2.1",
     "d3-selection": "^1.4.1",
+    "d3-shape": "^1.3.7",
     "flubber": "^0.4.2",
     "gsap": "file:gsap-bonus.tgz",
     "lodash.clonedeep": "^4.5.0",

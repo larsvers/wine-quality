@@ -10,4 +10,7 @@ export default {
   dash: { offset: null },
   bottleTexts: null,
   maxBottlePathLength: null,
+  bottlePath: null,
+  lift: null,
+  wavePoints: null,
 };

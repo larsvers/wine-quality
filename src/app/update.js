@@ -1,6 +1,9 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-param-reassign */
 import { select } from 'd3-selection/src/index';
+import { range } from 'd3-array/src/index';
+import { scalePoint } from 'd3-scale/src/index';
+import { line, curveBasis } from 'd3-shape/src/index';
 import { gsap } from 'gsap/all';
 import { MorphSVGPlugin } from 'gsap/src/MorphSVGPlugin';
 import { DrawSVGPlugin } from 'gsap/src/DrawSVGPlugin';
@@ -8,7 +11,7 @@ import { GSDevTools } from 'gsap/src/GSDevTools';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import cloneDeep from 'lodash.clonedeep';
 import state from './state';
-import { getBox, setWrapHeight, getTransform } from './utils';
+import { getBox, setWrapHeight, getTransform, getWavePoints } from './utils';
 
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
 
@@ -18,6 +21,7 @@ gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
 let wineScape;
 let width;
 let height;
+let ctx00;
 let ctx01;
 let ctx02;
 let ctx03;
@@ -26,6 +30,7 @@ const tween = {
   wineScape: null,
   glassBottle: null,
   textBottle: null,
+  bottleWave: null,
 };
 
 ScrollTrigger.defaults({
@@ -59,21 +64,26 @@ function resizeCanvas(canvas, container) {
 function setVisualStructure() {
   // Get elements.
   const container = document.querySelector('#canvas-main-container');
-  const can01 = document.querySelector('#canvas-main');
-  const can02 = document.querySelector('#canvas-level-1');
-  const can03 = document.querySelector('#canvas-level-2');
+  const can00 = document.querySelector('#canvas-level-0');
+  const can01 = document.querySelector('#canvas-level-1');
+  const can02 = document.querySelector('#canvas-level-2');
+  const can03 = document.querySelector('#canvas-level-3');
+
+  // Get contexts.
+  ctx00 = can00.getContext('2d');
   ctx01 = can01.getContext('2d');
   ctx02 = can02.getContext('2d');
   ctx03 = can03.getContext('2d');
 
   // Resize canvas.
+  resizeCanvas(can00, container);
   resizeCanvas(can01, container);
   resizeCanvas(can02, container);
   resizeCanvas(can03, container);
 
   // Base measures (module scope).
-  width = parseFloat(can01.style.width);
-  height = parseFloat(can01.style.height);
+  width = parseFloat(can00.style.width);
+  height = parseFloat(can00.style.height);
 }
 
 function updateTransforms() {
@@ -85,13 +95,10 @@ function updateTransforms() {
     width: 1,
     height: 0,
   });
-  // transform.glass = cloneDeep(transform.scape);
-  // transform.shape = cloneDeep(transform.scape);
   state.transform.shape = cloneDeep(state.transform.scape);
 
   // Update bottle transform.
   const bottleDim = getBox(select('#bottle-path'));
-  // transform.bottle = getTransform(
   state.transform.bottle = getTransform(
     bottleDim,
     { width: 0, height: 0.8 },
@@ -150,33 +157,69 @@ function drawText(ctx, paths, t, length, offset) {
   ctx.restore();
 }
 
+function drawPathSimple(ctx, path, t) {
+  ctx.clearRect(0, 0, width, height);
+  ctx.save();
+  ctx.translate(t.x, t.y);
+  ctx.scale(t.scale, t.scale);
+
+  // Clip path.
+  ctx.beginPath();
+  ctx.moveTo(0, height);
+  ctx.lineTo(0, (1 - state.lift) * height);
+  ctx.lineTo(width, (1 - state.lift) * height);
+  ctx.closePath();
+  ctx.clip();
+
+  // Background.
+  ctx.fill(path);
+
+  ctx.restore();
+}
+
 // Render functions.
 function drawScape() {
   requestAnimationFrame(() =>
-    drawImage(ctx01, wineScape, state.transform.scape, state.alpha)
+    drawImage(ctx00, wineScape, state.transform.scape, state.alpha)
   );
 }
 
 function drawBottle() {
-  ctx02.strokeStyle = state.colour;
+  ctx01.strokeStyle = state.colour;
   requestAnimationFrame(() => {
-    drawImage(ctx01, wineScape, state.transform.scape, state.alpha);
-    drawPath(ctx02, state.path, state.transform.shape);
+    drawImage(ctx00, wineScape, state.transform.scape, state.alpha);
+    drawPath(ctx01, state.path, state.transform.shape);
   });
 }
 
 function drawBottleText() {
-  ctx03.strokeStyle = state.colour;
+  ctx02.strokeStyle = state.colour;
   requestAnimationFrame(() => {
-    drawImage(ctx01, wineScape, state.transform.scape, state.alpha);
-    drawPath(ctx02, state.path, state.transform.shape);
+    drawImage(ctx00, wineScape, state.transform.scape, state.alpha);
+    drawPath(ctx01, state.path, state.transform.shape);
     drawText(
-      ctx03,
+      ctx02,
       state.bottleTexts,
       state.transform.shape,
       state.maxBottlePathLength,
       state.dash.offset
     );
+  });
+}
+
+function drawBottleWave() {
+  ctx03.fillStyle = state.colour;
+  requestAnimationFrame(() => {
+    drawImage(ctx00, wineScape, state.transform.scape, state.alpha);
+    drawPath(ctx01, state.path, state.transform.shape);
+    drawText(
+      ctx02,
+      state.bottleTexts,
+      state.transform.shape,
+      state.maxBottlePathLength,
+      state.dash.offset
+    );
+    drawPathSimple(ctx03, state.bottlePath, state.transform.shape);
   });
 }
 
@@ -255,6 +298,48 @@ function defineTweenTextBottle() {
   return tl.add(offset, 0).add(colourvalue, 0);
 }
 
+// The wave...
+// -----------
+const n = 20;
+const xWaveScale = scalePoint(range(20), [0, width]);
+const waveLineGen = line()
+  .x(d => d[0])
+  .y(d => d[1])
+  .curve(curveBasis);
+
+function makeWave(time, deltaTime, frame) {
+  state.wavePoints = range(n).map((d, i) => {
+    let xy = getWavePoints(15, 0.5, 2, xWaveScale(d), state.lift, time / 1000);
+    if (i === 0) xy[0] = 0;
+    if (i === n - 1) xy[0] = width;
+    return xy;
+  });
+}
+
+function startWave() {
+  gsap.ticker.add(makeWave);
+}
+
+function defineTweenBottleWave() {
+  const tl = gsap.timeline({
+    onUpdate: drawBottleWave,
+    onStart: startWave,
+  });
+
+  const bottlefill = gsap.fromTo(
+    state,
+    { colour: 'rgba(0, 0, 0, 0)' },
+    {
+      colour: 'rgba(0, 0, 0, 1)',
+      ease: 'circ.out',
+    }
+  );
+
+  const lift = gsap.fromTo(state, { lift: 0 }, { lift: 1 });
+
+  return tl.add(bottlefill, 0).add(lift, 0);
+}
+
 // Animation kill and rebuild.
 function tweenWineScape() {
   // Capture current progress.
@@ -289,6 +374,17 @@ function tweenTextBottle() {
   tween.textBottle.totalProgress(progress);
 }
 
+function tweenBottleWave() {
+  // Capture current progress.
+  const scroll = ScrollTrigger.getById('bottleWave');
+  const progress = scroll ? scroll.progress : 0;
+
+  // Kill old - set up new timeline.
+  if (tween.textBottle) tween.textBottle.kill();
+  tween.bottleWave = defineTweenBottleWave();
+  tween.bottleWave.totalProgress(progress);
+}
+
 function setScroll() {
   // Create the scroll triggers.
   ScrollTrigger.create({
@@ -315,6 +411,14 @@ function setScroll() {
     id: 'textBottle',
   });
 
+  ScrollTrigger.create({
+    animation: tween.bottleWave,
+    trigger: '.section-4',
+    scrub: true,
+    toggleActions: 'play none none reverse',
+    id: 'bottleWave',
+  });
+
   // Recalculate all scroll positions.
   ScrollTrigger.refresh();
 }
@@ -329,6 +433,7 @@ function update(wineScapeImg) {
   tweenWineScape();
   tweenGlassBottle();
   tweenTextBottle();
+  tweenBottleWave();
 
   setScroll();
 }
