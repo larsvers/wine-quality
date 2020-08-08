@@ -93,12 +93,12 @@ function buildVisual() {
 
   // Prep text bottle.
   const bottleTexts = splitPath(textBottle);
-  state.maxBottlePathLength = max(bottleTexts.map(getPathLength));
-  state.dash.offset = cloneDeep(state.maxBottlePathLength);
-  state.bottleTexts = bottleTexts.map(p => new Path2D(p));
+  state.bottleText.maxLength = max(bottleTexts.map(getPathLength));
+  state.bottleText.dashOffset = cloneDeep(state.bottleText.maxLength);
+  state.bottleText.paths = bottleTexts.map(p => new Path2D(p));
 
   // Prep bottle wave.
-  state.bottlePath = new Path2D(bottle);
+  state.bottleWave.bottlePath = new Path2D(bottle);
 }
 
 function buildStory(data) {

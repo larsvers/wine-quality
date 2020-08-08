@@ -35,7 +35,7 @@ let waveLineGen;
 const tween = {
   wineScape: null,
   glassBottle: null,
-  textBottle: null,
+  bottleText: null,
   bottleWave: null,
 };
 
@@ -167,7 +167,7 @@ function drawBottleWave(ctx, path, t) {
 
   // Clip path.
   ctx.beginPath();
-  waveLineGen.context(ctx)(state.wavePoints);
+  waveLineGen.context(ctx)(state.bottleWave.wavePoints);
   ctx.lineTo(width, height);
   ctx.lineTo(0, height);
   ctx.closePath();
@@ -182,29 +182,29 @@ function drawBottleWave(ctx, path, t) {
 // Render functions.
 function renderScape() {
   requestAnimationFrame(() =>
-    drawScape(ctx00, wineScape, state.transform.scape, state.alpha)
+    drawScape(ctx00, wineScape, state.transform.scape, state.scape.alpha)
   );
 }
 
 function renderBottle() {
-  ctx01.strokeStyle = state.colour;
+  ctx01.strokeStyle = state.glassBottle.colour;
   requestAnimationFrame(() => {
     // We need to draw both ctx00 and ctx01 here, as the tween
     // doesn't only cover ctx01 paramters but also the alpha of ctx00.
-    drawScape(ctx00, wineScape, state.transform.scape, state.alpha);
-    drawBottle(ctx01, state.path, state.transform.shape);
+    drawScape(ctx00, wineScape, state.transform.scape, state.scape.alpha);
+    drawBottle(ctx01, state.glassBottle.path, state.transform.shape);
   });
 }
 
 function renderBottleText() {
-  ctx02.strokeStyle = state.colour;
+  ctx02.strokeStyle = state.bottleText.colour;
   requestAnimationFrame(() => {
     drawBottleText(
       ctx02,
-      state.bottleTexts,
+      state.bottleText.paths,
       state.transform.shape,
-      state.maxBottlePathLength,
-      state.dash.offset
+      state.bottleText.maxLength,
+      state.bottleText.dashOffset
     );
   });
 }
@@ -212,14 +212,14 @@ function renderBottleText() {
 function renderBottleWave() {
   ctx03.fillStyle = 'black';
   requestAnimationFrame(() => {
-    drawBottleWave(ctx03, state.bottlePath, state.transform.shape);
+    drawBottleWave(ctx03, state.bottleWave.bottlePath, state.transform.shape);
   });
 }
 
 // Timeline set up.
 function defineTweenWineScape() {
   const tl = gsap.timeline({ onUpdate: renderScape });
-  const imagealpha = gsap.fromTo(state, { alpha: 0 }, { alpha: 1 });
+  const imagealpha = gsap.fromTo(state.scape, { alpha: 0 }, { alpha: 1 });
   return tl.add(imagealpha, 0);
 }
 
@@ -230,15 +230,15 @@ function defineTweenGlassBottle() {
     morphSVG: {
       shape: '#bottle-path',
       map: 'complexity',
-      render(path) {
-        state.path = path;
-      },
       updateTarget: false,
+      render(path) {
+        state.glassBottle.path = path;
+      },
     },
   });
 
   const colourvalue = gsap.fromTo(
-    state,
+    state.glassBottle,
     { colour: 'rgba(0, 0, 0, 0)' },
     {
       colour: 'rgba(0, 0, 0, 1)',
@@ -261,7 +261,7 @@ function defineTweenGlassBottle() {
     }
   );
 
-  const imagealpha = gsap.fromTo(state, { alpha: 1 }, { alpha: 0.2 });
+  const imagealpha = gsap.fromTo(state.scape, { alpha: 1 }, { alpha: 0.2 });
 
   return tl
     .add(retransform, 0)
@@ -270,17 +270,17 @@ function defineTweenGlassBottle() {
     .add(imagealpha, 0);
 }
 
-function defineTweenTextBottle() {
+function defineTweenBottleText() {
   const tl = gsap.timeline({ onUpdate: renderBottleText });
 
   const offset = gsap.fromTo(
-    state.dash,
-    { offset: state.maxBottlePathLength },
-    { offset: 0 }
+    state.bottleText,
+    { dashOffset: state.bottleText.maxLength },
+    { dashOffset: 0 }
   );
 
   const colourvalue = gsap.fromTo(
-    state,
+    state.bottleText,
     { colour: 'rgba(0, 0, 0, 0)' },
     {
       colour: 'rgba(0, 0, 0, 1)',
@@ -294,9 +294,10 @@ function defineTweenTextBottle() {
 function defineTweenBottleWave() {
   // Makes the wave points and draws the wine.
   function makeWave(time) {
-    state.wavePoints = range(nWavePoints).map((d, i) => {
+    state.bottleWave.wavePoints = range(nWavePoints).map((d, i) => {
       const x0 = xWaveScale(d);
-      const y0 = ((1 - state.lift) * height) / state.transform.shape.scale;
+      const y0 =
+        ((1 - state.bottleWave.lift) * height) / state.transform.shape.scale;
       let xy = getWavePoints(10, 0.5, 2, x0, y0, time * 5);
       if (i === 0) xy[0] = 0;
       if (i === nWavePoints - 1) xy[0] = width;
@@ -322,7 +323,7 @@ function defineTweenBottleWave() {
   // On scroll the lift gets updated, which startWave's canvas
   // draw function picks up to lift the waving wave.
   const tl = gsap.timeline({ onStart: startWave });
-  const lift = gsap.fromTo(state, { lift: 0 }, { lift: 0.8 });
+  const lift = gsap.fromTo(state.bottleWave, { lift: 0 }, { lift: 0.8 });
   return tl.add(lift, 0);
 }
 
@@ -349,15 +350,15 @@ function tweenGlassBottle() {
   tween.glassBottle.totalProgress(progress);
 }
 
-function tweenTextBottle() {
+function tweenBottleText() {
   // Capture current progress.
-  const scroll = ScrollTrigger.getById('textBottle');
+  const scroll = ScrollTrigger.getById('bottleText');
   const progress = scroll ? scroll.progress : 0;
 
   // Kill old - set up new timeline.
-  if (tween.textBottle) tween.textBottle.kill();
-  tween.textBottle = defineTweenTextBottle();
-  tween.textBottle.totalProgress(progress);
+  if (tween.bottleText) tween.bottleText.kill();
+  tween.bottleText = defineTweenBottleText();
+  tween.bottleText.totalProgress(progress);
 }
 
 function tweenBottleWave() {
@@ -366,7 +367,7 @@ function tweenBottleWave() {
   const progress = scroll ? scroll.progress : 0;
 
   // Kill old - set up new timeline.
-  if (tween.textBottle) tween.textBottle.kill();
+  if (tween.bottleWave) tween.bottleWave.kill();
   tween.bottleWave = defineTweenBottleWave();
   tween.bottleWave.totalProgress(progress);
 }
@@ -390,11 +391,11 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
-    animation: tween.textBottle,
+    animation: tween.bottleText,
     trigger: '.section-3',
     scrub: true,
     toggleActions: 'play none none reverse',
-    id: 'textBottle',
+    id: 'bottleText',
   });
 
   ScrollTrigger.create({
@@ -418,7 +419,7 @@ function update(wineScapeImg) {
 
   tweenWineScape();
   tweenGlassBottle();
-  tweenTextBottle();
+  tweenBottleText();
   tweenBottleWave();
 
   setScroll();

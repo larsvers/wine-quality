@@ -1,16 +1,27 @@
 export default {
-  path: null,
-  colour: null,
+  // General.
   transform: {
     scape: null,
     bottle: null,
     shape: null,
   },
-  alpha: null,
-  dash: { offset: null },
-  bottleTexts: null,
-  maxBottlePathLength: null,
-  bottlePath: null,
-  lift: null,
-  wavePoints: null,
+  // Tweens.
+  scape: {
+    alpha: null,
+  },
+  glassBottle: {
+    path: null,
+    colour: null,
+  },
+  bottleText: {
+    paths: null,
+    maxLength: null,
+    dashOffset: null,
+    colour: null,
+  },
+  bottleWave: {
+    bottlePath: null,
+    wavePoints: null,
+    lift: null,
+  },
 };
