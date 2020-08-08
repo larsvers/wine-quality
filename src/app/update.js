@@ -1,43 +1,14 @@
-/* eslint-disable no-plusplus */
 /* eslint-disable no-param-reassign */
 import { select } from 'd3-selection/src/index';
-import { range } from 'd3-array/src/index';
-import { scalePoint } from 'd3-scale/src/index';
-import { line, curveBasis } from 'd3-shape/src/index';
-import { gsap } from 'gsap/all';
-import { MorphSVGPlugin } from 'gsap/src/MorphSVGPlugin';
-import { DrawSVGPlugin } from 'gsap/src/DrawSVGPlugin';
-import { GSDevTools } from 'gsap/src/GSDevTools';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import cloneDeep from 'lodash.clonedeep';
 import state from './state';
-import { getBox, setWrapHeight, getTransform, getWavePoints } from './utils';
+import { getBox, setWrapHeight, getTransform } from './utils';
 
-gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
-
-// Module state.
-// ------------
-
-// Structure.
-let width;
-let height;
-let ctx00;
-let ctx01;
-let ctx02;
-let ctx03;
-
-// Tweens.
-let wineScape;
-let nWavePoints;
-let xWaveScale;
-let waveLineGen;
-
-const tween = {
-  wineScape: null,
-  glassBottle: null,
-  bottleText: null,
-  bottleWave: null,
-};
+import tweenWineScape from '../tweens/wineScape';
+import tweenGlassBottle from '../tweens/glassBottle';
+import tweenBottleText from '../tweens/bottleText';
+import tweenBottleWave from '../tweens/bottleWave';
 
 ScrollTrigger.defaults({
   scroller: '#text-wrap',
@@ -51,17 +22,17 @@ function resizeCanvas(canvas, container) {
   const context = canvas.getContext('2d');
 
   // Get the desired dimensions.
-  width = container.offsetWidth;
-  height = container.offsetHeight;
+  state.width = container.offsetWidth;
+  state.height = container.offsetHeight;
 
   // Give each device pixel an element and drawing surface pixel.
   // This should make it bigger for retina displays for example.
-  canvas.width = width * window.devicePixelRatio;
-  canvas.height = height * window.devicePixelRatio;
+  canvas.width = state.width * window.devicePixelRatio;
+  canvas.height = state.height * window.devicePixelRatio;
 
   // Scale only the element's size down to the given width on the site.
-  canvas.style.width = `${width}px`;
-  canvas.style.height = `${height}px`;
+  canvas.style.width = `${state.width}px`;
+  canvas.style.height = `${state.height}px`;
 
   // Scale the drawing surface (up).
   context.scale(window.devicePixelRatio, window.devicePixelRatio);
@@ -76,10 +47,10 @@ function setVisualStructure() {
   const can03 = document.querySelector('#canvas-level-3');
 
   // Get contexts.
-  ctx00 = can00.getContext('2d');
-  ctx01 = can01.getContext('2d');
-  ctx02 = can02.getContext('2d');
-  ctx03 = can03.getContext('2d');
+  state.ctx.scape = can00.getContext('2d');
+  state.ctx.glassBottle = can01.getContext('2d');
+  state.ctx.bottleText = can02.getContext('2d');
+  state.ctx.bottleWave = can03.getContext('2d');
 
   // Resize canvas.
   resizeCanvas(can00, container);
@@ -92,7 +63,10 @@ function updateTransforms() {
   // Update all necessary transforms.
 
   // Update winescape image (and glass) transform.
-  const scapeDim = { width: wineScape.width, height: wineScape.height };
+  const scapeDim = {
+    width: state.scape.image.width,
+    height: state.scape.image.height,
+  };
   state.transform.scape = getTransform(scapeDim, {
     width: 1,
     height: 0,
@@ -108,274 +82,10 @@ function updateTransforms() {
   );
 }
 
-// Canvas draw functions.
-function drawScape(ctx, img, t, alpha) {
-  ctx.clearRect(0, 0, width, height);
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.translate(t.x, t.y);
-  ctx.scale(t.scale, t.scale);
-  ctx.drawImage(img, 0, 0, img.width, img.height);
-  ctx.restore();
-}
-
-function drawBottle(ctx, path, t) {
-  ctx.clearRect(0, 0, width, height);
-  ctx.save();
-  ctx.translate(t.x, t.y);
-  ctx.scale(t.scale, t.scale);
-  ctx.beginPath();
-  for (let i = 0; i < path.length; i++) {
-    const segment = path[i];
-    const l = segment.length;
-    ctx.moveTo(segment[0], segment[1]);
-    for (let j = 2; j < l; j += 6) {
-      ctx.bezierCurveTo(
-        segment[j],
-        segment[j + 1],
-        segment[j + 2],
-        segment[j + 3],
-        segment[j + 4],
-        segment[j + 5]
-      );
-    }
-    if (segment.closed) {
-      ctx.closePath();
-    }
-  }
-  ctx.stroke();
-  ctx.restore();
-}
-
-function drawBottleText(ctx, paths, t, length, offset) {
-  ctx.clearRect(0, 0, width, height);
-  ctx.save();
-  ctx.translate(t.x, t.y);
-  ctx.scale(t.scale, t.scale);
-  ctx.setLineDash([length - offset, offset]);
-  Array.isArray(paths)
-    ? paths.forEach(path => ctx.stroke(path))
-    : ctx.stroke(paths);
-  ctx.restore();
-}
-
-function drawBottleWave(ctx, path, t) {
-  ctx.clearRect(0, 0, width, height);
-  ctx.save();
-  ctx.translate(t.x, t.y);
-  ctx.scale(t.scale, t.scale);
-
-  // Clip path.
-  ctx.beginPath();
-  waveLineGen.context(ctx)(state.bottleWave.wavePoints);
-  ctx.lineTo(width, height);
-  ctx.lineTo(0, height);
-  ctx.closePath();
-  ctx.clip();
-
-  // Background.
-  ctx.fill(path);
-
-  ctx.restore();
-}
-
-// Render functions.
-function renderScape() {
-  requestAnimationFrame(() =>
-    drawScape(ctx00, wineScape, state.transform.scape, state.scape.alpha)
-  );
-}
-
-function renderBottle() {
-  ctx01.strokeStyle = state.glassBottle.colour;
-  requestAnimationFrame(() => {
-    // We need to draw both ctx00 and ctx01 here, as the tween
-    // doesn't only cover ctx01 paramters but also the alpha of ctx00.
-    drawScape(ctx00, wineScape, state.transform.scape, state.scape.alpha);
-    drawBottle(ctx01, state.glassBottle.path, state.transform.shape);
-  });
-}
-
-function renderBottleText() {
-  ctx02.strokeStyle = state.bottleText.colour;
-  requestAnimationFrame(() => {
-    drawBottleText(
-      ctx02,
-      state.bottleText.paths,
-      state.transform.shape,
-      state.bottleText.maxLength,
-      state.bottleText.dashOffset
-    );
-  });
-}
-
-function renderBottleWave() {
-  ctx03.fillStyle = 'black';
-  requestAnimationFrame(() => {
-    drawBottleWave(ctx03, state.bottleWave.bottlePath, state.transform.shape);
-  });
-}
-
-// Timeline set up.
-function defineTweenWineScape() {
-  const tl = gsap.timeline({ onUpdate: renderScape });
-  const imagealpha = gsap.fromTo(state.scape, { alpha: 0 }, { alpha: 1 });
-  return tl.add(imagealpha, 0);
-}
-
-function defineTweenGlassBottle() {
-  const tl = gsap.timeline({ onUpdate: renderBottle });
-
-  const morph = gsap.to('#glass-path', {
-    morphSVG: {
-      shape: '#bottle-path',
-      map: 'complexity',
-      updateTarget: false,
-      render(path) {
-        state.glassBottle.path = path;
-      },
-    },
-  });
-
-  const colourvalue = gsap.fromTo(
-    state.glassBottle,
-    { colour: 'rgba(0, 0, 0, 0)' },
-    {
-      colour: 'rgba(0, 0, 0, 1)',
-      ease: 'circ.out',
-    }
-  );
-
-  const retransform = gsap.fromTo(
-    state.transform.shape,
-    {
-      x: state.transform.scape.x,
-      y: state.transform.scape.y,
-      scale: state.transform.scape.scale,
-    },
-    {
-      x: state.transform.bottle.x,
-      y: state.transform.bottle.y,
-      scale: state.transform.bottle.scale,
-      ease: 'none',
-    }
-  );
-
-  const imagealpha = gsap.fromTo(state.scape, { alpha: 1 }, { alpha: 0.2 });
-
-  return tl
-    .add(retransform, 0)
-    .add(colourvalue, 0)
-    .add(morph, 0)
-    .add(imagealpha, 0);
-}
-
-function defineTweenBottleText() {
-  const tl = gsap.timeline({ onUpdate: renderBottleText });
-
-  const offset = gsap.fromTo(
-    state.bottleText,
-    { dashOffset: state.bottleText.maxLength },
-    { dashOffset: 0 }
-  );
-
-  const colourvalue = gsap.fromTo(
-    state.bottleText,
-    { colour: 'rgba(0, 0, 0, 0)' },
-    {
-      colour: 'rgba(0, 0, 0, 1)',
-      ease: 'circ.out',
-    }
-  );
-
-  return tl.add(offset, 0).add(colourvalue, 0);
-}
-
-function defineTweenBottleWave() {
-  // Makes the wave points and draws the wine.
-  function makeWave(time) {
-    state.bottleWave.wavePoints = range(nWavePoints).map((d, i) => {
-      const x0 = xWaveScale(d);
-      const y0 =
-        ((1 - state.bottleWave.lift) * height) / state.transform.shape.scale;
-      let xy = getWavePoints(10, 0.5, 2, x0, y0, time * 5);
-      if (i === 0) xy[0] = 0;
-      if (i === nWavePoints - 1) xy[0] = width;
-      return xy;
-    });
-    renderBottleWave();
-  }
-
-  // Kicks of the wine wave draw on each tick.
-  function startWave() {
-    gsap.ticker.add(makeWave);
-  }
-
-  // Prep the wave line.
-  nWavePoints = 20;
-  xWaveScale = scalePoint(range(nWavePoints), [0, width]);
-  waveLineGen = line()
-    .x(d => d[0])
-    .y(d => d[1])
-    .curve(curveBasis);
-
-  // Set up timeline.
-  // On scroll the lift gets updated, which startWave's canvas
-  // draw function picks up to lift the waving wave.
-  const tl = gsap.timeline({ onStart: startWave });
-  const lift = gsap.fromTo(state.bottleWave, { lift: 0 }, { lift: 0.8 });
-  return tl.add(lift, 0);
-}
-
-// Animation kill and rebuild.
-function tweenWineScape() {
-  // Capture current progress.
-  const scroll = ScrollTrigger.getById('wineScape');
-  const progress = scroll ? scroll.progress : 0;
-
-  // Kill old - set up new timeline.
-  if (tween.wineScape) tween.wineScape.kill();
-  tween.wineScape = defineTweenWineScape();
-  tween.wineScape.totalProgress(progress);
-}
-
-function tweenGlassBottle() {
-  // Capture current progress.
-  const scroll = ScrollTrigger.getById('glassBottle');
-  const progress = scroll ? scroll.progress : 0;
-
-  // Kill old - set up new timeline.
-  if (tween.glassBottle) tween.glassBottle.kill();
-  tween.glassBottle = defineTweenGlassBottle();
-  tween.glassBottle.totalProgress(progress);
-}
-
-function tweenBottleText() {
-  // Capture current progress.
-  const scroll = ScrollTrigger.getById('bottleText');
-  const progress = scroll ? scroll.progress : 0;
-
-  // Kill old - set up new timeline.
-  if (tween.bottleText) tween.bottleText.kill();
-  tween.bottleText = defineTweenBottleText();
-  tween.bottleText.totalProgress(progress);
-}
-
-function tweenBottleWave() {
-  // Capture current progress.
-  const scroll = ScrollTrigger.getById('bottleWave');
-  const progress = scroll ? scroll.progress : 0;
-
-  // Kill old - set up new timeline.
-  if (tween.bottleWave) tween.bottleWave.kill();
-  tween.bottleWave = defineTweenBottleWave();
-  tween.bottleWave.totalProgress(progress);
-}
-
 function setScroll() {
   // Create the scroll triggers.
   ScrollTrigger.create({
-    animation: tween.wineScape,
+    animation: state.tween.wineScape,
     trigger: '.section-1',
     scrub: true,
     toggleActions: 'play none none reverse',
@@ -383,7 +93,7 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
-    animation: tween.glassBottle,
+    animation: state.tween.glassBottle,
     trigger: '.section-2',
     scrub: true,
     toggleActions: 'play none none reverse',
@@ -391,7 +101,7 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
-    animation: tween.bottleText,
+    animation: state.tween.bottleText,
     trigger: '.section-3',
     scrub: true,
     toggleActions: 'play none none reverse',
@@ -399,7 +109,7 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
-    animation: tween.bottleWave,
+    animation: state.tween.bottleWave,
     trigger: '.section-4',
     scrub: true,
     toggleActions: 'play none none reverse',
@@ -412,7 +122,7 @@ function setScroll() {
 
 // Main function.
 function update(wineScapeImg) {
-  wineScape = wineScapeImg;
+  state.scape.image = wineScapeImg;
   setWrapHeight();
   setVisualStructure();
   updateTransforms();

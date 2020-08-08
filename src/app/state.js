@@ -1,12 +1,27 @@
 export default {
   // General.
+  width: null,
+  height: null,
   transform: {
     scape: null,
     bottle: null,
     shape: null,
   },
+  ctx: {
+    scape: null,
+    glassBottle: null,
+    bottleText: null,
+    bottleWave: null,
+  },
   // Tweens.
+  tween: {
+    wineScape: null,
+    glassBottle: null,
+    bottleText: null,
+    bottleWave: null,
+  },
   scape: {
+    image: null,
     alpha: null,
   },
   glassBottle: {

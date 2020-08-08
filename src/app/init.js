@@ -6,12 +6,20 @@ import rough from 'roughjs/bundled/rough.esm';
 import cloneDeep from 'lodash.clonedeep';
 import debounce from 'lodash.debounce';
 import { max } from 'd3-array/src/index';
+import { gsap } from 'gsap/all';
+import { MorphSVGPlugin } from 'gsap/src/MorphSVGPlugin';
+import { DrawSVGPlugin } from 'gsap/src/DrawSVGPlugin';
+import { GSDevTools } from 'gsap/src/GSDevTools';
+import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import glass from '../../static/wine-glass-clean';
 import bottle from '../../static/wine-bottle-1';
 import textBottle from '../../static/text-bottle'; // an array of paths.
 import state from './state';
 import update from './update';
 import { getBox, splitPath, getPathLength, setScaleX } from './utils';
+
+// Gsap register.
+gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
 
 function buildChart() {
   // Build the chart.
