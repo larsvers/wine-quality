@@ -15,16 +15,22 @@ import { getBox, setWrapHeight, getTransform, getWavePoints } from './utils';
 
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
 
-// State.
-// ------
+// Module state.
+// ------------
 
-let wineScape;
+// Structure.
 let width;
 let height;
 let ctx00;
 let ctx01;
 let ctx02;
 let ctx03;
+
+// Tweens.
+let wineScape;
+let nWavePoints;
+let xWaveScale;
+let waveLineGen;
 
 const tween = {
   wineScape: null,
@@ -40,6 +46,7 @@ ScrollTrigger.defaults({
   markers: true,
 });
 
+// Update functions.
 function resizeCanvas(canvas, container) {
   const context = canvas.getContext('2d');
 
@@ -60,7 +67,6 @@ function resizeCanvas(canvas, container) {
   context.scale(window.devicePixelRatio, window.devicePixelRatio);
 }
 
-// Update functions.
 function setVisualStructure() {
   // Get elements.
   const container = document.querySelector('#canvas-main-container');
@@ -80,10 +86,6 @@ function setVisualStructure() {
   resizeCanvas(can01, container);
   resizeCanvas(can02, container);
   resizeCanvas(can03, container);
-
-  // Base measures (module scope).
-  width = parseFloat(can00.style.width);
-  height = parseFloat(can00.style.height);
 }
 
 function updateTransforms() {
@@ -107,7 +109,7 @@ function updateTransforms() {
 }
 
 // Canvas draw functions.
-function drawImage(ctx, img, t, alpha) {
+function drawScape(ctx, img, t, alpha) {
   ctx.clearRect(0, 0, width, height);
   ctx.save();
   ctx.globalAlpha = alpha;
@@ -117,7 +119,7 @@ function drawImage(ctx, img, t, alpha) {
   ctx.restore();
 }
 
-function drawPath(ctx, path, t) {
+function drawBottle(ctx, path, t) {
   ctx.clearRect(0, 0, width, height);
   ctx.save();
   ctx.translate(t.x, t.y);
@@ -145,7 +147,7 @@ function drawPath(ctx, path, t) {
   ctx.restore();
 }
 
-function drawText(ctx, paths, t, length, offset) {
+function drawBottleText(ctx, paths, t, length, offset) {
   ctx.clearRect(0, 0, width, height);
   ctx.save();
   ctx.translate(t.x, t.y);
@@ -157,7 +159,7 @@ function drawText(ctx, paths, t, length, offset) {
   ctx.restore();
 }
 
-function drawPathSimple(ctx, path, t) {
+function drawBottleWave(ctx, path, t) {
   ctx.clearRect(0, 0, width, height);
   ctx.save();
   ctx.translate(t.x, t.y);
@@ -165,9 +167,9 @@ function drawPathSimple(ctx, path, t) {
 
   // Clip path.
   ctx.beginPath();
-  ctx.moveTo(0, height);
-  ctx.lineTo(0, (1 - state.lift) * height);
-  ctx.lineTo(width, (1 - state.lift) * height);
+  waveLineGen.context(ctx)(state.wavePoints);
+  ctx.lineTo(width, height);
+  ctx.lineTo(0, height);
   ctx.closePath();
   ctx.clip();
 
@@ -178,26 +180,26 @@ function drawPathSimple(ctx, path, t) {
 }
 
 // Render functions.
-function drawScape() {
+function renderScape() {
   requestAnimationFrame(() =>
-    drawImage(ctx00, wineScape, state.transform.scape, state.alpha)
+    drawScape(ctx00, wineScape, state.transform.scape, state.alpha)
   );
 }
 
-function drawBottle() {
+function renderBottle() {
   ctx01.strokeStyle = state.colour;
   requestAnimationFrame(() => {
-    drawImage(ctx00, wineScape, state.transform.scape, state.alpha);
-    drawPath(ctx01, state.path, state.transform.shape);
+    // We need to draw both ctx00 and ctx01 here, as the tween
+    // doesn't only cover ctx01 paramters but also the alpha of ctx00.
+    drawScape(ctx00, wineScape, state.transform.scape, state.alpha);
+    drawBottle(ctx01, state.path, state.transform.shape);
   });
 }
 
-function drawBottleText() {
+function renderBottleText() {
   ctx02.strokeStyle = state.colour;
   requestAnimationFrame(() => {
-    drawImage(ctx00, wineScape, state.transform.scape, state.alpha);
-    drawPath(ctx01, state.path, state.transform.shape);
-    drawText(
+    drawBottleText(
       ctx02,
       state.bottleTexts,
       state.transform.shape,
@@ -207,31 +209,22 @@ function drawBottleText() {
   });
 }
 
-function drawBottleWave() {
-  ctx03.fillStyle = state.colour;
+function renderBottleWave() {
+  ctx03.fillStyle = 'black';
   requestAnimationFrame(() => {
-    drawImage(ctx00, wineScape, state.transform.scape, state.alpha);
-    drawPath(ctx01, state.path, state.transform.shape);
-    drawText(
-      ctx02,
-      state.bottleTexts,
-      state.transform.shape,
-      state.maxBottlePathLength,
-      state.dash.offset
-    );
-    drawPathSimple(ctx03, state.bottlePath, state.transform.shape);
+    drawBottleWave(ctx03, state.bottlePath, state.transform.shape);
   });
 }
 
 // Timeline set up.
 function defineTweenWineScape() {
-  const tl = gsap.timeline({ onUpdate: drawScape });
+  const tl = gsap.timeline({ onUpdate: renderScape });
   const imagealpha = gsap.fromTo(state, { alpha: 0 }, { alpha: 1 });
   return tl.add(imagealpha, 0);
 }
 
 function defineTweenGlassBottle() {
-  const tl = gsap.timeline({ onUpdate: drawBottle });
+  const tl = gsap.timeline({ onUpdate: renderBottle });
 
   const morph = gsap.to('#glass-path', {
     morphSVG: {
@@ -278,7 +271,7 @@ function defineTweenGlassBottle() {
 }
 
 function defineTweenTextBottle() {
-  const tl = gsap.timeline({ onUpdate: drawBottleText });
+  const tl = gsap.timeline({ onUpdate: renderBottleText });
 
   const offset = gsap.fromTo(
     state.dash,
@@ -298,46 +291,39 @@ function defineTweenTextBottle() {
   return tl.add(offset, 0).add(colourvalue, 0);
 }
 
-// The wave...
-// -----------
-const n = 20;
-const xWaveScale = scalePoint(range(20), [0, width]);
-const waveLineGen = line()
-  .x(d => d[0])
-  .y(d => d[1])
-  .curve(curveBasis);
-
-function makeWave(time, deltaTime, frame) {
-  state.wavePoints = range(n).map((d, i) => {
-    let xy = getWavePoints(15, 0.5, 2, xWaveScale(d), state.lift, time / 1000);
-    if (i === 0) xy[0] = 0;
-    if (i === n - 1) xy[0] = width;
-    return xy;
-  });
-}
-
-function startWave() {
-  gsap.ticker.add(makeWave);
-}
-
 function defineTweenBottleWave() {
-  const tl = gsap.timeline({
-    onUpdate: drawBottleWave,
-    onStart: startWave,
-  });
+  // Makes the wave points and draws the wine.
+  function makeWave(time) {
+    state.wavePoints = range(nWavePoints).map((d, i) => {
+      const x0 = xWaveScale(d);
+      const y0 = ((1 - state.lift) * height) / state.transform.shape.scale;
+      let xy = getWavePoints(10, 0.5, 2, x0, y0, time * 5);
+      if (i === 0) xy[0] = 0;
+      if (i === nWavePoints - 1) xy[0] = width;
+      return xy;
+    });
+    renderBottleWave();
+  }
 
-  const bottlefill = gsap.fromTo(
-    state,
-    { colour: 'rgba(0, 0, 0, 0)' },
-    {
-      colour: 'rgba(0, 0, 0, 1)',
-      ease: 'circ.out',
-    }
-  );
+  // Kicks of the wine wave draw on each tick.
+  function startWave() {
+    gsap.ticker.add(makeWave);
+  }
 
-  const lift = gsap.fromTo(state, { lift: 0 }, { lift: 1 });
+  // Prep the wave line.
+  nWavePoints = 20;
+  xWaveScale = scalePoint(range(nWavePoints), [0, width]);
+  waveLineGen = line()
+    .x(d => d[0])
+    .y(d => d[1])
+    .curve(curveBasis);
 
-  return tl.add(bottlefill, 0).add(lift, 0);
+  // Set up timeline.
+  // On scroll the lift gets updated, which startWave's canvas
+  // draw function picks up to lift the waving wave.
+  const tl = gsap.timeline({ onStart: startWave });
+  const lift = gsap.fromTo(state, { lift: 0 }, { lift: 0.8 });
+  return tl.add(lift, 0);
 }
 
 // Animation kill and rebuild.
