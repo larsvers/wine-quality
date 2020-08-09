@@ -49,7 +49,7 @@ function makeWave(time) {
 
     // The main point generation function, which sets x and y
     // based on the time at each passed in tick time.
-    let xy = getWavePoints(10, 1, 1.5, x0, y0, time * 5);
+    let xy = getWavePoints(state.bottleWave.r, 1, 1.5, x0, y0, time * 5);
 
     // The first and the last point are pinned to the sides.
     if (i === 0) xy[0] = 0;
@@ -67,6 +67,17 @@ function makeWave(time) {
  */
 function startWave() {
   gsap.ticker.add(makeWave);
+}
+
+/**
+ * Little additional tween every time the user scrolls
+ * to kickstart and slowly decay the wave.
+ */
+function decayWave() {
+  gsap
+    .timeline()
+    .to(state.bottleWave, { r: 10, duration: 0.2 })
+    .to(state.bottleWave, { r: 1, duration: 2 });
 }
 
 // Tween and draw.
@@ -110,9 +121,9 @@ function defineTweenBottleWave() {
     .curve(curveBasis);
 
   // Set up timeline.
-  // On scroll the lift gets updated, which startWave's canvas
-  // draw function picks up to lift the waving wave.
-  const tl = gsap.timeline({ onStart: startWave });
+  // On scroll the lift gets updated, which startWave's
+  // canvas draw function picks up to lift the waving wave.
+  const tl = gsap.timeline({ onStart: startWave, onUpdate: decayWave });
   const lift = gsap.fromTo(state.bottleWave, { lift: 0 }, { lift: 0.8 });
   return tl.add(lift, 0);
 }

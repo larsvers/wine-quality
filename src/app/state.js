@@ -38,5 +38,6 @@ export default {
     bottlePath: null,
     wavePoints: null,
     lift: null,
+    r: null,
   },
 };
