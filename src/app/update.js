@@ -75,9 +75,16 @@ function updateTransforms() {
 
   // Update bottle transform.
   const bottleDim = getBox(select('#bottle-path'));
+  // There's no mathemtacial connection between the bottle's
+  // ideal height and the aspect ratio, but using the ar
+  // fits quite nicely in this case.
+  const bottleHeight = Math.min(
+    Math.floor((state.width / state.height) * 100) / 100,
+    0.8
+  );
   state.transform.bottle = getTransform(
     bottleDim,
-    { width: 0, height: 0.8 },
+    { width: 0, height: bottleHeight },
     { x: 0.5, height: null }
   );
 }
