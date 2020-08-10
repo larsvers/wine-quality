@@ -30,8 +30,8 @@ function setWrapHeight() {
  * @param { SVGRect|Object } object The object's bounding box - at least with width and height. Required.
  * @param { Object } fit  { width: 0-1, height: 0-1 } The percentage of the width or height the
  *                        object should fit with. One must be 0! Required.
- * @param { Object } pos  { x: 0-1, y: 0-1 } The percentage of the width or height
- *                        x or y should be at. Optional.
+ * @param { Object } pos  { x: 0-2, y: 0-2 } The percentage of the width or height
+ *                        x or y should be at. 1 represents the centre. Optional.
  * @returns { Object }    { x, y, scale } The translate and scale values to be used for positioning.
  */
 function getTransform(object, fit, nudge) {
