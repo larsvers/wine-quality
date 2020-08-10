@@ -12,6 +12,7 @@ export default {
     glassBottle: null,
     bottleText: null,
     bottleWave: null,
+    lolliChart: null,
   },
   // Tweens.
   tween: {
@@ -19,12 +20,16 @@ export default {
     glassBottle: null,
     bottleText: null,
     bottleWave: null,
+    lolliChart: null,
   },
   scape: {
     image: null,
     alpha: null,
   },
   glassBottle: {
+    bottleBox: null,
+    bottleTop: null, // % of bottle's top position
+    bottleLeft: null, // % of bottle's top position
     path: null,
     colour: null,
   },
@@ -39,5 +44,8 @@ export default {
     wavePoints: null,
     lift: null,
     r: null,
+  },
+  lolliChart: {
+    x: null,
   },
 };

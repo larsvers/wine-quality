@@ -9,6 +9,7 @@ import tweenWineScape from '../tweens/wineScape';
 import tweenGlassBottle from '../tweens/glassBottle';
 import tweenBottleText from '../tweens/bottleText';
 import tweenBottleWave from '../tweens/bottleWave';
+import tweenLolliChart from '../tweens/lolliChart';
 
 ScrollTrigger.defaults({
   scroller: '#text-wrap',
@@ -45,18 +46,21 @@ function setVisualStructure() {
   const can01 = document.querySelector('#canvas-level-1');
   const can02 = document.querySelector('#canvas-level-2');
   const can03 = document.querySelector('#canvas-level-3');
+  const can04 = document.querySelector('#canvas-level-4');
 
   // Get contexts.
   state.ctx.scape = can00.getContext('2d');
   state.ctx.glassBottle = can01.getContext('2d');
   state.ctx.bottleText = can02.getContext('2d');
   state.ctx.bottleWave = can03.getContext('2d');
+  state.ctx.lolliChart = can04.getContext('2d');
 
   // Resize canvas.
   resizeCanvas(can00, container);
   resizeCanvas(can01, container);
   resizeCanvas(can02, container);
   resizeCanvas(can03, container);
+  resizeCanvas(can04, container);
 }
 
 function updateTransforms() {
@@ -73,19 +77,18 @@ function updateTransforms() {
   });
   state.transform.shape = cloneDeep(state.transform.scape);
 
-  // Update bottle transform.
-  const bottleDim = getBox(select('#bottle-path'));
   // There's no mathemtacial connection between the bottle's
   // ideal height and the aspect ratio, but using the ar
   // fits quite nicely in this case.
-  const bottleHeight = Math.min(
+  state.glassBottle.bottleTop = Math.min(
     Math.floor((state.width / state.height) * 100) / 100,
     0.8
   );
+  state.glassBottle.bottleLeft = 0.25;
   state.transform.bottle = getTransform(
-    bottleDim,
-    { width: 0, height: bottleHeight },
-    { x: 0.5, height: null }
+    state.glassBottle.bottleBox,
+    { width: 0, height: state.glassBottle.bottleTop },
+    { x: state.glassBottle.bottleLeft, height: null }
   );
 }
 
@@ -123,6 +126,14 @@ function setScroll() {
     id: 'bottleWave',
   });
 
+  ScrollTrigger.create({
+    animation: state.tween.lolliChart,
+    trigger: '.section-5',
+    scrub: true,
+    toggleActions: 'play none none reverse',
+    id: 'lolliChart',
+  });
+
   // Recalculate all scroll positions.
   ScrollTrigger.refresh();
 }
@@ -138,6 +149,7 @@ function update(wineScapeImg) {
   tweenGlassBottle();
   tweenBottleText();
   tweenBottleWave();
+  tweenLolliChart();
 
   setScroll();
 }

@@ -36,7 +36,8 @@ function buildChart() {
   ];
 
   // Scales.
-  const bottleBox = getBox('#bottle-path');
+  state.glassBottle.bottleBox = getBox('#bottle-path');
+
   // Set the xScale here - use it in update.
   setScaleX([0, 1], [0, bottleBox.width]);
   const yScale = scaleBand()
@@ -98,6 +99,9 @@ function buildVisual() {
     .style('fill', 'none')
     .style('stroke-width', 1)
     .style('stroke', 'grey');
+
+  // Prep bottle dims.
+  state.glassBottle.bottleBox = getBox('#bottle-path');
 
   // Prep text bottle.
   const bottleTexts = splitPath(textBottle);

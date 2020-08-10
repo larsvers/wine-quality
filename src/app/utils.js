@@ -30,7 +30,7 @@ function setWrapHeight() {
  * @param { SVGRect|Object } object The object's bounding box - at least with width and height. Required.
  * @param { Object } fit  { width: 0-1, height: 0-1 } The percentage of the width or height the
  *                        object should fit with. One must be 0! Required.
- * @param { Object } pos  { x: 0-2, y: 0-2 } The percentage of the width or height
+ * @param { Object } pos  { x: 0-1, y: 0-1 } The percentage of the full width or height
  *                        x or y should be at. 1 represents the centre. Optional.
  * @returns { Object }    { x, y, scale } The translate and scale values to be used for positioning.
  */
@@ -60,10 +60,10 @@ function getTransform(object, fit, nudge) {
   };
 
   // If `nudge` is defined, then `nudge.x` and `nudge.y` are both
-  // expressed  as % of the central position. 1 would be just that,
-  // 2 would be the end (100% width) 0.5 half the centre (0.25 % width).
-  if (nudge && nudge.x) position.x *= nudge.x;
-  if (nudge && nudge.y) position.y *= nudge.y;
+  // expressed  as % of width and/or height. 1 would be full width/height,
+  // 0.5 would be the (default) centre and 0.2.5 half the centre (0.25% width).
+  if (nudge && nudge.x) position.x *= nudge.x * 2; // *2 as the default position
+  if (nudge && nudge.y) position.y *= nudge.y * 2; // is the centre (see above).
 
   // Nice all the values up.
   return {
