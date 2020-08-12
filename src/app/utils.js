@@ -92,15 +92,6 @@ function getPathLength(pathData) {
   return path.getTotalLength() || 0;
 }
 
-// Need xScale in init and update
-// but only want to set it once (in init).
-let xScale;
-function setScaleX(domain, range) {
-  xScale = scaleLinear()
-    .domain(domain)
-    .range(range);
-}
-
 export {
   isSelection,
   getBox,
@@ -108,6 +99,4 @@ export {
   getTransform,
   splitPath,
   getPathLength,
-  setScaleX,
-  xScale,
 };

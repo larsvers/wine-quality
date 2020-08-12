@@ -1,9 +1,8 @@
 /* eslint-disable no-param-reassign */
-import { select } from 'd3-selection/src/index';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import cloneDeep from 'lodash.clonedeep';
 import state from './state';
-import { getBox, setWrapHeight, getTransform } from './utils';
+import { setWrapHeight, getTransform } from './utils';
 
 import tweenWineScape from '../tweens/wineScape';
 import tweenGlassBottle from '../tweens/glassBottle';

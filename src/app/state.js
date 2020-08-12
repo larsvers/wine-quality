@@ -46,6 +46,7 @@ export default {
     r: null,
   },
   lolliChart: {
+    data: null,
     x: null,
   },
 };
