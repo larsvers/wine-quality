@@ -13,6 +13,10 @@ import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import glass from '../../static/wine-glass-clean';
 import bottle from '../../static/wine-bottle-1';
 import textBottle from '../../static/text-bottle'; // an array of paths.
+import textAlcohol from '../../static/text-alcohol';
+import textAcid from '../../static/text-acid';
+import textChloride from '../../static/text-chloride';
+import textQuality from '../../static/text-quality';
 import state from './state';
 import update from './update';
 import { getBox, splitPath, getPathLength } from './utils';
@@ -20,6 +24,16 @@ import { getBox, splitPath, getPathLength } from './utils';
 // Gsap register.
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
 
+// Utils.
+function getPathData(path) {
+  const splitPaths = splitPath(path);
+  const paths = splitPaths.map(p => new Path2D(p));
+  const length = Math.ceil(max(splitPaths.map(getPathLength)));
+  const offset = length;
+  return { paths, length, offset };
+}
+
+// Prep visual.
 function buildVisual() {
   const svg = select('#svg-hidden');
   const stageGroup = svg.append('g').attr('id', 'stage-group');
@@ -57,13 +71,36 @@ function buildVisual() {
   // Prep bottle wave.
   state.bottleWave.bottlePath = new Path2D(bottle);
 
-  // Prep lolli chart.
-  state.lolliChart.data = [
-    { property: 'alcohol', text: 'Alcohol', value: 0.8 },
-    { property: 'acid', text: 'Citric Acid', value: 0.2 },
-    { property: 'chlorides', text: 'Chlorides', value: 0.4 },
-    { property: 'quality', text: 'Quality', value: 1 },
-  ];
+  // Prep lolly chart.
+
+  // Get the lolly's path data (the paths and the length).
+  const lolliTextPaths = [textAlcohol, textAcid, textChloride, textQuality].map(
+    getPathData
+  );
+
+  // A bit roundabout, but in order to gsapolate the values we need them in
+  // objects as below. But to iterate through them in the canvas draw function
+  // we need at least the names in an array like here:
+  state.lolliChart.values = ['alcohol', 'acid', 'chloride', 'quality'];
+
+  state.lolliChart.data = {
+    alcohol: {
+      value: 0.8,
+      text: lolliTextPaths[0],
+    },
+    acid: {
+      value: 0.2,
+      text: lolliTextPaths[1],
+    },
+    chloride: {
+      value: 0.4,
+      text: lolliTextPaths[2],
+    },
+    quality: {
+      value: 0.9,
+      text: lolliTextPaths[3],
+    },
+  };
 }
 
 function buildStory(data) {

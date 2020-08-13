@@ -2,7 +2,16 @@ import { gsap } from 'gsap/all';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import state from '../app/state';
 
-function drawBottleText(ctx, paths, t, length, offset) {
+/**
+ * Draws a path at a certain offset of its full length.
+ * Can nicely be used to animate a path.
+ * @param { Object } ctx Context to draw on
+ * @param { Array|String} paths Path(s) to draw
+ * @param { Object } t transform to apply to context
+ * @param { Number } length Max length of the (longest) path
+ * @param { Number } offset Length of the path to draw (ideally animated)
+ */
+function drawTextPath(ctx, paths, t, length, offset) {
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
   ctx.translate(t.x, t.y);
@@ -18,7 +27,7 @@ function drawBottleText(ctx, paths, t, length, offset) {
 function renderBottleText() {
   state.ctx.bottleText.strokeStyle = state.bottleText.colour;
   requestAnimationFrame(() => {
-    drawBottleText(
+    drawTextPath(
       state.ctx.bottleText,
       state.bottleText.paths,
       state.transform.shape,
