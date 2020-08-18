@@ -48,6 +48,6 @@ export default {
   lolliChart: {
     data: null,
     values: null,
-    x: null,
+    radius: null,
   },
 };

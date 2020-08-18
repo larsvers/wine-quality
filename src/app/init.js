@@ -78,29 +78,40 @@ function buildVisual() {
     getPathData
   );
 
-  // A bit roundabout, but in order to gsapolate the values we need them in
-  // objects as below. But to iterate through them in the canvas draw function
-  // we need at least the names in an array like here:
-  state.lolliChart.values = ['alcohol', 'acid', 'chloride', 'quality'];
-
+  // Set the data
+  // `value` is the mutable value to change,
+  // `values` has all values we want to gsap to.
   state.lolliChart.data = {
     alcohol: {
-      value: 0.8,
+      value: 0,
+      values: [0, 0.8, 0.3, 0.8],
+      radius: 0,
       text: lolliTextPaths[0],
     },
     acid: {
-      value: 0.2,
+      value: 0,
+      values: [0, 0.2, 0.7, 0.2],
+      radius: 0,
       text: lolliTextPaths[1],
     },
     chloride: {
-      value: 0.4,
+      value: 0,
+      values: [0, 0.4, 0.6, 0.4],
+      radius: 0,
       text: lolliTextPaths[2],
     },
     quality: {
-      value: 0.9,
+      value: 0,
+      values: [0, 0.9, 0.3, 0.9],
+      radius: 0,
       text: lolliTextPaths[3],
     },
   };
+
+  // A bit roundabout, but in order to gsapolate the values we need them in
+  // objects as below. But to iterate through them in the canvas draw function
+  // we need at least the names in an array like here:
+  state.lolliChart.values = Object.keys(state.lolliChart.data);
 }
 
 function buildStory(data) {

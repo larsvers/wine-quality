@@ -4,7 +4,7 @@ import { scaleLinear, scalePoint } from 'd3-scale/src/index';
 import state from '../app/state';
 
 let chart = {
-  top: 0,
+  top: undefined,
   right: undefined,
   bottom: undefined,
   left: undefined,
@@ -13,23 +13,26 @@ let chart = {
 };
 let xScale;
 let yScale;
-let lolliRadius;
+let lolliRadiusTarget;
 
 // Utils.
 function setDimensions() {
   // Set the lollichart area.
   const bottle = state.glassBottle; // Just for shortness.
-  chart.left = Math.floor(bottle.bottleBox.width);
-  chart.height = Math.floor(bottle.bottleBox.height);
+  // Horizontal dims.
+  chart.left = Math.floor(bottle.bottleBox.width * 1.05);
   chart.width = Math.floor(
     (state.width / state.transform.bottle.scale) * bottle.bottleLeft +
       bottle.bottleBox.width
   );
   chart.right = Math.floor(chart.left + chart.width);
-  chart.bottom = Math.floor(chart.top + chart.height);
+  // Vertical dims.
+  chart.top = Math.floor(bottle.bottleBox.height * 0.5);
+  chart.bottom = Math.floor(bottle.bottleBox.height * 0.9);
+  chart.height = Math.floor(chart.bottom - chart.top);
 
-  // Set the lolly radius.
-  lolliRadius = 5 / state.transform.bottle.scale;
+  // Set the lolly radius target.
+  lolliRadiusTarget = 5 / state.transform.bottle.scale;
 
   // Set the lolly scales.
   xScale = scaleLinear([0, 1], [chart.left, chart.right]);
@@ -46,7 +49,8 @@ function drawLolliChart(ctx, t) {
   ctx.scale(t.scale, t.scale);
 
   state.lolliChart.values.forEach(d => {
-    const xValue = state.lolliChart.data[d].value;
+    const datapoint = state.lolliChart.data[d];
+    const xValue = datapoint.value;
     const { length } = state.lolliChart.data[d].text;
     const { offset } = state.lolliChart.data[d].text;
     const { paths } = state.lolliChart.data[d].text;
@@ -59,12 +63,13 @@ function drawLolliChart(ctx, t) {
 
     // Circle.
     ctx.beginPath();
-    ctx.arc(xScale(xValue), yScale(d), lolliRadius, 0, 2 * Math.PI);
-    ctx.stroke();
+    ctx.arc(xScale(xValue), yScale(d), datapoint.radius, 0, 2 * Math.PI);
+    ctx.fill();
 
     // Text.
     ctx.save();
-    ctx.translate(xScale(0), yScale(d));
+    ctx.translate(xScale(0), yScale(d) + 2);
+    ctx.lineWidth = 0.5;
     ctx.setLineDash([length - offset, offset]);
     paths.forEach(path => ctx.stroke(path));
     ctx.restore();
@@ -85,34 +90,36 @@ function defineTweenLolliChart() {
   // Things to tween.
   const tl = gsap.timeline({ onUpdate: renderLolliChart });
 
-  // The path offset tweens.
-  const alcoholOffset = gsap.fromTo(
-    state.lolliChart.data.alcohol.text,
-    { offset: state.lolliChart.data.alcohol.text.length },
-    { offset: 0 }
-  );
-  const acidOffset = gsap.fromTo(
-    state.lolliChart.data.acid.text,
-    { offset: state.lolliChart.data.acid.text.length },
-    { offset: 0 }
-  );
-  const chlorideOffset = gsap.fromTo(
-    state.lolliChart.data.chloride.text,
-    { offset: state.lolliChart.data.chloride.text.length },
-    { offset: 0 }
-  );
-  const qualityOffset = gsap.fromTo(
-    state.lolliChart.data.quality.text,
-    { offset: state.lolliChart.data.quality.text.length },
-    { offset: 0 }
-  );
+  // Loop through all data (in object).
+  Object.keys(state.lolliChart.data).forEach(d => {
+    // Datapoint to tween around with.
+    const datapoint = state.lolliChart.data[d];
 
-  // Set them off one after the ather.
-  return tl
-    .add(alcoholOffset)
-    .add(acidOffset)
-    .add(chlorideOffset)
-    .add(qualityOffset);
+    // Set up the tweens.
+    const valueTween = gsap.fromTo(
+      datapoint,
+      { value: datapoint.values[0] },
+      { value: datapoint.values[1] }
+    );
+    const radiusTween = gsap.fromTo(
+      datapoint,
+      { radius: 0 },
+      { radius: lolliRadiusTarget }
+    );
+    const offsetTween = gsap.fromTo(
+      datapoint.text,
+      { offset: datapoint.text.length },
+      { offset: 0 }
+    );
+
+    // Add the tweens to the timeline.
+    // ">" end "<" start of previous tween.
+    tl.add(valueTween, '>')
+      .add(radiusTween, '<')
+      .add(offsetTween, '>');
+  });
+
+  return tl;
 }
 
 function tweenLolliChart() {
