@@ -11,6 +11,7 @@ import state from '../app/state';
 const n = 20; // n of wave points.
 let xWaveScale;
 let waveLine;
+let waveAlpha;
 
 // Utils.
 
@@ -48,8 +49,15 @@ function makeWave(time) {
       state.transform.shape.scale;
 
     // The main point generation function, which sets x and y
-    // based on the time at each passed in tick time.
-    let xy = getWavePoints(state.bottleWave.r, 1, 1.5, x0, y0, time * 5);
+    // based on the time passed in.
+    let xy = getWavePoints(
+      state.bottleWave.r,
+      waveAlpha,
+      1.5,
+      x0,
+      y0,
+      time * 5
+    );
 
     // The first and the last point are pinned to the sides.
     if (i === 0) xy[0] = 0;
@@ -119,6 +127,7 @@ function defineTweenBottleWave() {
     .x(d => d[0])
     .y(d => d[1])
     .curve(curveBasis);
+  waveAlpha = state.width / state.height < 0.5 ? 1 : 5;
 
   // Set up timeline.
   // On scroll the lift gets updated, which startWave's
