@@ -81,7 +81,7 @@ function buildVisual() {
   // Set the data
   // `value` is the mutable value to change,
   // `values` has all values we want to gsap to.
-  state.lolliChart.data = {
+  state.lolli.data = {
     alcohol: {
       value: 0,
       values: [0, 0.8, 0.3, 0.8],
@@ -111,7 +111,7 @@ function buildVisual() {
   // A bit roundabout, but in order to gsapolate the values we need them in
   // objects as below. But to iterate through them in the canvas draw function
   // we need at least the names in an array like here:
-  state.lolliChart.values = Object.keys(state.lolliChart.data);
+  state.lolli.values = Object.keys(state.lolli.data);
 }
 
 function buildStory(data) {

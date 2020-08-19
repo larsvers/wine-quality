@@ -17,7 +17,7 @@ let lolliRadiusTarget;
 
 // Utils.
 function setDimensions() {
-  // Set the lolli area.
+  // Set the lollichart area.
   const bottle = state.glassBottle; // Just for shortness.
   // Horizontal dims.
   chart.left = Math.floor(bottle.bottleBox.width * 1.05);

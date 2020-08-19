@@ -52,7 +52,7 @@ function setVisualStructure() {
   state.ctx.glassBottle = can01.getContext('2d');
   state.ctx.bottleText = can02.getContext('2d');
   state.ctx.bottleWave = can03.getContext('2d');
-  state.ctx.lolliChart = can04.getContext('2d');
+  state.ctx.lolli = can04.getContext('2d');
 
   // Resize canvas.
   resizeCanvas(can00, container);
@@ -126,11 +126,19 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
-    animation: state.tween.lolliChart,
+    animation: state.tween.lolli,
     trigger: '.section-5',
     scrub: true,
     toggleActions: 'play none none reverse',
-    id: 'lolliChart',
+    id: 'lolli',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.lolliUpdate,
+    trigger: '.section-6',
+    scrub: true,
+    toggleActions: 'play none none reverse',
+    id: 'lolliUpdate',
   });
 
   // Recalculate all scroll positions.
