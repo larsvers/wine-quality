@@ -3,7 +3,8 @@ import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import { scaleLinear, scalePoint } from 'd3-scale/src/index';
 import state from '../app/state';
 
-let chart = {
+let lolliRadiusTarget;
+state.lolli.area = {
   top: undefined,
   right: undefined,
   bottom: undefined,
@@ -11,34 +12,38 @@ let chart = {
   height: undefined,
   width: undefined,
 };
-let xScale;
-let yScale;
-let lolliRadiusTarget;
 
 // Utils.
 function setDimensions() {
   // Set the lolli area.
   const bottle = state.glassBottle; // Just for shortness.
   // Horizontal dims.
-  chart.left = Math.floor(bottle.bottleBox.width * 1.05);
-  chart.width = Math.floor(
+  state.lolli.area.left = Math.floor(bottle.bottleBox.width * 1.05);
+  state.lolli.area.width = Math.floor(
     (state.width / state.transform.bottle.scale) * bottle.bottleLeft +
       bottle.bottleBox.width
   );
-  chart.right = Math.floor(chart.left + chart.width);
+  state.lolli.area.right = Math.floor(
+    state.lolli.area.left + state.lolli.area.width
+  );
   // Vertical dims.
-  chart.top = Math.floor(bottle.bottleBox.height * 0.5);
-  chart.bottom = Math.floor(bottle.bottleBox.height * 0.9);
-  chart.height = Math.floor(chart.bottom - chart.top);
+  state.lolli.area.top = Math.floor(bottle.bottleBox.height * 0.5);
+  state.lolli.area.bottom = Math.floor(bottle.bottleBox.height * 0.9);
+  state.lolli.area.height = Math.floor(
+    state.lolli.area.bottom - state.lolli.area.top
+  );
 
   // Set the lolly radius target.
   lolliRadiusTarget = 5 / state.transform.bottle.scale;
 
   // Set the lolly scales.
-  xScale = scaleLinear([0, 1], [chart.left, chart.right]);
-  yScale = scalePoint()
+  state.lolli.x = scaleLinear(
+    [0, 1],
+    [state.lolli.area.left, state.lolli.area.right]
+  );
+  state.lolli.y = scalePoint()
     .domain(state.lolli.values)
-    .range([chart.top, chart.bottom]);
+    .range([state.lolli.area.top, state.lolli.area.bottom]);
 }
 
 // Canvas draw function.
@@ -57,18 +62,24 @@ function drawLolliChart(ctx, t) {
 
     // Line.
     ctx.beginPath();
-    ctx.moveTo(xScale(0), yScale(d));
-    ctx.lineTo(xScale(xValue), yScale(d));
+    ctx.moveTo(state.lolli.x(0), state.lolli.y(d));
+    ctx.lineTo(state.lolli.x(xValue), state.lolli.y(d));
     ctx.stroke();
 
     // Circle.
     ctx.beginPath();
-    ctx.arc(xScale(xValue), yScale(d), datapoint.radius, 0, 2 * Math.PI);
+    ctx.arc(
+      state.lolli.x(xValue),
+      state.lolli.y(d),
+      datapoint.radius,
+      0,
+      2 * Math.PI
+    );
     ctx.fill();
 
     // Text.
     ctx.save();
-    ctx.translate(xScale(0), yScale(d) + 2);
+    ctx.translate(state.lolli.x(0), state.lolli.y(d) + 2);
     ctx.lineWidth = 0.5;
     ctx.setLineDash([length - offset, offset]);
     paths.forEach(path => ctx.stroke(path));
