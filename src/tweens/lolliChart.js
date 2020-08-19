@@ -135,13 +135,14 @@ function defineTweenLolliChart() {
 
 function tweenLolliChart() {
   // Capture current progress.
-  const scroll = ScrollTrigger.getById('lolli');
+  const scroll = ScrollTrigger.getById('lolliChart');
   const progress = scroll ? scroll.progress : 0;
 
   // Kill old - set up new timeline.
-  if (state.tween.lolli) state.tween.lolli.kill();
-  state.tween.lolli = defineTweenLolliChart();
-  state.tween.lolli.totalProgress(progress);
+  if (state.tween.lolliChart) state.tween.lolliChart.kill();
+  state.tween.lolliChart = defineTweenLolliChart();
+  state.tween.lolliChart.totalProgress(progress);
 }
 
 export default tweenLolliChart;
+export { renderLolliChart, drawLolliChart };

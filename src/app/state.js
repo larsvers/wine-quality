@@ -20,7 +20,7 @@ export default {
     glassBottle: null,
     bottleText: null,
     bottleWave: null,
-    lolli: null,
+    lolliChart: null,
   },
   scape: {
     image: null,

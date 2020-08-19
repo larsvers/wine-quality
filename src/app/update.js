@@ -126,11 +126,11 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
-    animation: state.tween.lolli,
+    animation: state.tween.lolliChart,
     trigger: '.section-5',
     scrub: true,
     toggleActions: 'play none none reverse',
-    id: 'lolli',
+    id: 'lolliChart',
   });
 
   ScrollTrigger.create({
