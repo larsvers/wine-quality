@@ -9,6 +9,7 @@ import tweenGlassBottle from '../tweens/glassBottle';
 import tweenBottleText from '../tweens/bottleText';
 import tweenBottleWave from '../tweens/bottleWave';
 import tweenLolliChart from '../tweens/lolliChart';
+import { tweenLolliUpdate1, tweenLolliUpdate2 } from '../tweens/lolliUpdate';
 
 ScrollTrigger.defaults({
   scroller: '#text-wrap',
@@ -134,11 +135,19 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
-    animation: state.tween.lolliUpdate,
+    animation: state.tween.lolliUpdate1,
     trigger: '.section-6',
     scrub: true,
     toggleActions: 'play none none reverse',
-    id: 'lolliUpdate',
+    id: 'lolliUpdate1',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.lolliUpdate2,
+    trigger: '.section-7',
+    scrub: true,
+    toggleActions: 'play none none reverse',
+    id: 'lolliUpdate2',
   });
 
   // Recalculate all scroll positions.
@@ -157,6 +166,8 @@ function update(wineScapeImg) {
   tweenBottleText();
   tweenBottleWave();
   tweenLolliChart();
+  tweenLolliUpdate1();
+  tweenLolliUpdate2();
 
   setScroll();
 }

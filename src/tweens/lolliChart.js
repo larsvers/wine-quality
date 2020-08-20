@@ -55,6 +55,7 @@ function drawLolliChart(ctx, t) {
 
   state.lolli.values.forEach(d => {
     const datapoint = state.lolli.data[d];
+
     const xValue = datapoint.value;
     const { length } = state.lolli.data[d].text;
     const { offset } = state.lolli.data[d].text;
@@ -95,11 +96,23 @@ function renderLolliChart() {
   );
 }
 
+// As tweenLolliUpdate is set later, it seems to change all initial
+// values (.values[0]) as set by this tweenLolliChart. 🤷‍♂️
+function forceInitialValues() {
+  Object.keys(state.lolli.data).forEach(d => {
+    const datapoint = state.lolli.data[d];
+    datapoint.value = datapoint.values[0];
+  });
+}
+
 function defineTweenLolliChart() {
   setDimensions();
 
   // Things to tween.
-  const tl = gsap.timeline({ onUpdate: renderLolliChart });
+  const tl = gsap.timeline({
+    onStart: forceInitialValues,
+    onUpdate: renderLolliChart,
+  });
 
   // Loop through all lolli-data (which is an object).
   Object.keys(state.lolli.data).forEach(d => {
@@ -124,7 +137,7 @@ function defineTweenLolliChart() {
     );
 
     // Add the tweens to the timeline.
-    // ">" end "<" start of previous tween.
+    // "<" start or ">" end of previous tween.
     tl.add(valueTween, '>')
       .add(radiusTween, '<')
       .add(offsetTween, '>');

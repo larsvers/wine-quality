@@ -21,6 +21,8 @@ export default {
     bottleText: null,
     bottleWave: null,
     lolliChart: null,
+    lolliUpdate1: null,
+    lolliUpdate2: null,
   },
   scape: {
     image: null,

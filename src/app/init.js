@@ -84,25 +84,25 @@ function buildVisual() {
   state.lolli.data = {
     alcohol: {
       value: 0,
-      values: [0, 0.8, 0.3, 0.8],
+      values: [0, 0.6, 0.3, 0.8],
       radius: 0,
       text: lolliTextPaths[0],
     },
     acid: {
       value: 0,
-      values: [0, 0.2, 0.7, 0.2],
+      values: [0, 0.3, 0.7, 0.2],
       radius: 0,
       text: lolliTextPaths[1],
     },
     chloride: {
       value: 0,
-      values: [0, 0.4, 0.6, 0.4],
+      values: [0, 0.7, 0.6, 0.4],
       radius: 0,
       text: lolliTextPaths[2],
     },
     quality: {
       value: 0,
-      values: [0, 0.9, 0.3, 0.9],
+      values: [0, 0.5, 0.3, 0.9],
       radius: 0,
       text: lolliTextPaths[3],
     },
