@@ -3,7 +3,6 @@ import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import { scaleLinear, scalePoint } from 'd3-scale/src/index';
 import state from '../app/state';
 
-let lolliRadiusTarget;
 state.lolli.area = {
   top: undefined,
   right: undefined,
@@ -33,8 +32,8 @@ function setDimensions() {
     state.lolli.area.bottom - state.lolli.area.top
   );
 
-  // Set the lolly radius target.
-  lolliRadiusTarget = 5 / state.transform.bottle.scale;
+  // Set the lolli radius' target value.
+  state.lolli.radiusTarget = 5 / state.transform.bottle.scale;
 
   // Set the lolly scales.
   state.lolli.x = scaleLinear(
@@ -96,12 +95,14 @@ function renderLolliChart() {
   );
 }
 
-// As tweenLolliUpdate is set later, it seems to change all initial
-// values (.values[0]) as set by this tweenLolliChart. 🤷‍♂️
+// As tweenLolliUpdate and blackbos are set later, it seems to change
+// all initial values (.values[0]) as set by this tweenLolliChart. 🤷‍♂️
 function forceInitialValues() {
   Object.keys(state.lolli.data).forEach(d => {
     const datapoint = state.lolli.data[d];
     datapoint.value = datapoint.values[0];
+    datapoint.radius = 0;
+    datapoint.text.offset = datapoint.text.length;
   });
 }
 
@@ -128,7 +129,7 @@ function defineTweenLolliChart() {
     const radiusTween = gsap.fromTo(
       datapoint,
       { radius: 0 },
-      { radius: lolliRadiusTarget }
+      { radius: state.lolli.radiusTarget }
     );
     const offsetTween = gsap.fromTo(
       datapoint.text,

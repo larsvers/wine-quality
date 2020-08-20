@@ -17,6 +17,7 @@ import textAlcohol from '../../static/text-alcohol';
 import textAcid from '../../static/text-acid';
 import textChloride from '../../static/text-chloride';
 import textQuality from '../../static/text-quality';
+import blackBox from '../../static/black-box';
 import state from './state';
 import update from './update';
 import { getBox, splitPath, getPathLength } from './utils';
@@ -84,25 +85,25 @@ function buildVisual() {
   state.lolli.data = {
     alcohol: {
       value: 0,
-      values: [0, 0.6, 0.3, 0.8],
+      values: [0, 0.6, 0.3, 0.8, 0],
       radius: 0,
       text: lolliTextPaths[0],
     },
     acid: {
       value: 0,
-      values: [0, 0.3, 0.7, 0.2],
+      values: [0, 0.3, 0.7, 0.2, 0],
       radius: 0,
       text: lolliTextPaths[1],
     },
     chloride: {
       value: 0,
-      values: [0, 0.7, 0.6, 0.4],
+      values: [0, 0.7, 0.6, 0.4, 0],
       radius: 0,
       text: lolliTextPaths[2],
     },
     quality: {
       value: 0,
-      values: [0, 0.5, 0.3, 0.9],
+      values: [0, 0.5, 0.3, 0.9, 0],
       radius: 0,
       text: lolliTextPaths[3],
     },
@@ -112,6 +113,9 @@ function buildVisual() {
   // objects as below. But to iterate through them in the canvas draw function
   // we need at least the names in an array like here:
   state.lolli.values = Object.keys(state.lolli.data);
+
+  // Get the blackbox pathdata.
+  state.blackBox.box = getPathData(blackBox);
 }
 
 function buildStory(data) {

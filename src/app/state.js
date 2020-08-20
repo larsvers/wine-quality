@@ -23,6 +23,8 @@ export default {
     lolliChart: null,
     lolliUpdate1: null,
     lolliUpdate2: null,
+    lolliUpdate3: null,
+    blackBox: null,
   },
   scape: {
     image: null,
@@ -50,9 +52,12 @@ export default {
   lolli: {
     data: null,
     values: null,
-    radius: null,
+    radiusTarget: null,
     area: null,
     x: null,
     y: null,
+  },
+  blackBox: {
+    box: null,
   },
 };
