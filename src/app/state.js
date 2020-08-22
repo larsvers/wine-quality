@@ -59,5 +59,6 @@ export default {
   },
   blackBox: {
     box: null,
+    model: null,
   },
 };

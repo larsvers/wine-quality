@@ -46,16 +46,35 @@ function drawLolliChart(ctx, t) {
   ctx.restore();
 }
 
-function renderLolliChart() {
+function drawBlackBox(ctx, t) {
+
+  ctx.clearRect(0, 0, state.width, state.height);
+  ctx.save();
+  ctx.translate(t.x, t.y);
+  ctx.scale(t.scale, t.scale);
+
+  // debugger;
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 0.1;
+
+  state.blackBox.box.paths.forEach(path => ctx.stroke(path));
+
+  ctx.restore();
+
+}
+
+function renderBlackBox() {
   requestAnimationFrame(() =>
-    drawLolliChart(state.ctx.lolli, state.transform.bottle)
+    drawBlackBox(state.ctx.lolli, state.transform.bottle)
   );
 }
+
 
 function defineTweenBlackBox() {
   // Things to tween.
   const tl = gsap.timeline({
-    onUpdate: renderLolliChart,
+    onStart: renderBlackBox,
+    // onUpdate: renderBlackBox,
   });
 
   // Loop through all lolli-data (which is an object).

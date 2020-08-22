@@ -17,7 +17,8 @@ import textAlcohol from '../../static/text-alcohol';
 import textAcid from '../../static/text-acid';
 import textChloride from '../../static/text-chloride';
 import textQuality from '../../static/text-quality';
-import blackBox from '../../static/black-box';
+import blackBox from '../../static/black-box-fill';
+import textModel from '../../static/text-model';
 import state from './state';
 import update from './update';
 import { getBox, splitPath, getPathLength } from './utils';
@@ -116,6 +117,7 @@ function buildVisual() {
 
   // Get the blackbox pathdata.
   state.blackBox.box = getPathData(blackBox);
+  state.blackBox.model = getPathData(textModel);
 }
 
 function buildStory(data) {

@@ -14,7 +14,7 @@ import {
   tweenLolliUpdate2,
   tweenLolliUpdate3,
 } from '../tweens/lolliUpdate';
-// import tweenBlackBox from '../tweens/blackBox';
+import tweenBlackBox from '../tweens/blackBox';
 
 ScrollTrigger.defaults({
   scroller: '#text-wrap',
@@ -190,7 +190,7 @@ function update(wineScapeImg) {
   tweenLolliUpdate1();
   tweenLolliUpdate2();
   tweenLolliUpdate3();
-  // tweenBlackBox();
+  tweenBlackBox();
 
   setScroll();
 }
