@@ -44,28 +44,29 @@ function resizeCanvas(canvas, container) {
   context.scale(window.devicePixelRatio, window.devicePixelRatio);
 }
 
-function setVisualStructure() {
-  // Get elements.
+// Get contexts and rezize canvases.
+function updateContexts(names) {
   const container = document.querySelector('#canvas-main-container');
-  const can00 = document.querySelector('#canvas-level-0');
-  const can01 = document.querySelector('#canvas-level-1');
-  const can02 = document.querySelector('#canvas-level-2');
-  const can03 = document.querySelector('#canvas-level-3');
-  const can04 = document.querySelector('#canvas-level-4');
+  const canvases = document.querySelectorAll('canvas');
+  names.forEach((name, i) => {
+    state.ctx[name] = canvases[i].getContext('2d');
+    resizeCanvas(canvases[i], container);
+  });
+}
 
+// Set off canvas factory.
+function setVisualStructure() {
   // Get contexts.
-  state.ctx.scape = can00.getContext('2d');
-  state.ctx.glassBottle = can01.getContext('2d');
-  state.ctx.bottleText = can02.getContext('2d');
-  state.ctx.bottleWave = can03.getContext('2d');
-  state.ctx.lolli = can04.getContext('2d');
+  const contextnames = [
+    'scape',
+    'glassBottle',
+    'bottleText',
+    'bottleWave',
+    'lolli',
+    'blackBox',
+  ];
 
-  // Resize canvas.
-  resizeCanvas(can00, container);
-  resizeCanvas(can01, container);
-  resizeCanvas(can02, container);
-  resizeCanvas(can03, container);
-  resizeCanvas(can04, container);
+  updateContexts(contextnames);
 }
 
 function updateTransforms() {
