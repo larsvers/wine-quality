@@ -1,6 +1,6 @@
 /* eslint-disable import/no-mutable-exports */
+import { max } from 'd3-array/src/index';
 import { select, selection } from 'd3-selection/src/index';
-import { scaleLinear } from 'd3-scale/src/index';
 
 function isSelection(el) {
   if (typeof el === 'string') return false;
@@ -92,6 +92,14 @@ function getPathLength(pathData) {
   return path.getTotalLength() || 0;
 }
 
+function getPathData(path) {
+  const splitPaths = splitPath(path);
+  const paths = splitPaths.map(p => new Path2D(p));
+  const length = Math.ceil(max(splitPaths.map(getPathLength)));
+  const offset = length;
+  return { paths, length, offset };
+}
+
 export {
   isSelection,
   getBox,
@@ -99,4 +107,5 @@ export {
   getTransform,
   splitPath,
   getPathLength,
+  getPathData,
 };

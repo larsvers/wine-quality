@@ -13,6 +13,7 @@ export default {
     bottleText: null,
     bottleWave: null,
     lolli: null,
+    blackBox: null,
   },
   // Tweens.
   tween: {
@@ -59,6 +60,8 @@ export default {
   },
   blackBox: {
     box: null,
+    boxDims: null,
     model: null,
+    xOffset: null,
   },
 };
