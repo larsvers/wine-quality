@@ -2,43 +2,74 @@ import { gsap } from 'gsap/all';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import state from '../app/state';
 
+const inputProperties = ['alcohol', 'acid', 'chloride'];
+const outputProperties = ['quality'];
+
+const zoom = { factor: 1 };
+
+function drawBlackBox(ctx, t) {
+  ctx.clearRect(0, 0, state.width, state.height);
+  ctx.save();
+  // Scaling and translating with some added "pulse" to
+  // suck up the predictors and spit out the dependent.
+  ctx.translate(
+    t.x - ((zoom.factor - 1) * (state.blackBox.boxDims.width * t.scale)) / 2,
+    t.y
+  );
+  ctx.scale(t.scale * zoom.factor, t.scale);
+
+  // Draw box (animate)
+  ctx.strokeStyle = 'white';
+  ctx.lineWidth = 0.1;
+  state.blackBox.box.paths.forEach(path => {
+    ctx.setLineDash([
+      state.blackBox.box.length - state.blackBox.box.offset,
+      state.blackBox.box.offset,
+    ]);
+    ctx.stroke(path);
+  });
+
+  // Draw text (don't animate).
+  ctx.strokeStyle = 'black';
+  ctx.lineWidth = 0.5;
+  state.blackBox.model.paths.forEach(path => ctx.stroke(path));
+
+  ctx.restore();
+}
+
 // Canvas draw function.
-function drawLolliChart(ctx, t) {
+function drawText(ctx, t, input, output) {
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
   ctx.translate(t.x, t.y);
   ctx.scale(t.scale, t.scale);
 
-  state.lolli.values.forEach(d => {
+  // Draw input properties.
+  input.forEach(d => {
     const datapoint = state.lolli.data[d];
-
-    const xValue = datapoint.value;
-    const { length } = state.lolli.data[d].text;
-    const { offset } = state.lolli.data[d].text;
     const { paths } = state.lolli.data[d].text;
 
-    // Line.
-    ctx.beginPath();
-    ctx.moveTo(state.lolli.x(0), state.lolli.y(d));
-    ctx.lineTo(state.lolli.x(xValue), state.lolli.y(d));
-    ctx.stroke();
-
-    // Circle.
-    ctx.beginPath();
-    ctx.arc(
-      state.lolli.x(xValue),
-      state.lolli.y(d),
-      datapoint.radius,
-      0,
-      2 * Math.PI
-    );
-    ctx.fill();
-
-    // Text.
     ctx.save();
-    ctx.translate(state.lolli.x(0), state.lolli.y(d) + 2);
+    ctx.translate(
+      state.lolli.x(0) + datapoint.offset.x,
+      state.lolli.y(d) + datapoint.offset.y + 2
+    );
     ctx.lineWidth = 0.5;
-    ctx.setLineDash([length - offset, offset]);
+    paths.forEach(path => ctx.stroke(path));
+    ctx.restore();
+  });
+
+  // Draw output property (or properties).
+  output.forEach(d => {
+    const datapoint = state.lolli.data[d];
+    const { paths } = state.lolli.data[d].text;
+
+    ctx.save();
+    ctx.translate(
+      state.lolli.x(0) + datapoint.offset.x,
+      state.lolli.y(d) + datapoint.offset.y + 2
+    );
+    ctx.lineWidth = 0.5;
     paths.forEach(path => ctx.stroke(path));
     ctx.restore();
   });
@@ -46,65 +77,92 @@ function drawLolliChart(ctx, t) {
   ctx.restore();
 }
 
-function drawBlackBox(ctx, t) {
-
-  ctx.clearRect(0, 0, state.width, state.height);
-  ctx.save();
-  ctx.translate(t.x, t.y);
-  ctx.scale(t.scale, t.scale);
-
-  // debugger;
-  ctx.strokeStyle = "white";
-  ctx.lineWidth = 0.1;
-
-  state.blackBox.box.paths.forEach(path => ctx.stroke(path));
-
-  ctx.restore();
-
-}
-
 function renderBlackBox() {
-  requestAnimationFrame(() =>
-    drawBlackBox(state.ctx.lolli, state.transform.bottle)
-  );
+  requestAnimationFrame(() => {
+    drawBlackBox(state.ctx.blackBox, state.transform.bottle);
+    drawText(state.ctx.lolli, state.transform.bottle, inputProperties, [
+      'quality',
+    ]);
+  });
 }
-
 
 function defineTweenBlackBox() {
   // Things to tween.
-  const tl = gsap.timeline({
-    onStart: renderBlackBox,
-    // onUpdate: renderBlackBox,
+  const tl = gsap.timeline({ onUpdate: renderBlackBox });
+
+  // Box path.
+  const boxoffset = gsap.fromTo(
+    state.blackBox.box,
+    { offset: state.blackBox.box.length },
+    { offset: 0 }
+  );
+
+  tl.add(boxoffset);
+
+  // Model text path (don't animate).
+
+  // Property x/y.
+  inputProperties.forEach((d, i) => {
+    // The x offset to move the predictor text by
+    // basically the width of the bottle.
+    const datapoint = state.lolli.data[d];
+    const xoffset = gsap.fromTo(
+      datapoint.offset,
+      { x: 0 },
+      { x: -state.lolli.area.left }
+    );
+
+    // The y offset to move the predictor text by
+    // the point scale step (pretty hard coded).
+    let yOffsetTarget;
+    if (i === 0) yOffsetTarget = state.lolli.y.step();
+    else yOffsetTarget = 0;
+
+    const yoffset = gsap.fromTo(
+      datapoint.offset,
+      { y: 0 },
+      { y: yOffsetTarget }
+    );
+
+    const scaleup = gsap.to(zoom, { factor: 0.95, duration: 0.2 });
+    const scaledown = gsap.to(zoom, { factor: 1 });
+
+    tl.add(xoffset, '>')
+      .add(yoffset, '<')
+      .add(scaleup, '<')
+      .add(scaledown, '>');
   });
 
-  // Loop through all lolli-data (which is an object).
-  Object.keys(state.lolli.data).forEach(d => {
-    // Datapoint to tween around with.
+  // Outcome x/y.
+  outputProperties.forEach((d, i) => {
+    // The x offset to move the predictor text by
+    // basically the width of the bottle.
     const datapoint = state.lolli.data[d];
-
-    // Set up the tweens.
-    const valueTween = gsap.fromTo(
-      datapoint,
-      { value: datapoint.values[3] },
-      { value: datapoint.values[4] }
-    );
-    const radiusTween = gsap.fromTo(
-      datapoint,
-      { radius: state.lolli.radiusTarget },
-      { radius: 0 }
+    const xoffset = gsap.fromTo(
+      datapoint.offset,
+      { x: -state.lolli.area.left },
+      { x: 0 }
     );
 
-    tl.add(valueTween, '>').add(radiusTween, '<');
+    // The y offset to move the predictor text by
+    // taken by the point scale step (pretty hard coded).
+    let yOffsetTarget;
+    const step = state.lolli.y.step();
+    if (i === 0) yOffsetTarget = -step;
 
-    if (d === 'quality') {
-      const offsetTween = gsap.fromTo(
-        datapoint.text,
-        { offset: 0 },
-        { offset: datapoint.text.length }
-      );
+    const yoffset = gsap.fromTo(
+      datapoint.offset,
+      { y: yOffsetTarget },
+      { y: yOffsetTarget * 0.5 }
+    );
 
-      tl.add(offsetTween, '>');
-    }
+    const scaleup = gsap.to(zoom, { factor: 1.1, duration: 0.2 });
+    const scaledown = gsap.to(zoom, { factor: 1 });
+
+    tl.add(xoffset, '+=0.5')
+      .add(yoffset, '<')
+      .add(scaleup, '<')
+      .add(scaledown, '>');
   });
 
   return tl;

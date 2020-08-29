@@ -167,7 +167,7 @@ function setScroll() {
   ScrollTrigger.create({
     animation: state.tween.blackBox,
     trigger: '.section-9',
-    scrub: true,
+    scrub: false,
     toggleActions: 'play none none reverse',
     id: 'blackBox',
   });

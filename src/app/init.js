@@ -21,19 +21,10 @@ import blackBox from '../../static/black-box-fill';
 import textModel from '../../static/text-model';
 import state from './state';
 import update from './update';
-import { getBox, splitPath, getPathLength } from './utils';
+import { getBox, splitPath, getPathLength, getPathData } from './utils';
 
 // Gsap register.
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
-
-// Utils.
-function getPathData(path) {
-  const splitPaths = splitPath(path);
-  const paths = splitPaths.map(p => new Path2D(p));
-  const length = Math.ceil(max(splitPaths.map(getPathLength)));
-  const offset = length;
-  return { paths, length, offset };
-}
 
 // Prep visual.
 function buildVisual() {
@@ -89,24 +80,40 @@ function buildVisual() {
       values: [0, 0.6, 0.3, 0.8, 0],
       radius: 0,
       text: lolliTextPaths[0],
+      offset: {
+        x: 0,
+        y: 0,
+      },
     },
     acid: {
       value: 0,
       values: [0, 0.3, 0.7, 0.2, 0],
       radius: 0,
       text: lolliTextPaths[1],
+      offset: {
+        x: 0,
+        y: 0,
+      },
     },
     chloride: {
       value: 0,
       values: [0, 0.7, 0.6, 0.4, 0],
       radius: 0,
       text: lolliTextPaths[2],
+      offset: {
+        x: 0,
+        y: 0,
+      },
     },
     quality: {
       value: 0,
       values: [0, 0.5, 0.3, 0.9, 0],
       radius: 0,
       text: lolliTextPaths[3],
+      offset: {
+        x: 0,
+        y: 0,
+      },
     },
   };
 
@@ -118,6 +125,16 @@ function buildVisual() {
   // Get the blackbox pathdata.
   state.blackBox.box = getPathData(blackBox);
   state.blackBox.model = getPathData(textModel);
+
+  stageGroup
+    .append('path')
+    .attr('id', 'black-box-path')
+    .attr('d', blackBox)
+    .style('fill', 'none')
+    .style('stroke-width', 0)
+    .style('stroke', 'none');
+
+  state.blackBox.boxDims = getBox('#black-box-path');
 }
 
 function buildStory(data) {
