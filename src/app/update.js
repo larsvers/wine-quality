@@ -20,6 +20,7 @@ ScrollTrigger.defaults({
   scroller: '#text-wrap',
   start: 'top center',
   end: 'center center',
+  toggleActions: 'play none none reverse',
   markers: true,
 });
 
@@ -104,7 +105,6 @@ function setScroll() {
     animation: state.tween.wineScape,
     trigger: '.section-1',
     scrub: true,
-    toggleActions: 'play none none reverse',
     id: 'wineScape',
   });
 
@@ -112,7 +112,6 @@ function setScroll() {
     animation: state.tween.glassBottle,
     trigger: '.section-2',
     scrub: true,
-    toggleActions: 'play none none reverse',
     id: 'glassBottle',
   });
 
@@ -120,7 +119,6 @@ function setScroll() {
     animation: state.tween.bottleText,
     trigger: '.section-3',
     scrub: true,
-    toggleActions: 'play none none reverse',
     id: 'bottleText',
   });
 
@@ -128,7 +126,6 @@ function setScroll() {
     animation: state.tween.bottleWave,
     trigger: '.section-4',
     scrub: true,
-    toggleActions: 'play none none reverse',
     id: 'bottleWave',
   });
 
@@ -136,7 +133,6 @@ function setScroll() {
     animation: state.tween.lolliChart,
     trigger: '.section-5',
     scrub: true,
-    toggleActions: 'play none none reverse',
     id: 'lolliChart',
   });
 
@@ -144,7 +140,6 @@ function setScroll() {
     animation: state.tween.lolliUpdate1,
     trigger: '.section-6',
     scrub: true,
-    toggleActions: 'play none none reverse',
     id: 'lolliUpdate1',
   });
 
@@ -152,7 +147,6 @@ function setScroll() {
     animation: state.tween.lolliUpdate2,
     trigger: '.section-7',
     scrub: true,
-    toggleActions: 'play none none reverse',
     id: 'lolliUpdate2',
   });
 
@@ -160,7 +154,6 @@ function setScroll() {
     animation: state.tween.lolliUpdate3,
     trigger: '.section-8',
     scrub: true,
-    toggleActions: 'play none none reverse',
     id: 'lolliUpdate3',
   });
 
@@ -168,7 +161,6 @@ function setScroll() {
     animation: state.tween.blackBox,
     trigger: '.section-9',
     scrub: false,
-    toggleActions: 'play none none reverse',
     id: 'blackBox',
   });
 
