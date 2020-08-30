@@ -1,4 +1,4 @@
-import { gsap, Elastic } from 'gsap/all';
+import { gsap } from 'gsap/all';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import state from '../app/state';
 
