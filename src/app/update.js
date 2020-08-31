@@ -15,6 +15,7 @@ import {
   tweenLolliUpdate3,
 } from '../tweens/lolliUpdate';
 import tweenBlackBox from '../tweens/blackBox';
+import tweenCleanup from '../tweens/cleanup';
 
 ScrollTrigger.defaults({
   scroller: '#text-wrap',
@@ -164,8 +165,21 @@ function setScroll() {
     id: 'blackBox',
   });
 
+  ScrollTrigger.create({
+    animation: state.tween.cleanup,
+    trigger: '.section-10',
+    scrub: false,
+    id: 'cleanup',
+    onEnter: cleanupStuff,
+  });
+
   // Recalculate all scroll positions.
   ScrollTrigger.refresh();
+}
+
+function cleanupStuff() {
+  console.log('trigger');
+  state.ctx.blackBox.clearRect(0, 0, state.width, state.height);
 }
 
 // Main function.
@@ -184,6 +198,7 @@ function update(wineScapeImg) {
   tweenLolliUpdate2();
   tweenLolliUpdate3();
   tweenBlackBox();
+  // tweenCleanup();
 
   setScroll();
 }

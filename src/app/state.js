@@ -26,6 +26,7 @@ export default {
     lolliUpdate2: null,
     lolliUpdate3: null,
     blackBox: null,
+    cleanup: null,
   },
   scape: {
     image: null,

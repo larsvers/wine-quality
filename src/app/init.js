@@ -27,7 +27,7 @@ import { getBox, splitPath, getPathLength, getPathData } from './utils';
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
 
 // Prep visual.
-function buildVisual() {
+function prepareVisuals() {
   const svg = select('#svg-hidden');
   const stageGroup = svg.append('g').attr('id', 'stage-group');
   const rg = rough.svg(svg.node()).generator;
@@ -150,7 +150,7 @@ function buildStory(data) {
 }
 
 function ready([scrollData, wineScape]) {
-  buildVisual();
+  prepareVisuals();
   buildStory(scrollData);
 
   // TODO: add flag to bypass redraw of canvases on resize.
