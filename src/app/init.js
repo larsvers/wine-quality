@@ -21,7 +21,7 @@ import blackBox from '../../static/black-box-fill';
 import textModel from '../../static/text-model';
 import state from './state';
 import update from './update';
-import { getBox, splitPath, getPathLength, getPathData } from './utils';
+import { getBox, splitPath, getPathDims, getPathData } from './utils';
 
 // Gsap register.
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
@@ -57,7 +57,8 @@ function prepareVisuals() {
 
   // Prep text bottle.
   const bottleTexts = splitPath(textBottle);
-  state.bottleText.maxLength = max(bottleTexts.map(getPathLength));
+  state.bottleText.dims = bottleTexts.map(p => getPathData(p));
+  state.bottleText.maxLength = max(state.bottleText.dims, d => d.length);
   state.bottleText.dashOffset = cloneDeep(state.bottleText.maxLength);
   state.bottleText.paths = bottleTexts.map(p => new Path2D(p));
 

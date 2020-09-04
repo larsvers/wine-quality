@@ -86,18 +86,33 @@ function splitPath(path) {
     .map(d => `M${d}`);
 }
 
-function getPathLength(pathData) {
-  let path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+function getPathDims(pathData) {
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   path.setAttribute('d', pathData);
-  return path.getTotalLength() || 0;
+  const domPath = select('#stage-group')
+    .append('path')
+    .attr('class', 'remove')
+    .attr('d', pathData);
+  const dims = domPath.node().getBBox();
+  const pathDims = {
+    x: Math.round(dims.x),
+    y: Math.round(dims.y),
+    width: Math.round(dims.width),
+    height: Math.round(dims.height),
+    length: Math.round(path.getTotalLength() || 0),
+  };
+  domPath.remove();
+
+  return pathDims;
 }
 
 function getPathData(path) {
   const splitPaths = splitPath(path);
   const paths = splitPaths.map(p => new Path2D(p));
-  const length = Math.ceil(max(splitPaths.map(getPathLength)));
+  const dims = splitPaths.map(getPathDims);
+  const length = max(dims, d => d.length);
   const offset = length;
-  return { paths, length, offset };
+  return { paths, dims, length, offset };
 }
 
 export {
@@ -106,6 +121,6 @@ export {
   setWrapHeight,
   getTransform,
   splitPath,
-  getPathLength,
+  getPathDims,
   getPathData,
 };
