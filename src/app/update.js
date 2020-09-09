@@ -165,20 +165,17 @@ function setScroll() {
     id: 'blackBox',
   });
 
-  // ScrollTrigger.create({
-  //   animation: state.tween.cleanup,
-  //   trigger: '.section-10',
-  //   scrub: false,
-  //   id: 'cleanup',
-  //   onEnter: cleanupStuff,
-  // });
+  ScrollTrigger.create({
+    animation: state.tween.cleanup,
+    trigger: '.section-10',
+    scrub: true,
+    id: 'cleanup',
+  });
+
+  // TODO Should I clear rect all unused contexts at end of cleanup?
 
   // Recalculate all scroll positions.
   ScrollTrigger.refresh();
-}
-
-function cleanupStuff() {
-  state.ctx.blackBox.clearRect(0, 0, state.width, state.height);
 }
 
 // Main function.
@@ -197,7 +194,7 @@ function update(wineScapeImg) {
   tweenLolliUpdate2();
   tweenLolliUpdate3();
   tweenBlackBox();
-  // tweenCleanup();
+  tweenCleanup();
 
   setScroll();
 }
