@@ -17,7 +17,7 @@ import {
 } from '../tweens/lolliUpdate';
 import tweenBlackBox from '../tweens/blackBox';
 import tweenCleanup from '../tweens/cleanup';
-import tweenZoomOut from '../tweens/zoomOut';
+import tweenBottleFill from '../tweens/bottleFill';
 
 ScrollTrigger.defaults({
   scroller: '#text-wrap',
@@ -166,9 +166,9 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
-    animation: state.tween.zoomOut,
+    animation: state.tween.bottleFill,
     trigger: '.section-11',
-    id: 'zoomOut',
+    id: 'bottleFill',
     onLeave: stopWave,
     onEnterBack: startWave,
   });
@@ -194,7 +194,7 @@ function update(wineScapeImg) {
   tweenLolliUpdate3();
   tweenBlackBox();
   tweenCleanup();
-  tweenZoomOut();
+  tweenBottleFill();
 
   setScroll();
 }
