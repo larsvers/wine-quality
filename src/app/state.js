@@ -14,6 +14,7 @@ export default {
     bottleWave: null,
     lolli: null,
     blackBox: null,
+    zoomOut: null,
   },
   // Tweens.
   tween: {
@@ -27,6 +28,7 @@ export default {
     lolliUpdate3: null,
     blackBox: null,
     cleanup: null,
+    zoomOut: null,
   },
   scape: {
     image: null,
@@ -49,7 +51,12 @@ export default {
     bottlePath: null,
     wavePoints: null,
     lift: null,
+    liftTarget: null,
     r: null,
+    n: 20,
+    xWaveScale: null,
+    waveLine: null,
+    waveAlpha: null,
   },
   lolli: {
     data: null,

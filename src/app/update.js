@@ -3,11 +3,12 @@ import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import cloneDeep from 'lodash.clonedeep';
 import state from './state';
 import { setWrapHeight, getTransform } from './utils';
+import tweenBottleWave, { startWave, stopWave } from '../tweens/bottleWave';
 
 import tweenWineScape from '../tweens/wineScape';
 import tweenGlassBottle from '../tweens/glassBottle';
 import tweenBottleText from '../tweens/bottleText';
-import tweenBottleWave from '../tweens/bottleWave';
+
 import tweenLolliChart from '../tweens/lolliChart';
 import {
   tweenLolliUpdate1,
@@ -16,11 +17,13 @@ import {
 } from '../tweens/lolliUpdate';
 import tweenBlackBox from '../tweens/blackBox';
 import tweenCleanup from '../tweens/cleanup';
+import tweenZoomOut from '../tweens/zoomOut';
 
 ScrollTrigger.defaults({
   scroller: '#text-wrap',
   start: 'top center',
   end: 'center center',
+  scrub: true,
   toggleActions: 'play none none reverse',
   markers: true,
 });
@@ -105,74 +108,70 @@ function setScroll() {
   ScrollTrigger.create({
     animation: state.tween.wineScape,
     trigger: '.section-1',
-    scrub: true,
     id: 'wineScape',
   });
 
   ScrollTrigger.create({
     animation: state.tween.glassBottle,
     trigger: '.section-2',
-    scrub: true,
     id: 'glassBottle',
   });
 
   ScrollTrigger.create({
     animation: state.tween.bottleText,
     trigger: '.section-3',
-    scrub: true,
     id: 'bottleText',
   });
 
   ScrollTrigger.create({
     animation: state.tween.bottleWave,
     trigger: '.section-4',
-    scrub: true,
     id: 'bottleWave',
   });
 
   ScrollTrigger.create({
     animation: state.tween.lolliChart,
     trigger: '.section-5',
-    scrub: true,
     id: 'lolliChart',
   });
 
   ScrollTrigger.create({
     animation: state.tween.lolliUpdate1,
     trigger: '.section-6',
-    scrub: true,
     id: 'lolliUpdate1',
   });
 
   ScrollTrigger.create({
     animation: state.tween.lolliUpdate2,
     trigger: '.section-7',
-    scrub: true,
     id: 'lolliUpdate2',
   });
 
   ScrollTrigger.create({
     animation: state.tween.lolliUpdate3,
     trigger: '.section-8',
-    scrub: true,
     id: 'lolliUpdate3',
   });
 
   ScrollTrigger.create({
     animation: state.tween.blackBox,
     trigger: '.section-9',
-    scrub: true,
     id: 'blackBox',
   });
 
   ScrollTrigger.create({
     animation: state.tween.cleanup,
     trigger: '.section-10',
-    scrub: true,
     id: 'cleanup',
   });
 
-  // TODO Should I clear rect all unused contexts at end of cleanup?
+  ScrollTrigger.create({
+    animation: state.tween.zoomOut,
+    trigger: '.section-11',
+    id: 'zoomOut',
+    onLeave: stopWave,
+    onEnterBack: startWave,
+  });
 
   // Recalculate all scroll positions.
   ScrollTrigger.refresh();
@@ -195,6 +194,7 @@ function update(wineScapeImg) {
   tweenLolliUpdate3();
   tweenBlackBox();
   tweenCleanup();
+  tweenZoomOut();
 
   setScroll();
 }
