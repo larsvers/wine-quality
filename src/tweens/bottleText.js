@@ -25,6 +25,7 @@ function drawTextPath(ctx, paths, t, length, offset) {
 }
 
 function renderBottleText() {
+  console.log('hi');
   state.ctx.bottleText.strokeStyle = state.bottleText.colour;
   requestAnimationFrame(() => {
     drawTextPath(
@@ -37,25 +38,31 @@ function renderBottleText() {
   });
 }
 
-function defineTweenBottleText() {
+function defineTweenBottleText(offsetDraw, alphaStart, alphaTarget) {
   const tl = gsap.timeline({ onUpdate: renderBottleText });
 
-  const offset = gsap.fromTo(
+  const offsetIn = gsap.fromTo(
     state.bottleText,
     { dashOffset: state.bottleText.maxLength },
     { dashOffset: 0 }
   );
 
+  const offsetOut = gsap.fromTo(
+    state.bottleText,
+    { dashOffset: 0 },
+    { dashOffset: state.bottleText.maxLength }
+  );
+
   const colourvalue = gsap.fromTo(
     state.bottleText,
-    { colour: 'rgba(0, 0, 0, 0)' },
+    { colour: `rgba(0, 0, 0, ${alphaStart})` },
     {
-      colour: 'rgba(0, 0, 0, 1)',
+      colour: `rgba(0, 0, 0, ${alphaTarget})`,
       ease: 'circ.out',
     }
   );
 
-  return tl.add(offset, 0).add(colourvalue, 0);
+  return tl.add(offsetDraw ? offsetIn : offsetOut).add(colourvalue, 0);
 }
 
 function tweenBottleText() {
@@ -65,8 +72,9 @@ function tweenBottleText() {
 
   // Kill old - set up new timeline.
   if (state.tween.bottleText) state.tween.bottleText.kill();
-  state.tween.bottleText = defineTweenBottleText();
+  state.tween.bottleText = defineTweenBottleText(true, 0, 1);
   state.tween.bottleText.totalProgress(progress);
 }
 
 export default tweenBottleText;
+export { defineTweenBottleText };

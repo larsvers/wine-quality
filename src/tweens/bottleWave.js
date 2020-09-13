@@ -114,7 +114,7 @@ function drawBottleWave(ctx, path, t) {
 }
 
 function renderBottleWave() {
-  state.ctx.bottleWave.fillStyle = 'black';
+  state.ctx.bottleWave.fillStyle = 'rgba(0, 0, 0, 1)';
   requestAnimationFrame(() => {
     drawBottleWave(
       state.ctx.bottleWave,
@@ -147,7 +147,8 @@ function defineTweenBottleWave(liftStart, liftTarget) {
     { lift: liftStart },
     { lift: liftTarget }
   );
-  return tl.add(lift, 0);
+
+  return tl.add(lift);
 }
 
 function tweenBottleWave() {

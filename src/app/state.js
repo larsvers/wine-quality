@@ -28,6 +28,7 @@ export default {
     blackBox: null,
     cleanup: null,
     bottleFill: null,
+    bottleTextOut: null,
   },
   scape: {
     image: null,

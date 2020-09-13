@@ -18,6 +18,7 @@ import {
 import tweenBlackBox from '../tweens/blackBox';
 import tweenCleanup from '../tweens/cleanup';
 import tweenBottleFill from '../tweens/bottleFill';
+import tweenBottleTextOut from '../tweens/bottleTextOut';
 
 ScrollTrigger.defaults({
   scroller: '#text-wrap',
@@ -166,8 +167,14 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
-    animation: state.tween.bottleFill,
+    animation: state.tween.bottleTextOut,
     trigger: '.section-11',
+    id: 'bottleTextOut',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.bottleFill,
+    trigger: '.section-12',
     id: 'bottleFill',
     onLeave: stopWave,
     onEnterBack: startWave,
@@ -195,6 +202,7 @@ function update(wineScapeImg) {
   tweenBlackBox();
   tweenCleanup();
   tweenBottleFill();
+  tweenBottleTextOut();
 
   setScroll();
 }
