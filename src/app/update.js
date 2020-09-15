@@ -19,6 +19,7 @@ import tweenBlackBox from '../tweens/blackBox';
 import tweenCleanup from '../tweens/cleanup';
 import tweenBottleFill from '../tweens/bottleFill';
 import tweenBottleTextOut from '../tweens/bottleTextOut';
+import tweenAnimals from '../tweens/animals';
 
 ScrollTrigger.defaults({
   scroller: '#text-wrap',
@@ -102,6 +103,27 @@ function updateTransforms() {
     { width: 0, height: state.glassBottle.bottleTop },
     { x: state.glassBottle.bottleLeft, height: null }
   );
+
+  // Animals.
+
+  // The animal data.
+  const animals = [
+    { name: 'pig', fit: { width: 0.5, height: 0 } },
+    { name: 'croc', fit: { width: 0.5, height: 0 } },
+    { name: 'giraffe', fit: { width: 0.5, height: 0 } },
+    { name: 'sloth1', fit: { width: 0.5, height: 0 } },
+    { name: 'whale', fit: { width: 0.5, height: 0 } },
+    { name: 'bird', fit: { width: 0.5, height: 0 } },
+    { name: 'sloth2', fit: { width: 0.5, height: 0 } },
+  ];
+
+  // Get a transform for each animal based on its getBBox dimensions.
+  animals.forEach(animal => {
+    state.transform[animal.name] = getTransform(state.animals[animal.name], {
+      width: 0.5,
+      height: 0,
+    });
+  });
 }
 
 function setScroll() {
@@ -180,6 +202,13 @@ function setScroll() {
     onEnterBack: startWave,
   });
 
+  ScrollTrigger.create({
+    animation: state.tween.animals,
+    trigger: '.section-13',
+    id: 'animals',
+    end: 'bottom center',
+  });
+
   // Recalculate all scroll positions.
   ScrollTrigger.refresh();
 }
@@ -203,6 +232,7 @@ function update(wineScapeImg) {
   tweenCleanup();
   tweenBottleFill();
   tweenBottleTextOut();
+  tweenAnimals();
 
   setScroll();
 }

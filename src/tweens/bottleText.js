@@ -25,7 +25,6 @@ function drawTextPath(ctx, paths, t, length, offset) {
 }
 
 function renderBottleText() {
-  console.log('hi');
   state.ctx.bottleText.strokeStyle = state.bottleText.colour;
   requestAnimationFrame(() => {
     drawTextPath(

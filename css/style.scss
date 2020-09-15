@@ -54,6 +54,12 @@ button {
   pointer-events: none;
 }
 
+.animals {
+  fill: none;
+  stroke-width: 1;
+  stroke: grey;
+}
+
 // Canvas
 #canvas-main-container {
   position: absolute;

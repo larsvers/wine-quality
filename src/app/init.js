@@ -1,4 +1,4 @@
-import { select } from 'd3-selection/src/index';
+import { select, selectAll } from 'd3-selection/src/index';
 import { csv, image } from 'd3-fetch/src/index';
 import rough from 'roughjs/bundled/rough.esm';
 
@@ -21,7 +21,15 @@ import blackBox from '../../static/black-box-fill';
 import textModel from '../../static/text-model';
 import state from './state';
 import update from './update';
-import { getBox, splitPath, getPathDims, getPathData } from './utils';
+import { getBox, splitPath, getPathData } from './utils';
+
+import animalBird from '../../static/animal-bird';
+import animalCroc from '../../static/animal-crocodile';
+import animalGiraffe from '../../static/animal-giraffe';
+import animalPig from '../../static/animal-pig';
+import animalSloth1 from '../../static/animal-sloth-1';
+import animalSloth2 from '../../static/animal-sloth-2';
+import animalWhale from '../../static/animal-whale';
 
 // Gsap register.
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
@@ -136,6 +144,35 @@ function prepareVisuals() {
     .style('stroke', 'none');
 
   state.blackBox.boxDims = getBox('#black-box-path');
+
+  // Add animal morph paths.
+
+  // The animals we have paths for.
+  const animals = [
+    { name: 'bird', path: animalBird },
+    { name: 'croc', path: animalCroc },
+    { name: 'giraffe', path: animalGiraffe },
+    { name: 'pig', path: animalPig },
+    { name: 'sloth1', path: animalSloth1 },
+    { name: 'sloth2', path: animalSloth2 },
+    { name: 'whale', path: animalWhale },
+  ];
+
+  // Add the paths to the DOM.
+  const animalPaths = stageGroup
+    .append('g')
+    .attr('class', 'animals')
+    .selectAll('.animal')
+    .data(animals)
+    .join('path')
+    .attr('class', 'animal')
+    .attr('id', d => `animal-${d.name}`)
+    .attr('d', d => d.path);
+
+  // Get each animal path's BBox.
+  animalPaths.each(function(d) {
+    state.animals[d.name] = this.getBBox();
+  });
 }
 
 function buildStory(data) {

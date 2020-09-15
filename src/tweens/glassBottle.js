@@ -59,6 +59,8 @@ function defineTweenGlassBottle() {
       map: 'complexity',
       updateTarget: false,
       render(path) {
+        // TODO: continue here. Can we store the path in a
+        // a generic state variable>
         state.glassBottle.path = path;
       },
     },

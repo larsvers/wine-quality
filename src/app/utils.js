@@ -41,13 +41,13 @@ function getTransform(object, fit, nudge) {
   // Get the parent visual.
   const frame = document.querySelector('#canvas-main-container');
   const visual = {
-    width: frame.offsetWidth,
-    height: frame.offsetHeight,
+    width: frame.clientWidth,
+    height: frame.clientHeight,
   };
 
   // Establish the object scale. fit.width and fit.height decide the scale
   // in relation to either the height or the width. You can't have both,
-  // becasue we won't skew. These two terms ↓ don't become a sum, but one
+  // becasue we don't skew. These two terms ↓ don't become a sum, but one
   // will be 0 when the other one is not.
   const scale =
     (visual.width / object.width) * fit.width +
@@ -61,7 +61,7 @@ function getTransform(object, fit, nudge) {
 
   // If `nudge` is defined, then `nudge.x` and `nudge.y` are both
   // expressed  as % of width and/or height. 1 would be full width/height,
-  // 0.5 would be the (default) centre and 0.2.5 half the centre (0.25% width).
+  // 0.5 would be the (default) centre and 0.25 half the centre (25% width).
   if (nudge && nudge.x) position.x *= nudge.x * 2; // *2 as the default position
   if (nudge && nudge.y) position.y *= nudge.y * 2; // is the centre (see above).
 

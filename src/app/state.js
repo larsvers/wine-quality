@@ -3,9 +3,11 @@ export default {
   width: null,
   height: null,
   transform: {
+    shape: null,
     scape: null,
     bottle: null,
-    shape: null,
+    // all the animal transforms
+    // will be added in `update`
   },
   ctx: {
     scape: null,
@@ -29,6 +31,7 @@ export default {
     cleanup: null,
     bottleFill: null,
     bottleTextOut: null,
+    animals: null,
   },
   scape: {
     image: null,
@@ -71,5 +74,14 @@ export default {
     boxDims: null,
     model: null,
     xOffset: null,
+  },
+  animals: {
+    bird: null,
+    croc: null,
+    giraffe: null,
+    pig: null,
+    sloth1: null,
+    sloth2: null,
+    whale: null,
   },
 };
