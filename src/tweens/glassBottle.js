@@ -3,6 +3,8 @@ import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import { drawScape } from './wineScape';
 import state from '../app/state';
 
+// TODO: export this and draw the
+// bottle outline in the respective ciolours
 function drawBottle(ctx, path, t) {
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
@@ -111,3 +113,4 @@ function tweenGlassBottle() {
 }
 
 export default tweenGlassBottle;
+export { drawBottle };

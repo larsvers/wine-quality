@@ -4,15 +4,15 @@ import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import state from '../app/state';
 import { defineTweenBottleWave } from './bottleWave';
 
-function tweenBottleFill() {
+function tweenBottleEmpty() {
   // Capture current progress.
-  const scroll = ScrollTrigger.getById('bottleFill');
+  const scroll = ScrollTrigger.getById('bottleEmpty');
   const progress = scroll ? scroll.progress : 0;
 
   // Kill old - set up new timeline.
-  if (state.tween.bottleFill) state.tween.bottleFill.kill();
-  state.tween.bottleFill = defineTweenBottleWave(0, 1.05);
-  state.tween.bottleFill.totalProgress(progress);
+  if (state.tween.bottleEmpty) state.tween.bottleEmpty.kill();
+  state.tween.bottleEmpty = defineTweenBottleWave(0.8, 0);
+  state.tween.bottleEmpty.totalProgress(progress);
 }
 
-export default tweenBottleFill;
+export default tweenBottleEmpty;

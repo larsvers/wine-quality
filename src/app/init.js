@@ -1,15 +1,22 @@
-import { select, selectAll } from 'd3-selection/src/index';
+// Libs.
+import { select } from 'd3-selection/src/index';
 import { csv, image } from 'd3-fetch/src/index';
+import { max } from 'd3-array/src/index';
 import rough from 'roughjs/bundled/rough.esm';
-
 import cloneDeep from 'lodash.clonedeep';
 import debounce from 'lodash.debounce';
-import { max } from 'd3-array/src/index';
 import { gsap } from 'gsap/all';
 import { MorphSVGPlugin } from 'gsap/src/MorphSVGPlugin';
 import { DrawSVGPlugin } from 'gsap/src/DrawSVGPlugin';
 import { GSDevTools } from 'gsap/src/GSDevTools';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
+
+// App modules.
+import state from './state';
+import update from './update';
+import { getBox, splitPath, getPathData } from './utils';
+
+// Paths general.
 import glass from '../../static/wine-glass-clean';
 import bottle from '../../static/wine-bottle-1';
 import textBottle from '../../static/text-bottle'; // an array of paths.
@@ -19,10 +26,8 @@ import textChloride from '../../static/text-chloride';
 import textQuality from '../../static/text-quality';
 import blackBox from '../../static/black-box-fill';
 import textModel from '../../static/text-model';
-import state from './state';
-import update from './update';
-import { getBox, splitPath, getPathData } from './utils';
 
+// Animal Paths.
 import animalBird from '../../static/animal-bird';
 import animalCroc from '../../static/animal-crocodile';
 import animalGiraffe from '../../static/animal-giraffe';

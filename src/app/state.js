@@ -7,7 +7,7 @@ export default {
     scape: null,
     bottle: null,
     // all the animal transforms
-    // will be added in `update`
+    // are being added in `update`
   },
   ctx: {
     scape: null,
@@ -29,9 +29,11 @@ export default {
     lolliUpdate3: null,
     blackBox: null,
     cleanup: null,
-    bottleFill: null,
+    bottleEmpty: null,
     bottleTextOut: null,
     animals: null,
+    bottleFill: null,
+    bottleColour: null,
   },
   scape: {
     image: null,
@@ -83,5 +85,9 @@ export default {
     sloth1: null,
     sloth2: null,
     whale: null,
+  },
+  bottleColour: {
+    colourStop0: null,
+    colourStop1: null,
   },
 };

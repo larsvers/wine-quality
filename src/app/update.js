@@ -17,10 +17,13 @@ import {
 } from '../tweens/lolliUpdate';
 import tweenBlackBox from '../tweens/blackBox';
 import tweenCleanup from '../tweens/cleanup';
-import tweenBottleFill from '../tweens/bottleFill';
+import tweenBottleEmpty from '../tweens/bottleEmpty';
 import tweenBottleTextOut from '../tweens/bottleTextOut';
 import tweenAnimals from '../tweens/animals';
+import tweenBottleFill from '../tweens/bottleFill';
+import tweenBottleColour from '../tweens/bottleColour';
 
+// Set ScrollTrigger defaults.
 ScrollTrigger.defaults({
   scroller: '#text-wrap',
   start: 'top center',
@@ -195,9 +198,9 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
-    animation: state.tween.bottleFill,
+    animation: state.tween.bottleEmpty,
     trigger: '.section-12',
-    id: 'bottleFill',
+    id: 'bottleEmpty',
     onLeave: stopWave,
     onEnterBack: startWave,
   });
@@ -207,6 +210,20 @@ function setScroll() {
     trigger: '.section-13',
     id: 'animals',
     end: 'bottom center',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.bottleFill,
+    trigger: '.section-14',
+    id: 'bottleFill',
+    onLeave: stopWave,
+    onEnterBack: startWave,
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.bottleColour,
+    trigger: '.section-15',
+    id: 'bottleColour',
   });
 
   // Recalculate all scroll positions.
@@ -230,9 +247,11 @@ function update(wineScapeImg) {
   tweenLolliUpdate3();
   tweenBlackBox();
   tweenCleanup();
-  tweenBottleFill();
+  tweenBottleEmpty();
   tweenBottleTextOut();
   tweenAnimals();
+  tweenBottleFill();
+  tweenBottleColour();
 
   setScroll();
 }
