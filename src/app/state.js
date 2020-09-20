@@ -34,6 +34,7 @@ export default {
     animals: null,
     bottleFill: null,
     bottleColour: null,
+    bottleZoomOut: null,
   },
   scape: {
     image: null,
@@ -87,7 +88,10 @@ export default {
     whale: null,
   },
   bottleColour: {
-    colourStop0: null,
-    colourStop1: null,
+    start: ['#619FFC', '#f5992c'],
+    stop: ['#023B64', '#AE5E00'],
+    base: '#000000',
+    colourStop0: '#000000',
+    colourStop1: '#000000',
   },
 };

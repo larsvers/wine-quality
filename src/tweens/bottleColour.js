@@ -6,7 +6,7 @@ import state from '../app/state';
 import { drawBottleWave } from './bottleWave';
 import { drawBottle } from './glassBottle';
 
-function renderBottleColour() {
+function setColours() {
   // Gradient.
   const gradient = state.ctx.bottleWave.createLinearGradient(
     0,
@@ -21,6 +21,10 @@ function renderBottleColour() {
   // Context styles.
   state.ctx.bottleWave.fillStyle = gradient;
   state.ctx.glassBottle.strokeStyle = gradient;
+}
+
+function renderBottleColour() {
+  setColours();
 
   requestAnimationFrame(() => {
     drawBottleWave(
@@ -39,31 +43,41 @@ function renderBottleColour() {
 function defineTweenBottleColour() {
   const tl = gsap.timeline({ onUpdate: renderBottleColour });
 
-  const colourStopGood1 = gsap.fromTo(
+  const colourStop0_good = gsap.fromTo(
     state.bottleColour,
-    { colourStop0: '#000000' },
-    { colourStop0: '#619FFC' }
+    { colourStop0: state.bottleColour.base },
+    { colourStop0: state.bottleColour.start[0] }
   );
 
-  const colourStopGood2 = gsap.fromTo(
+  const colourStop1_good = gsap.fromTo(
     state.bottleColour,
-    { colourStop1: '#000000' },
-    { colourStop1: '#023B64' }
+    { colourStop1: state.bottleColour.base },
+    { colourStop1: state.bottleColour.stop[0] }
   );
 
-  const colourStopBad1 = gsap.to(state.bottleColour, {
-    colourStop0: '#f5992c',
+  const colourStop0_bad = gsap.to(state.bottleColour, {
+    colourStop0: state.bottleColour.start[1],
   });
 
-  const colourStopBad2 = gsap.to(state.bottleColour, {
-    colourStop1: '#AE5E00',
+  const colourStop1_bad = gsap.to(state.bottleColour, {
+    colourStop1: state.bottleColour.stop[1],
+  });
+
+  const colourStop0_base = gsap.to(state.bottleColour, {
+    colourStop0: state.bottleColour.base,
+  });
+
+  const colourStop1_base = gsap.to(state.bottleColour, {
+    colourStop1: state.bottleColour.base,
   });
 
   return tl
-    .add(colourStopGood1)
-    .add(colourStopGood2, '<')
-    .add(colourStopBad1, '+=1')
-    .add(colourStopBad2, '<');
+    .add(colourStop0_good)
+    .add(colourStop1_good, '<')
+    .add(colourStop0_bad, '+=1')
+    .add(colourStop1_bad, '<')
+    .add(colourStop0_base, '+=1')
+    .add(colourStop1_base, '<');
 }
 
 function tweenBottleColour() {
