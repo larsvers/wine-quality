@@ -34,7 +34,7 @@ export default {
     animals: null,
     bottleFill: null,
     bottleColour: null,
-    bottleZoomOut: null,
+    bottleGrid: null,
   },
   scape: {
     image: null,

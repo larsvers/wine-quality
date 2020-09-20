@@ -22,7 +22,7 @@ import tweenBottleTextOut from '../tweens/bottleTextOut';
 import tweenAnimals from '../tweens/animals';
 import tweenBottleFill from '../tweens/bottleFill';
 import tweenBottleColour from '../tweens/bottleColour';
-import tweenBottleZoomOut from '../tweens/bottleZoomOut';
+import tweenBottleGrid from '../tweens/bottleGrid';
 
 // Set ScrollTrigger defaults.
 ScrollTrigger.defaults({
@@ -228,9 +228,9 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
-    animation: state.tween.bottleZoomOut,
+    animation: state.tween.bottleGrid,
     trigger: '.section-16',
-    id: 'bottleZoomOut',
+    id: 'bottleGrid',
   });
 
   // Recalculate all scroll positions.
@@ -259,7 +259,7 @@ function update(wineScapeImg) {
   tweenAnimals();
   tweenBottleFill();
   tweenBottleColour();
-  tweenBottleZoomOut();
+  tweenBottleGrid();
 
   setScroll();
 }
