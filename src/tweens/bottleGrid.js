@@ -9,8 +9,6 @@ import state from '../app/state';
 
 import gridLayout from '../layouts/grid';
 
-let rows = 15;
-let cols = 15;
 const smallBottleScale = 0.15;
 let gridOrigin;
 let gridTarget;
@@ -36,6 +34,9 @@ let yScale;
 function drawBottles(ctx, path, points) {
   ctx.clearRect(0, 0, state.width, state.height);
   points.forEach(point => {
+    ctx.strokeStyle = point.quality
+      ? state.bottleGrid.colour.good
+      : state.bottleGrid.colour.bad;
     const { layout } = point;
     ctx.save();
     ctx.translate(xScale(layout.x), yScale(layout.y));
@@ -68,6 +69,9 @@ function drawBottles(ctx, path, points) {
 function drawBottleWaves(ctx, path, points) {
   ctx.clearRect(0, 0, state.width, state.height);
   points.forEach(point => {
+    ctx.fillStyle = point.quality
+      ? state.bottleGrid.colour.good
+      : state.bottleGrid.colour.bad;
     const { layout } = point;
     ctx.save();
     ctx.translate(xScale(layout.x), yScale(layout.y));
@@ -100,7 +104,7 @@ function renderBottleGrid() {
   });
 }
 
-function getBaseData() {
+function getBaseData(rows, cols) {
   return range(rows * cols).map((d, i) => ({
     quality: Math.random() > 0.3,
     index: i,
@@ -124,8 +128,12 @@ function defineTweenBottleGrid() {
   ]);
 
   // Data.
-  const baseData = getBaseData();
-  gridTarget = gridLayout()(baseData);
+  const num = 20;
+  const baseData = getBaseData(num, num);
+  gridTarget = gridLayout()
+    .rows(num)
+    .cols(num)
+    .scale(0.1)(baseData);
   gridOrigin = gridTarget.map(d => cloneDeep(d));
   gridOrigin.forEach(d => {
     d.layout.y = -0.2;
@@ -160,9 +168,9 @@ function tweenBottleGrid() {
 
   // Kill old - set up new timeline.
   if (state.tween.bottleGrid) state.tween.bottleGrid.kill();
-  state.tween.bottleGrid = defineTweenBottleGrid(0, 0.8);
+  state.tween.bottleGrid = defineTweenBottleGrid();
   state.tween.bottleGrid.totalProgress(progress);
 }
 
 export default tweenBottleGrid;
-export { drawBottles, drawBottleWaves };
+export { renderBottleGrid };

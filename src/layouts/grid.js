@@ -27,8 +27,8 @@ function gridLayout() {
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const point = {
-          x: Math.round((r / (rows - 1)) * 100) / 100,
-          y: Math.round((c / (cols - 1)) * 100) / 100,
+          x: Math.round((r / (rows - 1)) * 1e5) / 1e5,
+          y: Math.round((c / (cols - 1)) * 1e5) / 1e5,
           scale,
         };
         points.push(point);
