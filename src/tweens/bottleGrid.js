@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-use-before-define */
 import { gsap } from 'gsap/all';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
@@ -10,33 +11,86 @@ import state from '../app/state';
 import gridLayout from '../layouts/grid';
 
 const smallBottleScale = 0.15;
-let gridOrigin;
-let gridTarget;
 let xScale;
 let yScale;
 
-// function drawCircle(ctx, points) {
-//   ctx.clearRect(0, 0, state.width, state.height);
-//   ctx.strokeStyle = '#000000';
-//   points.forEach(point => {
-//     ctx.save();
-//     ctx.translate(xScale(point.x), yScale(point.y));
-//     ctx.translate(point.scale, point.scale);
-//     ctx.beginPath();
-//     ctx.arc(0, 0, 4, 0, 2 * Math.PI);
-//     ctx.stroke();
-//     ctx.restore();
-//   });
-// }
+// Helper functions.
+function getBaseData(rows, cols) {
+  return range(rows * cols).map((d, i) => ({
+    quality: Math.random() > 0.3,
+    // quality: i < 2 ? 1 : 0,
+    index: i,
+  }));
+}
 
-// TODO: export this and draw the
-// bottle outline in the respective ciolours
+function setScales() {
+  // Get scales (alos determining the space for our visual)
+  const xBottleCorrection =
+    (state.glassBottle.bottleBox.width / 2) * smallBottleScale;
+  const yBottleCorrection =
+    (state.glassBottle.bottleBox.height / 2) * smallBottleScale;
+
+  xScale = scaleLinear().range([
+    state.width * 0.1 - xBottleCorrection,
+    state.width * 0.9 - xBottleCorrection,
+  ]);
+  yScale = scaleLinear().range([
+    state.height * 0.1 - yBottleCorrection,
+    state.height * 0.9 - yBottleCorrection,
+  ]);
+}
+
+function prepData() {
+  // Base Data.
+  const num = 10;
+  state.bottleGrid.baseData = getBaseData(num, num);
+
+  // Target data with layout.
+  state.bottleGrid.dataTarget = gridLayout()
+    .rows(num)
+    .cols(num)
+    .scale(smallBottleScale)(state.bottleGrid.baseData);
+
+  // Origin data with layout.
+  state.bottleGrid.dataOrigin = state.bottleGrid.dataTarget.map(d =>
+    cloneDeep(d)
+  );
+  state.bottleGrid.dataOrigin.forEach(d => {
+    d.layout.y = -0.2;
+    d.layout.scale = 0;
+  });
+
+  // Add the initial position of the main bottle.
+  state.bottleGrid.dataOrigin[0].layout.x = xScale.invert(
+    state.transform.bottle.x
+  );
+  state.bottleGrid.dataOrigin[0].layout.y = yScale.invert(
+    state.transform.bottle.y
+  );
+  state.bottleGrid.dataOrigin[0].layout.scale = state.transform.bottle.scale;
+
+  // Sorted data (prep for sorted tween - this is complex!).
+  // 1. Clone the base data and sort it by high - low quality.
+  const sortedBaseData = state.bottleGrid.baseData
+    .map(d => cloneDeep(d))
+    .sort((a, b) => a.quality - b.quality);
+
+  // 2. Augment it with an updated layout.
+  state.bottleGrid.dataSorted = gridLayout()
+    .rows(num)
+    .cols(num)
+    .scale(smallBottleScale)(sortedBaseData);
+
+  // 3. Sort it into their original position.
+  // Now we have the elements in orginal order
+  // but the layout objects are sorted by quality.
+  state.bottleGrid.dataSorted.sort((a, b) => a.index - b.index);
+}
+
+// Drawing functions.
 function drawBottles(ctx, path, points) {
   ctx.clearRect(0, 0, state.width, state.height);
   points.forEach(point => {
-    ctx.strokeStyle = point.quality
-      ? state.bottleGrid.colour.good
-      : state.bottleGrid.colour.bad;
     const { layout } = point;
     ctx.save();
     ctx.translate(xScale(layout.x), yScale(layout.y));
@@ -65,15 +119,14 @@ function drawBottles(ctx, path, points) {
   });
 }
 
-// Tween and draw.
 function drawBottleWaves(ctx, path, points) {
   ctx.clearRect(0, 0, state.width, state.height);
   points.forEach(point => {
+    const { layout } = point;
+    ctx.save();
     ctx.fillStyle = point.quality
       ? state.bottleGrid.colour.good
       : state.bottleGrid.colour.bad;
-    const { layout } = point;
-    ctx.save();
     ctx.translate(xScale(layout.x), yScale(layout.y));
     ctx.scale(layout.scale, layout.scale);
 
@@ -98,62 +151,32 @@ function renderBottleGrid() {
     drawBottleWaves(
       state.ctx.bottleWave,
       state.bottleWave.bottlePath,
-      gridOrigin
+      state.bottleGrid.dataOrigin
     );
-    drawBottles(state.ctx.glassBottle, state.glassBottle.path, gridOrigin);
+    drawBottles(
+      state.ctx.glassBottle,
+      state.glassBottle.path,
+      state.bottleGrid.dataOrigin
+    );
   });
 }
 
-function getBaseData(rows, cols) {
-  return range(rows * cols).map((d, i) => ({
-    quality: Math.random() > 0.3,
-    index: i,
-  }));
-}
-
+// Tweening functions.
 function defineTweenBottleGrid() {
-  // Get scales (alos determining the space for our visual)
-  const xBottleCorrection =
-    (state.glassBottle.bottleBox.width / 2) * smallBottleScale;
-  const yBottleCorrection =
-    (state.glassBottle.bottleBox.height / 2) * smallBottleScale;
-
-  xScale = scaleLinear().range([
-    state.width * 0.1 - xBottleCorrection,
-    state.width * 0.9 - xBottleCorrection,
-  ]);
-  yScale = scaleLinear().range([
-    state.height * 0.1 - yBottleCorrection,
-    state.height * 0.9 - yBottleCorrection,
-  ]);
-
-  // Data.
-  const num = 20;
-  const baseData = getBaseData(num, num);
-  gridTarget = gridLayout()
-    .rows(num)
-    .cols(num)
-    .scale(0.1)(baseData);
-  gridOrigin = gridTarget.map(d => cloneDeep(d));
-  gridOrigin.forEach(d => {
-    d.layout.y = -0.2;
-    d.layout.scale = 0;
-  });
-
-  // Add the initial position of the main bottle.
-  gridOrigin[0].layout.x = xScale.invert(state.transform.bottle.x);
-  gridOrigin[0].layout.y = yScale.invert(state.transform.bottle.y);
-  gridOrigin[0].layout.scale = state.transform.bottle.scale;
+  // Prep.
+  setScales();
+  prepData();
 
   // Tween
   const tl = gsap.timeline({ onUpdate: renderBottleGrid });
 
   const pointtween = gsap.to(
-    gridOrigin.map(d => d.layout),
+    // gridOrigin.map(d => d.layout),
+    state.bottleGrid.dataOrigin.map(d => d.layout),
     {
-      x: i => gridTarget[i].layout.x,
-      y: i => gridTarget[i].layout.y,
-      scale: i => gridTarget[i].layout.scale,
+      x: i => state.bottleGrid.dataTarget[i].layout.x,
+      y: i => state.bottleGrid.dataTarget[i].layout.y,
+      scale: i => state.bottleGrid.dataTarget[i].layout.scale,
       stagger: 0.01,
     }
   );
@@ -173,4 +196,4 @@ function tweenBottleGrid() {
 }
 
 export default tweenBottleGrid;
-export { renderBottleGrid };
+export { drawBottles, drawBottleWaves, renderBottleGrid };

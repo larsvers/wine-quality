@@ -36,6 +36,7 @@ export default {
     bottleColour: null,
     bottleGrid: null,
     bottleGridColour: null,
+    bottleGridSort: null,
   },
   scape: {
     image: null,
@@ -96,10 +97,10 @@ export default {
     colourStop1: '#000000',
   },
   bottleGrid: {
-    data: null,
-    scale: null,
-    xScale: null,
-    yScale: null,
+    baseData: null,
+    dataOrigin: null,
+    dataTarget: null,
+    dataSorted: null,
     colour: {
       good: '#000000',
       bad: '#000000',
