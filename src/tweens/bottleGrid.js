@@ -17,8 +17,7 @@ let yScale;
 // Helper functions.
 function getBaseData(rows, cols) {
   return range(rows * cols).map((d, i) => ({
-    quality: Math.random() > 0.3,
-    // quality: i < 2 ? 1 : 0,
+    quality: Math.random() < 0.3,
     index: i,
   }));
 }
@@ -73,7 +72,7 @@ function prepData() {
   // 1. Clone the base data and sort it by high - low quality.
   const sortedBaseData = state.bottleGrid.baseData
     .map(d => cloneDeep(d))
-    .sort((a, b) => a.quality - b.quality);
+    .sort((a, b) => b.quality - a.quality);
 
   // 2. Augment it with an updated layout.
   state.bottleGrid.dataSorted = gridLayout()
@@ -85,6 +84,13 @@ function prepData() {
   // Now we have the elements in orginal order
   // but the layout objects are sorted by quality.
   state.bottleGrid.dataSorted.sort((a, b) => a.index - b.index);
+
+  // Exit positions (out data).
+  state.bottleGrid.dataOut = state.bottleGrid.dataTarget.map(d => cloneDeep(d));
+  state.bottleGrid.dataOut.forEach(d => {
+    d.layout.y = -0.2;
+    d.layout.scale = 0;
+  });
 }
 
 // Drawing functions.
@@ -171,7 +177,6 @@ function defineTweenBottleGrid() {
   const tl = gsap.timeline({ onUpdate: renderBottleGrid });
 
   const pointtween = gsap.to(
-    // gridOrigin.map(d => d.layout),
     state.bottleGrid.dataOrigin.map(d => d.layout),
     {
       x: i => state.bottleGrid.dataTarget[i].layout.x,
