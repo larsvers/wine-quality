@@ -192,12 +192,12 @@ function buildStory(data) {
     .html(d => d.text);
 }
 
-function ready([scrollData, wineScape]) {
+function ready([scrollData, wineScape, wineData]) {
   prepareVisuals();
   buildStory(scrollData);
 
   // TODO: add flag to bypass redraw of canvases on resize.
-  update(wineScape);
+  update(wineScape, wineData);
 
   // Debounced resize.
   const debounced = debounce(() => update(wineScape), 500);
@@ -207,8 +207,9 @@ function ready([scrollData, wineScape]) {
 function init() {
   const scrollData = csv('../../data/scrolldata.csv');
   const wineScape = image('../../static/wine-scape.png');
+  const wineData = image('../../static/wine-data.png');
 
-  Promise.all([scrollData, wineScape]).then(ready);
+  Promise.all([scrollData, wineScape, wineData]).then(ready);
 }
 
 export default init;

@@ -38,10 +38,12 @@ export default {
     bottleGridColour: null,
     bottleGridSort: null,
     bottleGridOut: null,
+    statsScape: null,
   },
   scape: {
     image: null,
     alpha: null,
+    alphaTarget: 0.2,
   },
   glassBottle: {
     bottleBox: null,
@@ -107,5 +109,9 @@ export default {
       good: '#000000',
       bad: '#000000',
     },
+  },
+  stats: {
+    image: null,
+    alpha: null,
   },
 };

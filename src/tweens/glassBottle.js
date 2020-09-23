@@ -92,7 +92,11 @@ function defineTweenGlassBottle() {
     }
   );
 
-  const imagealpha = gsap.fromTo(state.scape, { alpha: 1 }, { alpha: 0.2 });
+  const imagealpha = gsap.fromTo(
+    state.scape,
+    { alpha: 1 },
+    { alpha: state.scape.alphaTarget }
+  );
 
   return tl
     .add(retransform, 0)
