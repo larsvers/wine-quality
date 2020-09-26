@@ -8,6 +8,7 @@ export default {
     bottle: null,
     // all the animal transforms
     // are being added in `update`
+    dataset: null,
   },
   ctx: {
     scape: null,
@@ -38,7 +39,7 @@ export default {
     bottleGridColour: null,
     bottleGridSort: null,
     bottleGridOut: null,
-    statsScape: null,
+    datasetGrid: null,
   },
   scape: {
     image: null,
@@ -110,8 +111,10 @@ export default {
       bad: '#000000',
     },
   },
-  stats: {
-    image: null,
-    alpha: null,
+  dataset: {
+    info: null,
+    box: null,
+    // all the column path data
+    // are being added in `init`
   },
 };

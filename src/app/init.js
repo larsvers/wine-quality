@@ -1,3 +1,4 @@
+/* eslint-disable no-return-assign */
 // Libs.
 import { select } from 'd3-selection/src/index';
 import { csv, image } from 'd3-fetch/src/index';
@@ -35,6 +36,21 @@ import animalPig from '../../static/animal-pig';
 import animalSloth1 from '../../static/animal-sloth-1';
 import animalSloth2 from '../../static/animal-sloth-2';
 import animalWhale from '../../static/animal-whale';
+
+// Dataset paths
+import dataset00Grid from '../../static/dataset-00-grid';
+import dataset01Id from '../../static/dataset-01-id';
+import dataset02Quality from '../../static/dataset-02-quality';
+import dataset03FAcidity from '../../static/dataset-03-f-acidity';
+import dataset04VAcidity from '../../static/dataset-04-v-acidity';
+import dataset05Citric from '../../static/dataset-05-citric';
+import dataset06Sugar from '../../static/dataset-06-sugar';
+import dataset07Chlorides from '../../static/dataset-07-chlorides';
+import dataset08Sulfur from '../../static/dataset-08-sulfur';
+import dataset09Density from '../../static/dataset-09-density';
+import dataset10Ph from '../../static/dataset-10-ph';
+import dataset11Sulphates from '../../static/dataset-11-sulphates';
+import dataset12Alcohol from '../../static/dataset-12-alcohol';
 
 // Gsap register.
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
@@ -178,6 +194,32 @@ function prepareVisuals() {
   animalPaths.each(function(d) {
     state.animals[d.name] = this.getBBox();
   });
+
+  // Set the paths and info of all dataset's elements.
+  state.dataset.info = [
+    { name: 'grid', paths: dataset00Grid, tween: 'datasetGrid' },
+    { name: 'id', paths: dataset01Id, tween: 'datasetId' },
+    { name: 'quality', paths: dataset02Quality, tween: 'datasetQuality' },
+    { name: 'fxAcidity', paths: dataset03FAcidity, tween: 'datasetFxAcidity' },
+    { name: 'vlAcidity', paths: dataset04VAcidity, tween: 'datasetVlAcidity' },
+    { name: 'citric', paths: dataset05Citric, tween: 'datasetCitric' },
+    { name: 'sugar', paths: dataset06Sugar, tween: 'datasetSugar' },
+    { name: 'chlorides', paths: dataset07Chlorides, tween: 'datasetChlorides' },
+    { name: 'sulfur', paths: dataset08Sulfur, tween: 'datasetSulfur' },
+    { name: 'density', paths: dataset09Density, tween: 'datasetDensity' },
+    { name: 'ph', paths: dataset10Ph, tween: 'datasetPh' },
+    { name: 'sulphates', paths: dataset11Sulphates, tween: 'datasetSulphates' },
+    { name: 'alcohol', paths: dataset12Alcohol, tween: 'datasetAlcohol' },
+  ];
+
+  // Get the path info for each element.
+  state.dataset.info.forEach(
+    d => (state.dataset[d.name] = getPathData(d.paths))
+  );
+
+  // Also, the grid and columns share the same base bounding box,
+  // so we just need a single bbox, we take from the grid:
+  state.dataset.box = getBox(false, dataset00Grid);
 }
 
 function buildStory(data) {
@@ -192,12 +234,12 @@ function buildStory(data) {
     .html(d => d.text);
 }
 
-function ready([scrollData, wineScape, wineData]) {
+function ready([scrollData, wineScape]) {
   prepareVisuals();
   buildStory(scrollData);
 
   // TODO: add flag to bypass redraw of canvases on resize.
-  update(wineScape, wineData);
+  update(wineScape);
 
   // Debounced resize.
   const debounced = debounce(() => update(wineScape), 500);
@@ -207,9 +249,8 @@ function ready([scrollData, wineScape, wineData]) {
 function init() {
   const scrollData = csv('../../data/scrolldata.csv');
   const wineScape = image('../../static/wine-scape.png');
-  const wineData = image('../../static/wine-data.png');
 
-  Promise.all([scrollData, wineScape, wineData]).then(ready);
+  Promise.all([scrollData, wineScape]).then(ready);
 }
 
 export default init;

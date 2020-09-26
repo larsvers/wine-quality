@@ -8,9 +8,31 @@ function isSelection(el) {
   return false;
 }
 
-function getBox(el) {
-  const sel = isSelection(el) ? el : select(el);
-  return sel.node().getBBox();
+/**
+ * Get the bounding box of either a DOM element, a D3 selection
+ *  or a path string. Either `el` or `path` needs to be falsey.
+ * @param { node|selection } el either a DOM node or a D3 selection
+ * @param { string } path an svg path
+ * @return An SVG rect with (most importantly) width and height
+ */
+function getBox(el, path) {
+  let box;
+  if (el) {
+    const sel = isSelection(el) ? el : select(el);
+    box = sel.node().getBBox();
+  } else if (path) {
+    const domPath = select('body')
+      .append('svg')
+      .attr('class', 'svg-temp')
+      .append('path')
+      .attr('d', path);
+
+    box = domPath.node().getBBox();
+    domPath.remove();
+  } else {
+    throw Error('Either el or path must be defined');
+  }
+  return box;
 }
 
 /**

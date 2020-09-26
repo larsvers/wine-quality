@@ -26,7 +26,7 @@ import tweenBottleGrid from '../tweens/bottleGrid';
 import tweenBottleGridColour from '../tweens/bottleGridColour';
 import tweenBottleGridSort from '../tweens/bottleGridSort';
 import tweenBottleGridOut from '../tweens/bottleGridOut';
-import tweenStatsScape from '../tweens/statsScape';
+import tweenDataset from '../tweens/dataset';
 
 // Set ScrollTrigger defaults.
 ScrollTrigger.defaults({
@@ -131,6 +131,12 @@ function updateTransforms() {
       width: 0.5,
       height: 0,
     });
+  });
+
+  // Update the dataset transform.
+  state.transform.dataset = getTransform(state.dataset.box, {
+    width: 0.9,
+    height: 0,
   });
 }
 
@@ -255,10 +261,14 @@ function setScroll() {
     id: 'bottleGridOut',
   });
 
-  ScrollTrigger.create({
-    animation: state.tween.statsScape,
-    trigger: '.section-20',
-    id: 'statsScape',
+  // Setting up all the scrolltriggers for the dataset.
+  // We set up a scrolltrigger/tween for each column and the grid.
+  state.dataset.info.forEach((d, i) => {
+    ScrollTrigger.create({
+      animation: state.tween[d.tween],
+      trigger: `.section-${20 + i}`, // first section +1
+      id: d.tween,
+    });
   });
 
   // Recalculate all scroll positions.
@@ -266,9 +276,9 @@ function setScroll() {
 }
 
 // Main function.
-function update(wineScapeImg, wineDataImg) {
+function update(wineScapeImg) {
   state.scape.image = wineScapeImg;
-  state.stats.image = wineDataImg;
+
   setWrapHeight();
   setVisualStructure();
   updateTransforms();
@@ -292,7 +302,7 @@ function update(wineScapeImg, wineDataImg) {
   tweenBottleGridColour();
   tweenBottleGridSort();
   tweenBottleGridOut();
-  tweenStatsScape();
+  tweenDataset();
 
   setScroll();
 }
