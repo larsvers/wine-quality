@@ -17,6 +17,7 @@ export default {
     bottleWave: null,
     lolli: null,
     blackBox: null,
+    globe: null,
   },
   // Tweens.
   tween: {
@@ -39,7 +40,8 @@ export default {
     bottleGridColour: null,
     bottleGridSort: null,
     bottleGridOut: null,
-    datasetGrid: null,
+    // dataset tweens are being added in tween func
+    globe: null,
   },
   scape: {
     image: null,
@@ -116,5 +118,12 @@ export default {
     box: null,
     // all the column path data
     // are being added in `init`
+  },
+  globe: {
+    data: null,
+    scroll: {
+      progress: null,
+      direction: null,
+    },
   },
 };

@@ -137,6 +137,88 @@ function getPathData(path) {
   return { paths, dims, length, offset };
 }
 
+/**
+ * Drwa canvas arrows. From:
+ * (https://riptutorial.com/html5-canvas/example/18138/cubic---quadratic-bezier-curve-with-arrowheads)
+ * @param { objecr } ctx Canvas context to draw on.
+ * @param { object } p0 {x, y} control point - start
+ * @param { object } p1 {x, y} control point - control quadratic
+ * @param { object } p2 {x, y} control point - end
+ * @param { object } p3 {x, y} control point - control cubic if defined
+ * @param { number } arrowLength Length of arrow head
+ * @param { boolean } hasStartArrow Add start arrow
+ * @param { boolean } hasEndArrow Add end arrow
+ */
+function bezWithArrowheads(
+  ctx,
+  p0,
+  p1,
+  p2,
+  p3,
+  arrowLength,
+  hasStartArrow,
+  hasEndArrow
+) {
+  let x;
+  let y;
+  let norm;
+  let ex;
+  let ey;
+  function pointsToNormalisedVec(p, pp) {
+    let len;
+    norm.y = pp.x - p.x;
+    norm.x = -(pp.y - p.y);
+    len = Math.sqrt(norm.x * norm.x + norm.y * norm.y);
+    norm.x /= len;
+    norm.y /= len;
+    return norm;
+  }
+
+  const arrowWidth = arrowLength / 2;
+  norm = {};
+  // defaults to true for both arrows if arguments not included
+  hasStartArrow =
+    hasStartArrow === undefined || hasStartArrow === null
+      ? true
+      : hasStartArrow;
+  hasEndArrow =
+    hasEndArrow === undefined || hasEndArrow === null ? true : hasEndArrow;
+  ctx.beginPath();
+  ctx.moveTo(p0.x, p0.y);
+  if (p3 === undefined) {
+    ctx.quadraticCurveTo(p1.x, p1.y, p2.x, p2.y);
+    ex = p2.x; // get end point
+    ey = p2.y;
+    norm = pointsToNormalisedVec(p1, p2);
+  } else {
+    ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+    ex = p3.x; // get end point
+    ey = p3.y;
+    norm = pointsToNormalisedVec(p2, p3);
+  }
+  if (hasEndArrow) {
+    x = arrowWidth * norm.x + arrowLength * -norm.y;
+    y = arrowWidth * norm.y + arrowLength * norm.x;
+    ctx.moveTo(ex + x, ey + y);
+    ctx.lineTo(ex, ey);
+    x = arrowWidth * -norm.x + arrowLength * -norm.y;
+    y = arrowWidth * -norm.y + arrowLength * norm.x;
+    ctx.lineTo(ex + x, ey + y);
+  }
+  if (hasStartArrow) {
+    norm = pointsToNormalisedVec(p0, p1);
+    x = arrowWidth * norm.x - arrowLength * -norm.y;
+    y = arrowWidth * norm.y - arrowLength * norm.x;
+    ctx.moveTo(p0.x + x, p0.y + y);
+    ctx.lineTo(p0.x, p0.y);
+    x = arrowWidth * -norm.x - arrowLength * -norm.y;
+    y = arrowWidth * -norm.y - arrowLength * norm.x;
+    ctx.lineTo(p0.x + x, p0.y + y);
+  }
+
+  ctx.stroke();
+}
+
 export {
   isSelection,
   getBox,
@@ -145,4 +227,5 @@ export {
   splitPath,
   getPathDims,
   getPathData,
+  bezWithArrowheads,
 };

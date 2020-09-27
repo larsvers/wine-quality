@@ -1,7 +1,7 @@
 /* eslint-disable no-return-assign */
 // Libs.
 import { select } from 'd3-selection/src/index';
-import { csv, image } from 'd3-fetch/src/index';
+import { csv, image, json } from 'd3-fetch/src/index';
 import { max } from 'd3-array/src/index';
 import rough from 'roughjs/bundled/rough.esm';
 import cloneDeep from 'lodash.clonedeep';
@@ -56,7 +56,7 @@ import dataset12Alcohol from '../../static/dataset-12-alcohol';
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
 
 // Prep visual.
-function prepareVisuals() {
+function prepareVisuals(globeData) {
   const svg = select('#svg-hidden');
   const stageGroup = svg.append('g').attr('id', 'stage-group');
   const rg = rough.svg(svg.node()).generator;
@@ -220,6 +220,9 @@ function prepareVisuals() {
   // Also, the grid and columns share the same base bounding box,
   // so we just need a single bbox, we take from the grid:
   state.dataset.box = getBox(false, dataset00Grid);
+
+  // Save the world json.
+  state.globe.data = globeData;
 }
 
 function buildStory(data) {
@@ -234,8 +237,8 @@ function buildStory(data) {
     .html(d => d.text);
 }
 
-function ready([scrollData, wineScape]) {
-  prepareVisuals();
+function ready([scrollData, wineScape, globeData]) {
+  prepareVisuals(globeData);
   buildStory(scrollData);
 
   // TODO: add flag to bypass redraw of canvases on resize.
@@ -249,8 +252,9 @@ function ready([scrollData, wineScape]) {
 function init() {
   const scrollData = csv('../../data/scrolldata.csv');
   const wineScape = image('../../static/wine-scape.png');
+  const globeData = json('../../data/world-simple.json');
 
-  Promise.all([scrollData, wineScape]).then(ready);
+  Promise.all([scrollData, wineScape, globeData]).then(ready);
 }
 
 export default init;
