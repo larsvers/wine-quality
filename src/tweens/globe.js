@@ -3,7 +3,14 @@
 import { gsap } from 'gsap/all';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import { feature } from 'topojson-client';
-import { geoOrthographic, geoPath, geoGraticule } from 'd3-geo';
+import {
+  geoOrthographic,
+  geoPath,
+  geoGraticule,
+  geoCentroid,
+  geoCircle,
+  geoDistance,
+} from 'd3-geo';
 
 import { scaleLinear } from 'd3-scale';
 import state from '../app/state';
@@ -29,16 +36,55 @@ let point2;
 // The center of the world (Northern Portigal in our case).
 const rBase = [8, -42, 0];
 
+// Values for the gradient. // 1
+const gradientCentrePoint = [-30, 40];
+const gradientEdgePoint = [-60, 40];
+let gradientValues;
+
+/**
+ * Calculates the distance between two [lon, lat] points
+ * in pixel, given a projection.
+ * @param { 2d array } pStart The start point for the distance calc
+ * @param { 2d array } pEnd The end point for the distance calc
+ * @param { function } projection The projection
+ * @returns { object } Star, end point as well as distance in pixel.
+ */
+function getPixelDistance(pStart, pEnd, projection) {
+  const pStartPx = projection(pStart);
+  const pEndPx = projection(pEnd);
+  const distVector = [pEndPx[0] - pStartPx[0], pEndPx[1] - pStartPx[1]];
+  const distance = Math.sqrt(
+    Math.pow(distVector[0], 2) + Math.pow(distVector[1], 2)
+  );
+  return { start: pStartPx, end: pEndPx, distance };
+}
+
 function drawGlobe(ctx) {
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
 
   ctx.globalAlpha = gaScale(state.globe.scroll.progress);
   ctx.strokeStyle = '#000000';
-  ctx.beginPath(), path(sphere), ctx.stroke();
 
-  ctx.lineWidth = 0.1;
-  // ctx.beginPath(), path(grid), ctx.stroke();
+  // Set the globe's radial gradient.
+  const grad = ctx.createRadialGradient(
+    0,
+    0,
+    gradientValues.distance,
+    0,
+    0,
+    gradientValues.distance * 6
+  );
+
+  grad.addColorStop(0, '#d5e5f5');
+  grad.addColorStop(0.5, '#99aabb');
+  grad.addColorStop(1, '#3e6184');
+
+  ctx.fillStyle = grad;
+  ctx.beginPath(), path(sphere), ctx.fill();
+
+  ctx.lineWidth = 0.05;
+  ctx.beginPath(), path(grid), ctx.stroke();
 
   ctx.lineWidth = 0.5;
   ctx.beginPath(), path(countries), ctx.stroke();
@@ -64,6 +110,13 @@ function renderGlobe() {
   projection.scale(sScale(state.globe.scroll.progress));
   const r = rScale(state.globe.scroll.progress);
   projection.rotate([rBase[0] + r, rBase[1] + r, rBase[2]]);
+
+  // Radial gradient parameters.
+  gradientValues = getPixelDistance(
+    gradientCentrePoint,
+    gradientEdgePoint,
+    projection
+  );
 
   // Arrow control point.
   point1 = projection([-20, 43]);
@@ -134,7 +187,7 @@ function prepScales() {
 
   // The globe's globalAlpha scale.
   gaScale = scaleLinear()
-    .domain([0, 0.3, 0.95, 1])
+    .domain([0, 0.1, 0.99, 1])
     .range([0, 1, 1, 0]);
 
   // The arrow's globalAlpha scale.
@@ -167,3 +220,10 @@ function tweenGlobe() {
 }
 
 export default tweenGlobe;
+
+// 1. So I worked a whole evening on finding a radial gradient circle
+//    whose centre remains on the transformed earth, which culminated in the
+//    `getPixelDistance` function. Only to find by accident that setting
+//    a radial gradient simply at (0, 0) looks in fact better. The distance
+//    is still good to have though - although this could be solved with a
+//    simple linear scale synced with the scale.
