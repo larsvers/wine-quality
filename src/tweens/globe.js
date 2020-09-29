@@ -22,7 +22,6 @@ let sScale;
 let rScale;
 let gaScale;
 let aaScale;
-
 let point0;
 let point1;
 let point2;
@@ -197,7 +196,7 @@ function defineTweenGlobe() {
   prepScales();
 
   const tl = gsap.timeline({ onUpdate: renderGlobe });
-  // Bonkers tween to make timelinw work. We could work straight
+  // Bonkers tween to make timeline work. We could work straight
   // off ScrollTrigger, but this is more in tune with the rest.
   const blub = gsap.to({ bar: 0 }, { bar: 1 });
   return tl.add(blub);
