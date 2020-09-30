@@ -3,6 +3,7 @@
 import { select } from 'd3-selection/src/index';
 import { csv, image, json } from 'd3-fetch/src/index';
 import { max } from 'd3-array/src/index';
+import { autoType } from 'd3-dsv/src/index';
 import rough from 'roughjs/bundled/rough.esm';
 import cloneDeep from 'lodash.clonedeep';
 import debounce from 'lodash.debounce';
@@ -56,7 +57,7 @@ import dataset12Alcohol from '../../static/dataset-12-alcohol';
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
 
 // Prep visual.
-function prepareVisuals(globeData) {
+function prepareVisuals(globeData, wineData) {
   const svg = select('#svg-hidden');
   const stageGroup = svg.append('g').attr('id', 'stage-group');
   const rg = rough.svg(svg.node()).generator;
@@ -223,6 +224,20 @@ function prepareVisuals(globeData) {
 
   // Save the world json.
   state.globe.data = globeData;
+
+  // Save the wine data
+  state.stats.data = wineData;
+
+  // Get a link grid.
+  const n = 40;
+  let links = [];
+  for (let y = 0; y < n; ++y) {
+    for (let x = 0; x < n; ++x) {
+      if (y > 0) links.push({ source: (y - 1) * n + x, target: y * n + x });
+      if (x > 0) links.push({ source: y * n + (x - 1), target: y * n + x });
+    }
+  }
+  state.stats.links = links;
 }
 
 function buildStory(data) {
@@ -237,8 +252,8 @@ function buildStory(data) {
     .html(d => d.text);
 }
 
-function ready([scrollData, wineScape, globeData]) {
-  prepareVisuals(globeData);
+function ready([scrollData, wineScape, globeData, wineData]) {
+  prepareVisuals(globeData, wineData);
   buildStory(scrollData);
 
   // TODO: add flag to bypass redraw of canvases on resize.
@@ -253,8 +268,9 @@ function init() {
   const scrollData = csv('../../data/scrolldata.csv');
   const wineScape = image('../../static/wine-scape.png');
   const globeData = json('../../data/world-simple.json');
+  const wineData = csv('../../data/winedata.csv', autoType);
 
-  Promise.all([scrollData, wineScape, globeData]).then(ready);
+  Promise.all([scrollData, wineScape, globeData, wineData]).then(ready);
 }
 
 export default init;

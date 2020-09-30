@@ -126,4 +126,8 @@ export default {
       direction: null,
     },
   },
+  stats: {
+    data: null,
+    links: null,
+  },
 };

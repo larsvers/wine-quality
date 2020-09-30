@@ -57,7 +57,6 @@ function drawGlobe(ctx) {
   ctx.save();
 
   ctx.globalAlpha = gaScale(state.globe.scroll.progress);
-  ctx.strokeStyle = '#000000';
 
   // Set the globe's radial gradient.
   const grad = ctx.createRadialGradient(
@@ -77,6 +76,7 @@ function drawGlobe(ctx) {
   ctx.beginPath(), path(sphere), ctx.fill();
 
   ctx.lineWidth = 0.05;
+  ctx.strokeStyle = '#000000';
   ctx.beginPath(), path(grid), ctx.stroke();
 
   ctx.lineWidth = 0.5;
@@ -85,8 +85,8 @@ function drawGlobe(ctx) {
   ctx.fillStyle = '#ff00ff';
   ctx.beginPath(), path(portugal), ctx.fill();
 
+  ctx.lineWidth = 10;
   ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 2;
   ctx.globalAlpha = aaScale(state.globe.scroll.progress);
   bezWithArrowheads(ctx, point0, point1, point2, undefined, 15, false, true);
 
@@ -188,8 +188,6 @@ function prepScales() {
     .range([0, 0, 1, 1, 0, 0]);
 }
 
-// const foo = { bar: 0 };
-
 function defineTweenGlobe() {
   prepData();
   prepGeoTools();
@@ -214,6 +212,7 @@ function tweenGlobe() {
 }
 
 export default tweenGlobe;
+export { txScale, tyScale };
 
 // 1. So I worked a whole evening on finding a radial gradient circle
 //    whose centre remains on the transformed earth, which culminated in the

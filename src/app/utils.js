@@ -1,6 +1,7 @@
 /* eslint-disable import/no-mutable-exports */
 import { max } from 'd3-array/src/index';
 import { select, selection } from 'd3-selection/src/index';
+import state from './state';
 
 function isSelection(el) {
   if (typeof el === 'string') return false;
@@ -42,6 +43,23 @@ function getBox(el, path) {
 function setWrapHeight() {
   const contHeight = select('#text-container').node().offsetHeight;
   select('#text-wrap').style('height', `${contHeight}px`);
+}
+
+// Update functions.
+function resizeCanvas(canvas, width, height) {
+  const context = canvas.getContext('2d');
+
+  // Give each device pixel an element and drawing surface pixel.
+  // This should make it bigger for retina displays for example.
+  canvas.width = width * window.devicePixelRatio;
+  canvas.height = height * window.devicePixelRatio;
+
+  // Scale only the element's size down to the given width on the site.
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+
+  // Scale the drawing surface (up).
+  context.scale(window.devicePixelRatio, window.devicePixelRatio);
 }
 
 /**
@@ -223,6 +241,7 @@ export {
   isSelection,
   getBox,
   setWrapHeight,
+  resizeCanvas,
   getTransform,
   splitPath,
   getPathDims,

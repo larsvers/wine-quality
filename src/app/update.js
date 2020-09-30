@@ -1,8 +1,9 @@
+/* eslint-disable import/no-duplicates */
 /* eslint-disable no-param-reassign */
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import cloneDeep from 'lodash.clonedeep';
 import state from './state';
-import { setWrapHeight, getTransform } from './utils';
+import { setWrapHeight, resizeCanvas, getTransform } from './utils';
 import tweenBottleWave, { startWave, stopWave } from '../tweens/bottleWave';
 
 import tweenWineScape from '../tweens/wineScape';
@@ -29,6 +30,10 @@ import tweenBottleGridOut from '../tweens/bottleGridOut';
 import tweenDataset from '../tweens/dataset';
 
 import tweenGlobe from '../tweens/globe';
+import tweenStats, {
+  simulateLatticeEnter,
+  simulateLatticeLeaveBack,
+} from '../tweens/stats';
 
 // Set ScrollTrigger defaults.
 ScrollTrigger.defaults({
@@ -40,34 +45,18 @@ ScrollTrigger.defaults({
   markers: true,
 });
 
-// Update functions.
-function resizeCanvas(canvas, container) {
-  const context = canvas.getContext('2d');
-
-  // Get the desired dimensions.
-  state.width = container.offsetWidth;
-  state.height = container.offsetHeight;
-
-  // Give each device pixel an element and drawing surface pixel.
-  // This should make it bigger for retina displays for example.
-  canvas.width = state.width * window.devicePixelRatio;
-  canvas.height = state.height * window.devicePixelRatio;
-
-  // Scale only the element's size down to the given width on the site.
-  canvas.style.width = `${state.width}px`;
-  canvas.style.height = `${state.height}px`;
-
-  // Scale the drawing surface (up).
-  context.scale(window.devicePixelRatio, window.devicePixelRatio);
+function updateDimensions() {
+  const container = document.querySelector('#canvas-main-container');
+  state.width = container.clientWidth;
+  state.height = container.clientHeight;
 }
 
 // Get contexts and rezize canvases.
 function updateContexts(names) {
-  const container = document.querySelector('#canvas-main-container');
   const canvases = document.querySelectorAll('canvas');
   names.forEach((name, i) => {
     state.ctx[name] = canvases[i].getContext('2d');
-    resizeCanvas(canvases[i], container);
+    resizeCanvas(canvases[i], state.width, state.height);
   });
 }
 
@@ -278,11 +267,19 @@ function setScroll() {
     animation: state.tween.globe,
     // trigger: '.section-33',
     trigger: '.section-1',
+    end: '95% center',
     id: 'globe',
     onUpdate(self) {
       state.globe.scroll.progress = self.progress;
       state.globe.scroll.direction = self.direction;
     },
+  });
+
+  ScrollTrigger.create({
+    trigger: '.section-2',
+    id: 'statsLattice',
+    onEnter: simulateLatticeEnter,
+    onLeaveBack: simulateLatticeLeaveBack,
   });
 
   // Recalculate all scroll positions.
@@ -294,6 +291,7 @@ function update(wineScapeImg) {
   state.scape.image = wineScapeImg;
 
   setWrapHeight();
+  updateDimensions();
   setVisualStructure();
   updateTransforms();
 
@@ -318,6 +316,7 @@ function update(wineScapeImg) {
   // tweenBottleGridOut();
   // tweenDataset();
   tweenGlobe();
+  tweenStats();
 
   setScroll();
 }
