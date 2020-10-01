@@ -31,8 +31,10 @@ import tweenDataset from '../tweens/dataset';
 
 import tweenGlobe from '../tweens/globe';
 import tweenStats, {
-  simulateLatticeEnter,
-  simulateLatticeLeaveBack,
+  simulateLattice,
+  simulateGlobePosition,
+  simulateRandom,
+  simulateAlcohol,
 } from '../tweens/stats';
 
 // Set ScrollTrigger defaults.
@@ -263,23 +265,37 @@ function setScroll() {
   //   });
   // });
 
+  // ScrollTrigger.create({
+  //   animation: state.tween.globe,
+  //   // trigger: '.section-33',
+  //   trigger: '.section-1',
+  //   end: '95% center',
+  //   id: 'globe',
+  //   onUpdate(self) {
+  //     state.globe.scroll.progress = self.progress;
+  //     state.globe.scroll.direction = self.direction;
+  //   },
+  // });
+
+  // ScrollTrigger.create({
+  //   trigger: '.section-2',
+  //   id: 'statsLattice',
+  //   onEnter: simulateLattice,
+  //   onLeaveBack: simulateGlobePosition,
+  // });
+
   ScrollTrigger.create({
-    animation: state.tween.globe,
-    // trigger: '.section-33',
     trigger: '.section-1',
-    end: '95% center',
-    id: 'globe',
-    onUpdate(self) {
-      state.globe.scroll.progress = self.progress;
-      state.globe.scroll.direction = self.direction;
-    },
+    id: 'statsRandom',
+    onEnter: simulateRandom,
+    onLeaveBack: simulateLattice,
   });
 
   ScrollTrigger.create({
     trigger: '.section-2',
-    id: 'statsLattice',
-    onEnter: simulateLatticeEnter,
-    onLeaveBack: simulateLatticeLeaveBack,
+    id: 'statsAlcohol',
+    onEnter: simulateAlcohol,
+    onLeaveBack: simulateRandom,
   });
 
   // Recalculate all scroll positions.
