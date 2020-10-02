@@ -6,6 +6,7 @@
 
 // External libs.
 import gsap from 'gsap/gsap-core';
+import { nest } from 'd3-collection/src';
 import { scaleLinear } from 'd3-scale/src';
 import 'd3-transition';
 import {
@@ -29,6 +30,8 @@ let xScale;
 let yScale;
 let sim;
 let alpha = { value: 1 };
+let current;
+let axisPoints = [];
 
 // Render and draw.
 function drawDot(r, colour) {
@@ -50,9 +53,37 @@ function drawStats(ctx) {
 
   ctx.globalAlpha = alpha.value;
 
+  // Dots.
   state.stats.data.forEach(d => {
     ctx.drawImage(dot, d.x, d.y);
   });
+
+  // Labels.
+  ctx.strokeStyle = '#000000';
+  ctx.fillStyle = '#000000';
+  ctx.font = '10px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.lineWidth = 0.2;
+
+  if (current && axisPoints.length) {
+    axisPoints.forEach((d, i) => {
+      // Variables.
+      const { x } = d.value;
+      const y1 = d.value.y + 10;
+      let y2 = d.value.y + 20;
+      // Overwrite y2 if we should arrange long labels in zig zag
+      if (d.value.zigzag) y2 = i % 2 === 0 ? d.value.y + 20 : d.value.y + 35;
+      const label = d.key;
+
+      // Draw.
+      ctx.beginPath();
+      ctx.moveTo(x, y1);
+      ctx.lineTo(x, y2);
+      ctx.stroke();
+      ctx.fillText(label, x, y2 + 5);
+    });
+  }
 
   ctx.restore();
 }
@@ -95,12 +126,14 @@ function addLayouts() {
     d.layout.alcohol = {
       x: xScale(layoutAlcohol.get(d.id).x),
       y: yScale(layoutAlcohol.get(d.id).y),
+      value: layoutAlcohol.get(d.id).value,
     };
 
     // Density.
     d.layout.density = {
       x: xScale(layoutDensity.get(d.id).x),
       y: yScale(layoutDensity.get(d.id).y),
+      value: layoutDensity.get(d.id).value,
     };
   });
 }
@@ -123,11 +156,47 @@ function boundingBox() {
   });
 }
 
+// ---------------------------------------------------
+
+// We want to calculate each group's label x position
+// only on the points lower to the bottom. Not on all points
+// as the shape might be wavey. We do this here...
+function xFocus(leaves) {
+  return leaves.filter(
+    (_, i, nodes) => i < Math.max(Math.ceil(nodes.length * 0.1), 10)
+  );
+}
+
+// At each tick, this returns an object with the x and y position
+// for each label as well as their text value.
+function getAxisPoints() {
+  if (!current) return;
+
+  // Calculate center x and bottom y position. Also sort by value.
+  axisPoints = nest()
+    .key(d => d.layout[current].value)
+    .rollup(v => {
+      return {
+        x: d3.median(xFocus(v), d => d.x),
+        y: d3.max(v, d => d.y),
+        // if labels are longer than 3 than we should arrange them in zig zag.
+        zigzag: d3.median(v, d => String(d.layout[current].value).length) > 3,
+      };
+    })
+    .entries(state.stats.data)
+    .sort((a, b) => +a.key - +b.key);
+}
+
+// All the stuff we run per tick.
+function tick() {
+  getAxisPoints();
+  renderStats();
+}
 // Set up the simulations and stop it. We don't want
 // to start it until ScrollTrigger triggers it.
 function setSimulation() {
   sim = forceSimulation(state.stats.data)
-    .on('tick', renderStats)
+    .on('tick', tick)
     .stop();
 }
 
@@ -159,6 +228,10 @@ const xPosCentre = forceX(() => state.width / 2).strength(0.05); // 1
 const yPosCentre = forceY(() => state.height / 2).strength(0.05);
 
 function simulateLattice() {
+  // Set the current variable value to null.
+  // This is not a frequency distribution.
+  current = null;
+
   // Can't be with its force friends in module scope,
   // as it needs to be run after the links are produced.
   const linkForce = forceLink(state.stats.links)
@@ -193,6 +266,8 @@ const xPosAlcohol = forceX(d => d.layout.alcohol.x).strength(0.5);
 const yPosAlcohol = forceY(d => d.layout.alcohol.y).strength(0.5);
 
 function simulateAlcohol() {
+  current = 'alcohol';
+
   sim
     .nodes(state.stats.data)
     .force('link', null)
@@ -213,6 +288,8 @@ const xPosDensity = forceX(d => d.layout.density.x).strength(0.5);
 const yPosDensity = forceY(d => d.layout.density.y).strength(0.5);
 
 function simulateDensity() {
+  current = 'density';
+
   sim
     .nodes(state.stats.data)
     .force('xAlcohol', null)

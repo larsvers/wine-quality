@@ -67,13 +67,14 @@ function frequency() {
       id: d[id],
       x: xTools.scale(xTools.snap(d[variable])),
       y: yMap.get(d[id]),
+      value: xTools.snap(d[variable]),
     }));
 
     // Get the layout in a map by `id` which needs to be in
     // the dataset this layout gets joined by.
     const resultMap = nest()
       .key(d => d[id])
-      .rollup(v => ({ x: v[0].x, y: v[0].y }))
+      .rollup(v => ({ x: v[0].x, y: v[0].y, value: v[0].value }))
       .map(result);
 
     return resultMap;
