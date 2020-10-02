@@ -37,6 +37,9 @@ import tweenStats, {
   simulateLattice,
   simulateAlcohol,
   simulateDensity,
+  simulateCitric,
+  simulatePh,
+  simulateVolatile,
 } from '../tweens/stats';
 
 // Set ScrollTrigger defaults.
@@ -276,8 +279,8 @@ function setScroll() {
 
   // ScrollTrigger.create({
   //   animation: state.tween.globe,
-  //   // trigger: '.section-33',
-  //   trigger: '.section-1',
+  //   trigger: '.section-33',
+  //   // trigger: '.section-1',
   //   end: '95% center',
   //   id: 'globe',
   //   onUpdate(self) {
@@ -287,6 +290,7 @@ function setScroll() {
   // });
 
   ScrollTrigger.create({
+    // trigger: '.section-34',
     trigger: '.section-1',
     id: 'statsLattice',
     onEnter: simulateLattice,
@@ -294,6 +298,7 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
+    // trigger: '.section-35',
     trigger: '.section-2',
     id: 'statsAlcohol',
     onEnter: simulateAlcohol,
@@ -301,10 +306,35 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
+    // trigger: '.section-36',
     trigger: '.section-3',
     id: 'statsDensity',
     onEnter: simulateDensity,
     onLeaveBack: simulateAlcohol,
+  });
+
+  ScrollTrigger.create({
+    // trigger: '.section-37',
+    trigger: '.section-4',
+    id: 'statsCitric',
+    onEnter: simulateCitric,
+    onLeaveBack: simulateDensity,
+  });
+
+  ScrollTrigger.create({
+    // trigger: '.section-38',
+    trigger: '.section-5',
+    id: 'statsPh',
+    onEnter: simulatePh,
+    onLeaveBack: simulateCitric,
+  });
+
+  ScrollTrigger.create({
+    // trigger: '.section-39',
+    trigger: '.section-6',
+    id: 'statsVolatile',
+    onEnter: simulateVolatile,
+    onLeaveBack: simulatePh,
   });
 
   // Recalculate all scroll positions.

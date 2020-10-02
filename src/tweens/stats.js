@@ -92,7 +92,7 @@ function drawStats(ctx) {
     // Header.
     const xHeader = headerPoint.value.x;
     const yHeader = headerPoint.value.yHeader - 60;
-    const labelHeader = capitalise(current);
+    const labelHeader = capitalise(current).replace('_', ' ');
     ctx.font = '50px Amatic SC';
     ctx.fillText(labelHeader, xHeader, yHeader);
   }
@@ -160,9 +160,31 @@ function getLabelCoordinates() {
 // Layouts to save in each data row. The simulations
 // can move the dots to these with forceX, forceY.
 function addLayouts() {
-  const layoutAlcohol = frequency().variable('alcohol')(state.stats.data);
-  const layoutDensity = frequency().variable('density')(state.stats.data);
+  // Get all variable based layouts.
+  const variableLayouts = [
+    {
+      name: 'alcohol',
+      layout: frequency().variable('alcohol')(state.stats.data),
+    },
+    {
+      name: 'density',
+      layout: frequency().variable('density')(state.stats.data),
+    },
+    {
+      name: 'citric_acid',
+      layout: frequency().variable('citric_acid')(state.stats.data),
+    },
+    {
+      name: 'ph',
+      layout: frequency().variable('ph')(state.stats.data),
+    },
+    {
+      name: 'volatile_acidity',
+      layout: frequency().variable('volatile_acidity')(state.stats.data),
+    },
+  ];
 
+  // Add all layouts to the main data.
   state.stats.data.forEach(d => {
     d.layout = {};
 
@@ -174,19 +196,14 @@ function addLayouts() {
 
     // Note, the Lattice layout is controlled by the link dataset.
 
-    // Alcohol.
-    d.layout.alcohol = {
-      x: xScale(layoutAlcohol.get(d.id).x),
-      y: yScale(layoutAlcohol.get(d.id).y),
-      value: layoutAlcohol.get(d.id).value,
-    };
-
-    // Density.
-    d.layout.density = {
-      x: xScale(layoutDensity.get(d.id).x),
-      y: yScale(layoutDensity.get(d.id).y),
-      value: layoutDensity.get(d.id).value,
-    };
+    // Add all variable layouts to the data.
+    variableLayouts.forEach(el => {
+      d.layout[el.name] = {
+        x: xScale(el.layout.get(d.id).x),
+        y: yScale(el.layout.get(d.id).y),
+        value: el.layout.get(d.id).value,
+      };
+    });
   });
 }
 
@@ -225,6 +242,8 @@ function setSimulation() {
     .on('tick', tick)
     .stop();
 }
+
+// Individual simulations:
 
 // Move to the globe's exit position.
 const xPosGlobe = forceX(d => d.layout.globeExit.x).strength(0.1);
@@ -319,8 +338,65 @@ function simulateDensity() {
     .nodes(state.stats.data)
     .force('xAlcohol', null)
     .force('yAlcohol', null)
+    .force('xCitric', null)
+    .force('yCitric', null)
     .force('xDensity', xPosDensity)
     .force('yDensity', yPosDensity)
+    .alpha(0.8)
+    .restart();
+}
+
+// Move to Citric Acid frequency.
+const xPosCitric = forceX(d => d.layout.citric_acid.x).strength(0.5);
+const yPosCitric = forceY(d => d.layout.citric_acid.y).strength(0.5);
+
+function simulateCitric() {
+  current = 'citric_acid';
+
+  sim
+    .nodes(state.stats.data)
+    .force('xDensity', null)
+    .force('yDensity', null)
+    .force('xPh', null)
+    .force('yPh', null)
+    .force('xCitric', xPosCitric)
+    .force('yCitric', yPosCitric)
+    .alpha(0.8)
+    .restart();
+}
+
+// Move to pH frequency.
+const xPosPh = forceX(d => d.layout.ph.x).strength(0.5);
+const yPosPh = forceY(d => d.layout.ph.y).strength(0.5);
+
+function simulatePh() {
+  current = 'ph';
+
+  sim
+    .nodes(state.stats.data)
+    .force('xCitric', null)
+    .force('yCitric', null)
+    .force('xVolatile', null)
+    .force('yVolatile', null)
+    .force('xPh', xPosPh)
+    .force('yPh', yPosPh)
+    .alpha(0.8)
+    .restart();
+}
+
+// Move to Volatile Acidity frequency.
+const xPosVolatile = forceX(d => d.layout.volatile_acidity.x).strength(0.5);
+const yPosVolatile = forceY(d => d.layout.volatile_acidity.y).strength(0.5);
+
+function simulateVolatile() {
+  current = 'volatile_acidity';
+
+  sim
+    .nodes(state.stats.data)
+    .force('xPh', null)
+    .force('yPh', null)
+    .force('xVolatile', xPosVolatile)
+    .force('yVolatile', yPosVolatile)
     .alpha(0.8)
     .restart();
 }
@@ -340,6 +416,9 @@ export {
   simulateLattice,
   simulateAlcohol,
   simulateDensity,
+  simulateCitric,
+  simulatePh,
+  simulateVolatile,
 };
 
 // 1. Not using `forceCenter` here as v 1.2.1 (the ES5 version) doesn't
