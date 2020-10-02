@@ -1,7 +1,11 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable import/no-mutable-exports */
 import { max } from 'd3-array/src/index';
 import { select, selection } from 'd3-selection/src/index';
-import state from './state';
+
+function capitalise(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
 function isSelection(el) {
   if (typeof el === 'string') return false;
@@ -238,6 +242,7 @@ function bezWithArrowheads(
 }
 
 export {
+  capitalise,
   isSelection,
   getBox,
   setWrapHeight,

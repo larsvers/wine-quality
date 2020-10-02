@@ -1,3 +1,4 @@
+/* eslint-disable prefer-destructuring */
 /* eslint-disable no-multi-assign */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-restricted-properties */
@@ -21,6 +22,7 @@ import {
 import state from '../app/state';
 import frequency from '../layouts/frequency';
 import { txScale, tyScale } from './globe';
+import { capitalise } from '../app/utils';
 
 // Module scope.
 let dotRadius = 1.5;
@@ -32,8 +34,10 @@ let sim;
 let alpha = { value: 1 };
 let current;
 let axisPoints = [];
+let headerPoint;
 
-// Render and draw.
+// Render and draw
+// ---------------
 function drawDot(r, colour) {
   const can = document.createElement('canvas');
   can.width = can.height = r * 2;
@@ -61,12 +65,13 @@ function drawStats(ctx) {
   // Labels.
   ctx.strokeStyle = '#000000';
   ctx.fillStyle = '#000000';
-  ctx.font = '10px sans-serif';
+  ctx.font = '10px Pangolin';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   ctx.lineWidth = 0.2;
 
   if (current && axisPoints.length) {
+    // Axis.
     axisPoints.forEach((d, i) => {
       // Variables.
       const { x } = d.value;
@@ -83,6 +88,13 @@ function drawStats(ctx) {
       ctx.stroke();
       ctx.fillText(label, x, y2 + 5);
     });
+
+    // Header.
+    const xHeader = headerPoint.value.x;
+    const yHeader = headerPoint.value.yHeader - 60;
+    const labelHeader = capitalise(current);
+    ctx.font = '50px Amatic SC';
+    ctx.fillText(labelHeader, xHeader, yHeader);
   }
 
   ctx.restore();
@@ -92,7 +104,8 @@ function renderStats() {
   requestAnimationFrame(() => drawStats(state.ctx.lolli));
 }
 
-// Scales.
+// Scales
+// ------
 function getScales() {
   margin = {
     top: state.height * 0.3,
@@ -104,6 +117,45 @@ function getScales() {
   xScale = scaleLinear().range([margin.left, state.width - margin.right]);
   yScale = scaleLinear().range([state.height - margin.bottom, margin.top]);
 }
+
+// Axis
+// ----
+
+// We want to calculate each group's label x position only on the points lower to
+// the bottom. Not on all points as the shape might be wavey. We do this here...
+function xFocus(leaves) {
+  return leaves.filter(
+    (_, i, nodes) => i < Math.max(Math.ceil(nodes.length * 0.1), 10)
+  );
+}
+
+// At each tick, this returns an object with the x and y position
+// for each label as well as their text value.
+function getLabelCoordinates() {
+  if (!current) return;
+
+  // Calculate center x and bottom y position. Also sort by value.
+  axisPoints = nest()
+    .key(d => d.layout[current].value)
+    .rollup(v => {
+      return {
+        x: d3.median(xFocus(v), d => d.x),
+        y: d3.max(v, d => d.y),
+        yHeader: d3.min(v, d => d.y),
+        // if labels are longer than 3 than we should arrange them in zig zag.
+        zigzag: d3.median(v, d => String(d.layout[current].value).length) > 3,
+      };
+    })
+    .entries(state.stats.data)
+    .sort((a, b) => +a.key - +b.key);
+
+  // Get category with highest y value (which will be the lowest y pixel value).
+  const yHeighest = d3.min(axisPoints, d => d.value.yHeader);
+  headerPoint = axisPoints.filter(d => d.value.yHeader === yHeighest)[0];
+}
+
+// Layouts
+// -------
 
 // Layouts to save in each data row. The simulations
 // can move the dots to these with forceX, forceY.
@@ -146,7 +198,16 @@ function setLayout(name) {
   });
 }
 
-// General Forces (specific forces above relevant functions).
+// Simulations
+// -----------
+
+// All the stuff we run per tick.
+function tick() {
+  getLabelCoordinates();
+  renderStats();
+}
+
+// Forces applied to all simulations.
 function boundingBox() {
   // Relies on some globals.
   const r = dotRadius;
@@ -156,46 +217,11 @@ function boundingBox() {
   });
 }
 
-// ---------------------------------------------------
-
-// We want to calculate each group's label x position
-// only on the points lower to the bottom. Not on all points
-// as the shape might be wavey. We do this here...
-function xFocus(leaves) {
-  return leaves.filter(
-    (_, i, nodes) => i < Math.max(Math.ceil(nodes.length * 0.1), 10)
-  );
-}
-
-// At each tick, this returns an object with the x and y position
-// for each label as well as their text value.
-function getAxisPoints() {
-  if (!current) return;
-
-  // Calculate center x and bottom y position. Also sort by value.
-  axisPoints = nest()
-    .key(d => d.layout[current].value)
-    .rollup(v => {
-      return {
-        x: d3.median(xFocus(v), d => d.x),
-        y: d3.max(v, d => d.y),
-        // if labels are longer than 3 than we should arrange them in zig zag.
-        zigzag: d3.median(v, d => String(d.layout[current].value).length) > 3,
-      };
-    })
-    .entries(state.stats.data)
-    .sort((a, b) => +a.key - +b.key);
-}
-
-// All the stuff we run per tick.
-function tick() {
-  getAxisPoints();
-  renderStats();
-}
 // Set up the simulations and stop it. We don't want
 // to start it until ScrollTrigger triggers it.
 function setSimulation() {
   sim = forceSimulation(state.stats.data)
+    .force('boxForce', boundingBox)
     .on('tick', tick)
     .stop();
 }
@@ -243,7 +269,6 @@ function simulateLattice() {
   // Configure and start simulation.
   sim
     .nodes(state.stats.data)
-    .force('boxForce', boundingBox)
     .force('link', linkForce)
     .force('chargeLattice', chargeLattice)
     .force('chargeFrequencies', null)
