@@ -2,6 +2,8 @@
 /* eslint-disable no-param-reassign */
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import cloneDeep from 'lodash.clonedeep';
+import { select } from 'd3-selection/src';
+
 import state from './state';
 import { setWrapHeight, resizeCanvas, getTransform } from './utils';
 import tweenBottleWave, { startWave, stopWave } from '../tweens/bottleWave';
@@ -31,10 +33,10 @@ import tweenDataset from '../tweens/dataset';
 
 import tweenGlobe from '../tweens/globe';
 import tweenStats, {
-  simulateLattice,
   simulateGlobePosition,
-  simulateRandom,
+  simulateLattice,
   simulateAlcohol,
+  simulateDensity,
 } from '../tweens/stats';
 
 // Set ScrollTrigger defaults.
@@ -62,6 +64,12 @@ function updateContexts(names) {
   });
 }
 
+function updateSvg() {
+  const svg = select('svg#axes');
+
+  svg.attr('width', state.width);
+  svg.attr('height', state.height);
+}
 // Set off canvas factory.
 function setVisualStructure() {
   // Get contexts.
@@ -76,6 +84,7 @@ function setVisualStructure() {
   ];
 
   updateContexts(contextnames);
+  updateSvg();
 }
 
 function updateTransforms() {
@@ -277,25 +286,25 @@ function setScroll() {
   //   },
   // });
 
-  // ScrollTrigger.create({
-  //   trigger: '.section-2',
-  //   id: 'statsLattice',
-  //   onEnter: simulateLattice,
-  //   onLeaveBack: simulateGlobePosition,
-  // });
-
   ScrollTrigger.create({
     trigger: '.section-1',
-    id: 'statsRandom',
-    onEnter: simulateRandom,
-    onLeaveBack: simulateLattice,
+    id: 'statsLattice',
+    onEnter: simulateLattice,
+    onLeaveBack: simulateGlobePosition,
   });
 
   ScrollTrigger.create({
     trigger: '.section-2',
     id: 'statsAlcohol',
     onEnter: simulateAlcohol,
-    onLeaveBack: simulateRandom,
+    onLeaveBack: simulateLattice,
+  });
+
+  ScrollTrigger.create({
+    trigger: '.section-3',
+    id: 'statsDensity',
+    onEnter: simulateDensity,
+    onLeaveBack: simulateAlcohol,
   });
 
   // Recalculate all scroll positions.

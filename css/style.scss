@@ -67,7 +67,8 @@ button {
   width: 100%;
 }
 
-canvas.absolute {
+canvas.absolute,
+svg.absolute, {
   position: absolute;
   top: 0;
   left: 0;
