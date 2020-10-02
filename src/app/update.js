@@ -37,6 +37,9 @@ import tweenStats, {
   simulateLattice,
   simulateAlcohol,
   simulateDensity,
+  simulateCitric,
+  simulatePh,
+  simulateVolatile,
 } from '../tweens/stats';
 
 // Set ScrollTrigger defaults.
@@ -305,6 +308,27 @@ function setScroll() {
     id: 'statsDensity',
     onEnter: simulateDensity,
     onLeaveBack: simulateAlcohol,
+  });
+
+  ScrollTrigger.create({
+    trigger: '.section-4',
+    id: 'statsCitric',
+    onEnter: simulateCitric,
+    onLeaveBack: simulateDensity,
+  });
+
+  ScrollTrigger.create({
+    trigger: '.section-5',
+    id: 'statsPh',
+    onEnter: simulatePh,
+    onLeaveBack: simulateCitric,
+  });
+
+  ScrollTrigger.create({
+    trigger: '.section-6',
+    id: 'statsVolatile',
+    onEnter: simulateVolatile,
+    onLeaveBack: simulatePh,
   });
 
   // Recalculate all scroll positions.
