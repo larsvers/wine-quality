@@ -41,6 +41,7 @@ import {
   simulateCitric,
   simulatePh,
   simulateVolatile,
+  simulateQuality,
 } from '../tweens/statsFrequencies';
 
 // Set ScrollTrigger defaults.
@@ -336,6 +337,14 @@ function setScroll() {
     id: 'statsVolatile',
     onEnter: simulateVolatile,
     onLeaveBack: simulatePh,
+  });
+
+  ScrollTrigger.create({
+    // trigger: '.section-40',
+    trigger: '.section-7',
+    id: 'statsQuality',
+    onEnter: simulateQuality,
+    onLeaveBack: simulateVolatile,
   });
 
   // Recalculate all scroll positions.

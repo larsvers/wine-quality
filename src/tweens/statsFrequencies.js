@@ -158,8 +158,26 @@ function simulateVolatile() {
     .nodes(state.stats.data)
     .force('xPh', null)
     .force('yPh', null)
+    .force('xQuality', null)
+    .force('yQuality', null)
     .force('xVolatile', xPosVolatile)
     .force('yVolatile', yPosVolatile)
+    .alpha(0.8)
+    .restart();
+}
+// Move to Volatile Acidity frequency.
+const xPosQuality = forceX(d => d.layout.quality.x).strength(0.5);
+const yPosQuality = forceY(d => d.layout.quality.y).strength(0.5);
+
+function simulateQuality() {
+  state.stats.current = 'quality';
+
+  sim
+    .nodes(state.stats.data)
+    .force('xVolatile', null)
+    .force('yVolatile', null)
+    .force('xQuality', xPosQuality)
+    .force('yQuality', yPosQuality)
     .alpha(0.8)
     .restart();
 }
@@ -172,4 +190,5 @@ export {
   simulateCitric,
   simulatePh,
   simulateVolatile,
+  simulateQuality,
 };

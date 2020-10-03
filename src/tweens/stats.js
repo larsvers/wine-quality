@@ -178,6 +178,10 @@ function addLayouts() {
       name: 'volatile_acidity',
       layout: frequency().variable('volatile_acidity')(state.stats.data),
     },
+    {
+      name: 'quality',
+      layout: frequency().variable('quality')(state.stats.data),
+    },
   ];
 
   // Add all layouts to the main data.
