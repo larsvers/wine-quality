@@ -190,7 +190,7 @@ function addLayouts() {
 
     // That point where the globe disappears to.
     d.layout.globeExit = {
-      x: txScale(1) + Math.random(), // 2
+      x: txScale(1) + Math.random(), // 1
       y: tyScale(1) + Math.random(),
     };
 
@@ -255,7 +255,4 @@ function tweenStats() {
 export default tweenStats;
 export { sim };
 
-// 1. Not using `forceCenter` here as v 1.2.1 (the ES5 version) doesn't
-//    have a `strangth` setter yet. So I am implementing my own centre
-//    force here.
-// 2. Math.random to disperse them a little to start with.
+// 1. Math.random to disperse them a little to start with.

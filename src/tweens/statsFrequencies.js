@@ -192,3 +192,7 @@ export {
   simulateVolatile,
   simulateQuality,
 };
+
+// 1. Not using `forceCenter` here as v 1.2.1 (the ES5 version) doesn't
+//    have a `strangth` setter yet. So I am implementing my own centre
+//    force here.
