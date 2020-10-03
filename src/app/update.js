@@ -347,6 +347,22 @@ function setScroll() {
     onLeaveBack: simulateVolatile,
   });
 
+  ScrollTrigger.create({
+    // trigger: '.section-40',
+    trigger: '.section-8',
+    id: 'qualityDots',
+    onEnter: () => (state.stats.colourDots = true),
+    onLeaveBack: () => (state.stats.colourDots = false),
+  });
+
+  ScrollTrigger.create({
+    // trigger: '.section-35',
+    trigger: '.section-9',
+    id: 'statsAlcoholQuality',
+    onEnter: simulateAlcohol,
+    onLeaveBack: simulateQuality,
+  });
+
   // Recalculate all scroll positions.
   ScrollTrigger.refresh();
 }

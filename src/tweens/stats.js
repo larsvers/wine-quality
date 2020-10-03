@@ -21,6 +21,8 @@ import { capitalise } from '../app/utils';
 // Module scope.
 let dotRadius = 1.5;
 let dot;
+let dotGood;
+let dotBad;
 let margin;
 let xScale;
 let yScale;
@@ -51,7 +53,11 @@ function drawStats(ctx) {
 
   // Dots.
   state.stats.data.forEach(d => {
-    ctx.drawImage(dot, d.x, d.y);
+    if (!state.stats.colourDots) {
+      ctx.drawImage(dot, d.x, d.y);
+    } else {
+      ctx.drawImage(d.quality_binary ? dotBad : dotGood, d.x, d.y);
+    }
   });
 
   // Labels.
@@ -250,6 +256,8 @@ function tweenStats() {
   setLayout('globeExit');
   setSimulation();
   dot = drawDot(dotRadius, '#000000');
+  dotGood = drawDot(dotRadius, '#0000ff');
+  dotBad = drawDot(dotRadius, '#ff0000');
 }
 
 export default tweenStats;

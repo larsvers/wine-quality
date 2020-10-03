@@ -84,6 +84,8 @@ function simulateAlcohol() {
     .force('xCentre', null)
     .force('xDensity', null)
     .force('yDensity', null)
+    .force('xQuality', null) // this sim is triggered on two occasions.
+    .force('yQuality', null)
     .force('xAlcohol', xPosAlcohol)
     .force('yAlcohol', yPosAlcohol)
     .alpha(0.8)
@@ -174,6 +176,8 @@ function simulateQuality() {
 
   sim
     .nodes(state.stats.data)
+    .force('xAlcohol', null)
+    .force('yAlcohol', null)
     .force('xVolatile', null)
     .force('yVolatile', null)
     .force('xQuality', xPosQuality)

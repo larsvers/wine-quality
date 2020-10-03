@@ -131,5 +131,6 @@ export default {
     links: null,
     current: null,
     alpha: { value: 1 },
+    colourDots: false,
   },
 };
