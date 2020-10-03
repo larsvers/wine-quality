@@ -32,7 +32,8 @@ import tweenBottleGridOut from '../tweens/bottleGridOut';
 import tweenDataset from '../tweens/dataset';
 
 import tweenGlobe from '../tweens/globe';
-import tweenStats, {
+import tweenStats from '../tweens/stats';
+import {
   simulateGlobePosition,
   simulateLattice,
   simulateAlcohol,
@@ -40,7 +41,7 @@ import tweenStats, {
   simulateCitric,
   simulatePh,
   simulateVolatile,
-} from '../tweens/stats';
+} from '../tweens/statsFrequencies';
 
 // Set ScrollTrigger defaults.
 ScrollTrigger.defaults({

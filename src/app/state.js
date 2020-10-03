@@ -129,5 +129,7 @@ export default {
   stats: {
     data: null,
     links: null,
+    current: null,
+    alpha: { value: 1 },
   },
 };
