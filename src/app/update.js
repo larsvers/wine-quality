@@ -44,6 +44,8 @@ import {
   simulateQuality,
 } from '../tweens/statsFrequencies';
 
+import { simulateQualAlc } from '../tweens/statsScatter';
+
 // Set ScrollTrigger defaults.
 ScrollTrigger.defaults({
   scroller: '#text-wrap',
@@ -307,41 +309,41 @@ function setScroll() {
     onLeaveBack: simulateLattice,
   });
 
-  ScrollTrigger.create({
-    // trigger: '.section-36',
-    trigger: '.section-3',
-    id: 'statsDensity',
-    onEnter: simulateDensity,
-    onLeaveBack: simulateAlcohol,
-  });
+  // ScrollTrigger.create({
+  //   // trigger: '.section-36',
+  //   trigger: '.section-3',
+  //   id: 'statsDensity',
+  //   onEnter: simulateDensity,
+  //   onLeaveBack: simulateAlcohol,
+  // });
 
-  ScrollTrigger.create({
-    // trigger: '.section-37',
-    trigger: '.section-4',
-    id: 'statsCitric',
-    onEnter: simulateCitric,
-    onLeaveBack: simulateDensity,
-  });
+  // ScrollTrigger.create({
+  //   // trigger: '.section-37',
+  //   trigger: '.section-4',
+  //   id: 'statsCitric',
+  //   onEnter: simulateCitric,
+  //   onLeaveBack: simulateDensity,
+  // });
 
-  ScrollTrigger.create({
-    // trigger: '.section-38',
-    trigger: '.section-5',
-    id: 'statsPh',
-    onEnter: simulatePh,
-    onLeaveBack: simulateCitric,
-  });
+  // ScrollTrigger.create({
+  //   // trigger: '.section-38',
+  //   trigger: '.section-5',
+  //   id: 'statsPh',
+  //   onEnter: simulatePh,
+  //   onLeaveBack: simulateCitric,
+  // });
 
-  ScrollTrigger.create({
-    // trigger: '.section-39',
-    trigger: '.section-6',
-    id: 'statsVolatile',
-    onEnter: simulateVolatile,
-    onLeaveBack: simulatePh,
-  });
+  // ScrollTrigger.create({
+  //   // trigger: '.section-39',
+  //   trigger: '.section-6',
+  //   id: 'statsVolatile',
+  //   onEnter: simulateVolatile,
+  //   onLeaveBack: simulatePh,
+  // });
 
   ScrollTrigger.create({
     // trigger: '.section-40',
-    trigger: '.section-7',
+    trigger: '.section-3',
     id: 'statsQuality',
     onEnter: simulateQuality,
     onLeaveBack: simulateVolatile,
@@ -349,7 +351,7 @@ function setScroll() {
 
   ScrollTrigger.create({
     // trigger: '.section-40',
-    trigger: '.section-8',
+    trigger: '.section-4',
     id: 'qualityDots',
     onEnter: () => (state.stats.colourDots = true),
     onLeaveBack: () => (state.stats.colourDots = false),
@@ -357,10 +359,24 @@ function setScroll() {
 
   ScrollTrigger.create({
     // trigger: '.section-35',
-    trigger: '.section-9',
-    id: 'statsAlcoholQuality',
+    trigger: '.section-5',
+    id: 'statsAlcoholColoured',
     onEnter: simulateAlcohol,
     onLeaveBack: simulateQuality,
+  });
+
+  ScrollTrigger.create({
+    // trigger: '.section-35',
+    trigger: '.section-6',
+    id: 'statsAlcoholQuality',
+    onEnter: () => {
+      // state.stats.scatter = true;
+      simulateQualAlc();
+    },
+    onLeaveBack: () => {
+      state.stats.scatter = false;
+      simulateAlcohol();
+    },
   });
 
   // Recalculate all scroll positions.

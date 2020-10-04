@@ -2,7 +2,7 @@
 import gsap from 'gsap/gsap-core';
 import { forceLink, forceManyBody, forceX, forceY } from 'd3-force';
 
-// Internal moduls.
+// Internal modules.
 import state from '../app/state';
 import { sim } from './stats';
 
@@ -38,7 +38,7 @@ const yPosCentre = forceY(() => state.height / 2).strength(0.05);
 function simulateLattice() {
   // Set the current variable value to null.
   // This is not a frequency distribution.
-  state.stats.current = null;
+  state.stats.current = [];
 
   // Can't be with its force friends in module scope,
   // as it needs to be run after the links are produced.
@@ -73,7 +73,7 @@ const xPosAlcohol = forceX(d => d.layout.alcohol.x).strength(0.5);
 const yPosAlcohol = forceY(d => d.layout.alcohol.y).strength(0.5);
 
 function simulateAlcohol() {
-  state.stats.current = 'alcohol';
+  state.stats.current = [{ name: 'alcohol', axis: 'x' }];
 
   sim
     .nodes(state.stats.data)
@@ -86,6 +86,8 @@ function simulateAlcohol() {
     .force('yDensity', null)
     .force('xQuality', null) // this sim is triggered on two occasions.
     .force('yQuality', null)
+    .force('xPosQualAlc', null)
+    .force('yPosQualAlc', null)
     .force('xAlcohol', xPosAlcohol)
     .force('yAlcohol', yPosAlcohol)
     .alpha(0.8)
@@ -97,7 +99,7 @@ const xPosDensity = forceX(d => d.layout.density.x).strength(0.5);
 const yPosDensity = forceY(d => d.layout.density.y).strength(0.5);
 
 function simulateDensity() {
-  state.stats.current = 'density';
+  state.stats.current = [{ name: 'density', axis: 'x' }];
 
   sim
     .nodes(state.stats.data)
@@ -116,7 +118,7 @@ const xPosCitric = forceX(d => d.layout.citric_acid.x).strength(0.5);
 const yPosCitric = forceY(d => d.layout.citric_acid.y).strength(0.5);
 
 function simulateCitric() {
-  state.stats.current = 'citric_acid';
+  state.stats.current = [{ name: 'citric_acid', axis: 'x' }];
 
   sim
     .nodes(state.stats.data)
@@ -135,7 +137,7 @@ const xPosPh = forceX(d => d.layout.ph.x).strength(0.5);
 const yPosPh = forceY(d => d.layout.ph.y).strength(0.5);
 
 function simulatePh() {
-  state.stats.current = 'ph';
+  state.stats.current = [{ name: 'ph', axis: 'x' }];
 
   sim
     .nodes(state.stats.data)
@@ -154,7 +156,7 @@ const xPosVolatile = forceX(d => d.layout.volatile_acidity.x).strength(0.5);
 const yPosVolatile = forceY(d => d.layout.volatile_acidity.y).strength(0.5);
 
 function simulateVolatile() {
-  state.stats.current = 'volatile_acidity';
+  state.stats.current = [{ name: 'volatile_acidity', axis: 'x' }];
 
   sim
     .nodes(state.stats.data)
@@ -172,7 +174,7 @@ const xPosQuality = forceX(d => d.layout.quality.x).strength(0.5);
 const yPosQuality = forceY(d => d.layout.quality.y).strength(0.5);
 
 function simulateQuality() {
-  state.stats.current = 'quality';
+  state.stats.current = [{ name: 'quality', axis: 'x' }];
 
   sim
     .nodes(state.stats.data)

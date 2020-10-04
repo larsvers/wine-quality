@@ -12,9 +12,12 @@ import { nest } from 'd3-collection/src';
 import { scaleLinear } from 'd3-scale/src';
 import 'd3-transition';
 
+import { extent } from 'd3-array/src';
+
 // Internal modules.
 import state from '../app/state';
 import frequency from '../layouts/frequency';
+import labels from '../layouts/labels';
 import { txScale, tyScale } from './globe';
 import { capitalise } from '../app/utils';
 
@@ -60,15 +63,15 @@ function drawStats(ctx) {
     }
   });
 
-  // Labels.
-  ctx.strokeStyle = '#000000';
-  ctx.fillStyle = '#000000';
-  ctx.font = '10px Pangolin';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-  ctx.lineWidth = 0.2;
+  if (state.stats.current && axisPoints.length && !state.stats.scatter) {
+    // Styles.
+    ctx.strokeStyle = '#000000';
+    ctx.fillStyle = '#000000';
+    ctx.font = '10px Pangolin';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.lineWidth = 0.2;
 
-  if (state.stats.current && axisPoints.length) {
     // Axis.
     axisPoints.forEach((d, i) => {
       // Variables.
@@ -90,7 +93,10 @@ function drawStats(ctx) {
     // Header.
     const xHeader = headerPoint.value.x;
     const yHeader = headerPoint.value.yHeader - 60;
-    const labelHeader = capitalise(state.stats.current).replace('_', ' ');
+    const labelHeader = capitalise(state.stats.current[0].name).replace(
+      '_',
+      ' '
+    );
     ctx.font = '50px Amatic SC';
     ctx.fillText(labelHeader, xHeader, yHeader);
   }
@@ -130,30 +136,15 @@ function xFocus(leaves) {
 // At each tick, this returns an object with the x and y position
 // for each label as well as their text value.
 function getLabelCoordinates() {
-  if (!state.stats.current) return;
+  if (!state.stats.current.length || state.stats.scatter) return;
 
-  // Calculate center x and bottom y position. Also sort by value.
-  axisPoints = nest()
-    .key(d => d.layout[state.stats.current].value)
-    .rollup(v => {
-      return {
-        x: d3.median(xFocus(v), d => d.x),
-        y: d3.max(v, d => d.y),
-        yHeader: d3.min(v, d => d.y),
-        // if labels are longer than 3 than we should arrange them in zig zag.
-        zigzag:
-          d3.median(
-            v,
-            d => String(d.layout[state.stats.current].value).length
-          ) > 3,
-      };
-    })
-    .entries(state.stats.data)
-    .sort((a, b) => +a.key - +b.key);
+  const { name, axis } = state.stats.current[0];
+  const labelPositions = labels()
+    .axis(axis)
+    .nestKey(d => d.layout[name].value)(state.stats.data);
 
-  // Get category with highest y value (which will be the lowest y pixel value).
-  const yHeighest = d3.min(axisPoints, d => d.value.yHeader);
-  headerPoint = axisPoints.filter(d => d.value.yHeader === yHeighest)[0];
+  axisPoints = labelPositions.labels;
+  headerPoint = labelPositions.yHeader;
 }
 
 // Layouts
@@ -190,9 +181,17 @@ function addLayouts() {
     },
   ];
 
+  const sAlc = scaleLinear().domain(extent(state.stats.data, d => d.alcohol));
+  const sQual = scaleLinear().domain(extent(state.stats.data, d => d.quality));
+
   // Add all layouts to the main data.
   state.stats.data.forEach(d => {
     d.layout = {};
+
+    d.layout.qualAlc = {
+      x: xScale(sQual(d.quality)),
+      y: yScale(sAlc(d.alcohol)),
+    };
 
     // That point where the globe disappears to.
     d.layout.globeExit = {

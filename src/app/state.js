@@ -129,8 +129,9 @@ export default {
   stats: {
     data: null,
     links: null,
-    current: null,
+    current: [],
     alpha: { value: 1 },
     colourDots: false,
+    scatter: false,
   },
 };
