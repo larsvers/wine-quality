@@ -78,9 +78,14 @@ function drawStats(ctx) {
       const variable = state.stats.current[i];
       if (!variable.hasOwnProperty('ticks')) break;
 
-      variable.ticks.forEach((tick, i) => {
-        // Variables.
-        const { x, y } = tick.value;
+      // TODO:
+      // - Add tick lines (depend on axis and alignment)
+      // - header (depends on type of chart)
+
+      variable.ticks.forEach(tick => {
+        const x = tick.value.x;
+        const y = tick.value.y;
+
         // const y1 = tick.value.y + 10;
         // let y2 = tick.value.y + 20;
         // let y2 = tick.value.y;
@@ -135,17 +140,17 @@ function getScales() {
 // At each tick, this returns an object with the x and y position
 // for each label as well as their text value.
 function getLabelCoordinates() {
-  if (!state.stats.current.length || state.stats.scatter) return;
+  if (!state.stats.current.length) return;
 
   // Get tick values and the cloud's bounding box.
   state.stats.current.forEach(el => {
-    const { name, axis } = el;
+    const { name, axis, straight } = el;
     const labelPositions = labels()
+      .nestKey(d => d.layout[name].value)
       .axis(axis)
-      .nestKey(d => d.layout[name].value)(state.stats.data);
+      .align(straight)(state.stats.data);
 
     el.ticks = labelPositions.ticks;
-    // el.header = labelPositions.header;
     el.bbox = labelPositions.bbox;
 
     // Get the header position for frequencies (highest bar) and scatter (top left).

@@ -14,8 +14,8 @@ const yPosQualAlc = forceY(d => d.layout.qualAlc.y).strength(1);
 
 function simulateQualAlc() {
   state.stats.current = [
-    { name: 'quality', axis: 'x' },
-    { name: 'alcohol', axis: 'y' },
+    { name: 'quality', axis: 'x', straight: true },
+    { name: 'alcohol', axis: 'y', straight: true },
   ];
 
   sim

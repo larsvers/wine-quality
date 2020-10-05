@@ -73,7 +73,7 @@ const xPosAlcohol = forceX(d => d.layout.alcohol.x).strength(0.5);
 const yPosAlcohol = forceY(d => d.layout.alcohol.y).strength(0.5);
 
 function simulateAlcohol() {
-  state.stats.current = [{ name: 'alcohol', axis: 'x' }];
+  state.stats.current = [{ name: 'alcohol', axis: 'x', straight: false }];
 
   sim
     .nodes(state.stats.data)
@@ -99,7 +99,7 @@ const xPosDensity = forceX(d => d.layout.density.x).strength(0.5);
 const yPosDensity = forceY(d => d.layout.density.y).strength(0.5);
 
 function simulateDensity() {
-  state.stats.current = [{ name: 'density', axis: 'x' }];
+  state.stats.current = [{ name: 'density', axis: 'x', straight: false }];
 
   sim
     .nodes(state.stats.data)
@@ -118,7 +118,7 @@ const xPosCitric = forceX(d => d.layout.citric_acid.x).strength(0.5);
 const yPosCitric = forceY(d => d.layout.citric_acid.y).strength(0.5);
 
 function simulateCitric() {
-  state.stats.current = [{ name: 'citric_acid', axis: 'x' }];
+  state.stats.current = [{ name: 'citric_acid', axis: 'x', straight: false }];
 
   sim
     .nodes(state.stats.data)
@@ -137,7 +137,7 @@ const xPosPh = forceX(d => d.layout.ph.x).strength(0.5);
 const yPosPh = forceY(d => d.layout.ph.y).strength(0.5);
 
 function simulatePh() {
-  state.stats.current = [{ name: 'ph', axis: 'x' }];
+  state.stats.current = [{ name: 'ph', axis: 'x', straight: false }];
 
   sim
     .nodes(state.stats.data)
@@ -156,7 +156,9 @@ const xPosVolatile = forceX(d => d.layout.volatile_acidity.x).strength(0.5);
 const yPosVolatile = forceY(d => d.layout.volatile_acidity.y).strength(0.5);
 
 function simulateVolatile() {
-  state.stats.current = [{ name: 'volatile_acidity', axis: 'x' }];
+  state.stats.current = [
+    { name: 'volatile_acidity', axis: 'x', straight: false },
+  ];
 
   sim
     .nodes(state.stats.data)
@@ -174,7 +176,7 @@ const xPosQuality = forceX(d => d.layout.quality.x).strength(0.5);
 const yPosQuality = forceY(d => d.layout.quality.y).strength(0.5);
 
 function simulateQuality() {
-  state.stats.current = [{ name: 'quality', axis: 'x' }];
+  state.stats.current = [{ name: 'quality', axis: 'x', straight: false }];
 
   sim
     .nodes(state.stats.data)

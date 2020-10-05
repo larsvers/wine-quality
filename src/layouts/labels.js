@@ -9,24 +9,21 @@ function focus(leaves) {
   );
 }
 
-// TODO: If I build the x axis, I want
-// 1. the minimal y value to align the ticks for the scatter plat
-// 2. the maximal y value to position the header.
-// 3. the x value of the category with the maximum y value.
-
-function xValues(values, key) {
+// Values for an x axis.
+function xAxisValues(values, key, p) {
   return {
     x: median(focus(values), d => d.x),
-    y: max(values, d => d.y),
+    y: max(values, d => d.y) + p,
     xRange: extent(values, d => d.x),
     yRange: extent(values, d => d.y),
     zigzag: String(median(values, key)).length > 3, // 1
   };
 }
 
-function yValues(values, key) {
+// Values for a y axis.
+function yAxisValues(values, key, p) {
   return {
-    x: max(values, d => d.x),
+    x: max(values, d => d.x) + p,
     y: median(focus(values), d => d.y),
     xRange: extent(values, d => d.x),
     yRange: extent(values, d => d.y),
@@ -37,45 +34,49 @@ function yValues(values, key) {
 function labels() {
   let nestKey;
   let axis = 'x';
-  let type = 'frequency';
+  let align = false;
+  let padding = 10;
 
   function layout(data) {
-    // Label positions.
+    // Label positions for each variable category.
     const ticks = nest()
       .key(nestKey)
       .rollup(v => {
-        if (axis === 'x') return xValues(v, nestKey);
-        if (axis === 'y') return yValues(v, nestKey);
-        throw Error('Label axis parameter needs to b x or y');
+        if (axis === 'x') return xAxisValues(v, nestKey, padding);
+        if (axis === 'y') return yAxisValues(v, nestKey, padding);
+        throw Error('Label axis parameter needs to be x or y');
       })
       .entries(data)
       .sort((a, b) => +a.key - +b.key);
 
+    // Bounding box of the variable's point cloud.
     const bbox = {
       xMin: min(ticks, d => d.value.xRange[0]),
       xMax: max(ticks, d => d.value.xRange[1]),
       yMin: min(ticks, d => d.value.yRange[0]),
       yMax: max(ticks, d => d.value.yRange[1]),
     };
-    // Header positions.
-    // Get category with highest y value (which will be the lowest y pixel value).
-    const xMin = d3.min(ticks, d => d.value.xMin);
-    const yMin = d3.min(ticks, d => d.value.yMin);
-    const header =
-      axis === 'x'
-        ? ticks.filter(d => d.value.xMin === xMin)[0]
-        : ticks.filter(d => d.value.yMin === yMin)[0];
+
+    // If align is true, we correct/align the labels' cross axis position.
+    if (align && axis === 'x') {
+      ticks.forEach(tick => (tick.value.y = bbox.yMax + padding));
+    }
+    if (align && axis === 'y') {
+      ticks.forEach(tick => (tick.value.x = bbox.xMax + padding));
+    }
 
     return {
       ticks,
-      header,
       bbox,
     };
   }
 
   layout.nestKey = _ => (_ ? ((nestKey = _), layout) : nestKey);
   layout.axis = _ => (_ ? ((axis = _), layout) : axis);
-  layout.type = _ => (_ ? ((axis = _), layout) : axis);
+  layout.padding = _ => (_ ? ((padding = _), layout) : padding);
+  // Special treatment for boolean getter/setter:
+  layout.align = _ =>
+    _ !== undefined || _ !== null ? ((align = _), layout) : align;
 
   return layout;
 }
