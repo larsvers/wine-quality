@@ -8,7 +8,6 @@
 
 // External libs.
 import { forceSimulation } from 'd3-force';
-import { nest } from 'd3-collection/src';
 import { scaleLinear } from 'd3-scale/src';
 import 'd3-transition';
 
@@ -30,6 +29,8 @@ let margin;
 let xScale;
 let yScale;
 let sim;
+let labelInfo;
+
 let axisPoints = [];
 let headerPoint;
 
@@ -63,7 +64,8 @@ function drawStats(ctx) {
     }
   });
 
-  if (state.stats.current && axisPoints.length && !state.stats.scatter) {
+  // if (state.stats.current.length && axisPoints.length && !state.stats.scatter) {
+  if (state.stats.current.length && !state.stats.scatter) {
     // Styles.
     ctx.strokeStyle = '#000000';
     ctx.fillStyle = '#000000';
@@ -72,33 +74,41 @@ function drawStats(ctx) {
     ctx.textBaseline = 'top';
     ctx.lineWidth = 0.2;
 
-    // Axis.
-    axisPoints.forEach((d, i) => {
-      // Variables.
-      const { x } = d.value;
-      const y1 = d.value.y + 10;
-      let y2 = d.value.y + 20;
-      // Overwrite y2 if we should arrange long labels in zig zag
-      if (d.value.zigzag) y2 = i % 2 === 0 ? d.value.y + 20 : d.value.y + 35;
-      const label = d.key;
+    for (let i = 0; i < state.stats.current.length; i++) {
+      const variable = state.stats.current[i];
+      if (!variable.hasOwnProperty('ticks')) break;
 
-      // Draw.
-      ctx.beginPath();
-      ctx.moveTo(x, y1);
-      ctx.lineTo(x, y2);
-      ctx.stroke();
-      ctx.fillText(label, x, y2 + 5);
-    });
+      variable.ticks.forEach((tick, i) => {
+        // Variables.
+        const { x, y } = tick.value;
+        // const y1 = tick.value.y + 10;
+        // let y2 = tick.value.y + 20;
+        // let y2 = tick.value.y;
 
-    // Header.
-    const xHeader = headerPoint.value.x;
-    const yHeader = headerPoint.value.yHeader - 60;
-    const labelHeader = capitalise(state.stats.current[0].name).replace(
-      '_',
-      ' '
-    );
-    ctx.font = '50px Amatic SC';
-    ctx.fillText(labelHeader, xHeader, yHeader);
+        // Overwrite y2 if we should arrange long labels in zig zag
+        // if (tick.value.zigzag)
+        //   y2 = i % 2 === 0 ? tick.value.y + 20 : tick.value.y + 35;
+        const label = tick.key;
+
+        // Draw.
+        // ctx.beginPath();
+        // ctx.moveTo(x, y1);
+        // ctx.lineTo(x, y2);
+        // ctx.stroke();
+        // ctx.fillText(label, x, y2 + 5);
+        ctx.fillText(label, x, y);
+      });
+
+      // // Header.
+      // const xHeader = headerPoint.value.x;
+      // const yHeader = headerPoint.value.yHeader - 60;
+      // const labelHeader = capitalise(state.stats.current[0].name).replace(
+      //   '_',
+      //   ' '
+      // );
+      // ctx.font = '50px Amatic SC';
+      // ctx.fillText(labelHeader, xHeader, yHeader);
+    }
   }
 
   ctx.restore();
@@ -122,29 +132,28 @@ function getScales() {
   yScale = scaleLinear().range([state.height - margin.bottom, margin.top]);
 }
 
-// Axis
-// ----
-
-// We want to calculate each group's label x position only on the points lower to
-// the bottom. Not on all points as the shape might be wavey. We do this here...
-function xFocus(leaves) {
-  return leaves.filter(
-    (_, i, nodes) => i < Math.max(Math.ceil(nodes.length * 0.1), 10)
-  );
-}
-
 // At each tick, this returns an object with the x and y position
 // for each label as well as their text value.
 function getLabelCoordinates() {
   if (!state.stats.current.length || state.stats.scatter) return;
 
-  const { name, axis } = state.stats.current[0];
-  const labelPositions = labels()
-    .axis(axis)
-    .nestKey(d => d.layout[name].value)(state.stats.data);
+  // Get tick values and the cloud's bounding box.
+  state.stats.current.forEach(el => {
+    const { name, axis } = el;
+    const labelPositions = labels()
+      .axis(axis)
+      .nestKey(d => d.layout[name].value)(state.stats.data);
 
-  axisPoints = labelPositions.labels;
-  headerPoint = labelPositions.yHeader;
+    el.ticks = labelPositions.ticks;
+    // el.header = labelPositions.header;
+    el.bbox = labelPositions.bbox;
+
+    // Get the header position for frequencies (highest bar) and scatter (top left).
+    // prettier-ignore
+    const yMinTick = el.ticks.filter(d => d.value.yRange[0] === el.bbox.yMin)[0];
+    el.headerFreq = { x: yMinTick.value.x, y: el.bbox.yMin };
+    el.headerScatter = { x: el.bbox.xMin, y: el.bbox.yMin };
+  });
 }
 
 // Layouts

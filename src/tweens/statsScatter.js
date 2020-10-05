@@ -8,12 +8,15 @@ import { sim } from './stats';
 // Individual simulations:
 
 // Move to Alcohol frequency.
-const chargeScatter = forceManyBody().strength(-1.5);
-const xPosQualAlc = forceX(d => d.layout.qualAlc.x).strength(0.2);
-const yPosQualAlc = forceY(d => d.layout.qualAlc.y).strength(0.2);
+const chargeScatter = forceManyBody().strength(0);
+const xPosQualAlc = forceX(d => d.layout.qualAlc.x).strength(1);
+const yPosQualAlc = forceY(d => d.layout.qualAlc.y).strength(1);
 
 function simulateQualAlc() {
-  state.stats.current = 'quality_v_alcohol';
+  state.stats.current = [
+    { name: 'quality', axis: 'x' },
+    { name: 'alcohol', axis: 'y' },
+  ];
 
   sim
     .nodes(state.stats.data)
