@@ -132,6 +132,7 @@ export default {
     current: [],
     alpha: { value: 1 },
     colourDots: false,
-    scatter: false,
+    lr: true, // linear regression
+    progress: 0,
   },
 };

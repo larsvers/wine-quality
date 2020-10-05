@@ -372,6 +372,9 @@ function setScroll() {
     id: 'statsAlcoholQuality',
     onEnter: simulateQualAlc,
     onLeaveBack: simulateAlcohol,
+    onUpdate(self) {
+      state.stats.progress = self.progress;
+    },
   });
 
   ScrollTrigger.create({

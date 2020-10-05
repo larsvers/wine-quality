@@ -8,18 +8,19 @@
 /* eslint-disable no-unused-expressions */
 
 // External libs.
+import { extent } from 'd3-array/src';
 import { forceSimulation } from 'd3-force';
 import { scaleLinear } from 'd3-scale/src';
 import 'd3-transition';
 
-import { extent } from 'd3-array/src';
+import { linearRegression, linearRegressionLine } from 'simple-statistics';
 
 // Internal modules.
 import state from '../app/state';
 import frequency from '../layouts/frequency';
 import labels from '../layouts/labels';
 import { txScale, tyScale } from './globe';
-import { capitalise, getLinearScale } from '../app/utils';
+import { capitalise, getLinearScale, euclideanDistance } from '../app/utils';
 
 // Module scope.
 let dotRadius = 1.5;
@@ -31,6 +32,7 @@ let xScale;
 let yScale;
 let sim;
 let tickPadding = 20;
+let lrLine;
 
 // Render and draw
 // ---------------
@@ -164,6 +166,31 @@ function drawStats(ctx) {
     }
   });
 
+  // Draw regression line.
+  // TODOD
+  // This needs to be its own draw function propelled by the scroll
+  // as it stops drawing when the ticking stops.
+  if (state.stats.lr) {
+    // Data.
+    const xRange = extent(state.stats.data, d => d.x);
+    const start = [xRange[0], lrLine(xRange[0])];
+    const end = [xRange[1], lrLine(xRange[1])];
+    const length = euclideanDistance(start, end);
+    const offset = (1 - state.stats.progress) * length;
+
+    console.log(length);
+
+    // Take the scrolltrigger process to move the distance from 0 to full length:
+
+    // Draw/
+    ctx.beginPath();
+    ctx.setLineDash([length - offset, offset]);
+    ctx.moveTo(start[0], start[1]);
+    ctx.lineTo(end[0], end[1]);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
   ctx.restore();
 }
 
@@ -289,12 +316,19 @@ function setLayout(name) {
   });
 }
 
+function getLinearRegressionLine() {
+  const lrInput = state.stats.data.map(d => [d.x, d.y]);
+  const lr = linearRegression(lrInput);
+  lrLine = linearRegressionLine(lr);
+}
+
 // Simulations
 // -----------
 
 // All the stuff we run per tick.
 function handleTick() {
   getLabelCoordinates();
+  getLinearRegressionLine();
   renderStats();
 }
 
