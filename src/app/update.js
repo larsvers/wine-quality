@@ -1,3 +1,4 @@
+/* eslint-disable no-return-assign */
 /* eslint-disable import/no-duplicates */
 /* eslint-disable no-param-reassign */
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
@@ -44,7 +45,7 @@ import {
   simulateQuality,
 } from '../tweens/statsFrequencies';
 
-import { simulateQualAlc } from '../tweens/statsScatter';
+import { simulateQualAlc, simulateQualVol } from '../tweens/statsScatter';
 
 // Set ScrollTrigger defaults.
 ScrollTrigger.defaults({
@@ -369,14 +370,16 @@ function setScroll() {
     // trigger: '.section-35',
     trigger: '.section-6',
     id: 'statsAlcoholQuality',
-    onEnter: () => {
-      // state.stats.scatter = true;
-      simulateQualAlc();
-    },
-    onLeaveBack: () => {
-      state.stats.scatter = false;
-      simulateAlcohol();
-    },
+    onEnter: simulateQualAlc,
+    onLeaveBack: simulateAlcohol,
+  });
+
+  ScrollTrigger.create({
+    // trigger: '.section-35',
+    trigger: '.section-7',
+    id: 'statsVolatileQuality',
+    onEnter: simulateQualVol,
+    onLeaveBack: simulateQualAlc,
   });
 
   // Recalculate all scroll positions.

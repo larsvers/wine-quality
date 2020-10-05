@@ -1,7 +1,9 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable import/no-mutable-exports */
-import { max } from 'd3-array/src/index';
+import { max, extent } from 'd3-array/src/index';
 import { select, selection } from 'd3-selection/src/index';
+import { scaleLinear } from 'd3-scale/src';
+import state from './state';
 
 function capitalise(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -241,6 +243,10 @@ function bezWithArrowheads(
   ctx.stroke();
 }
 
+function getLinearScale(variable) {
+  return scaleLinear().domain(extent(state.stats.data, d => d[variable]));
+}
+
 export {
   capitalise,
   isSelection,
@@ -252,4 +258,5 @@ export {
   getPathDims,
   getPathData,
   bezWithArrowheads,
+  getLinearScale,
 };

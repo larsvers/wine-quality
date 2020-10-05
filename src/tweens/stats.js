@@ -1,3 +1,4 @@
+/* eslint-disable no-prototype-builtins */
 /* eslint-disable import/no-mutable-exports */
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-multi-assign */
@@ -18,7 +19,7 @@ import state from '../app/state';
 import frequency from '../layouts/frequency';
 import labels from '../layouts/labels';
 import { txScale, tyScale } from './globe';
-import { capitalise } from '../app/utils';
+import { capitalise, getLinearScale } from '../app/utils';
 
 // Module scope.
 let dotRadius = 1.5;
@@ -29,10 +30,7 @@ let margin;
 let xScale;
 let yScale;
 let sim;
-let labelInfo;
-
-let axisPoints = [];
-let headerPoint;
+let tickPadding = 20;
 
 // Render and draw
 // ---------------
@@ -55,7 +53,109 @@ function drawStats(ctx) {
 
   ctx.globalAlpha = state.stats.alpha.value;
 
-  // Dots.
+  // Draw axes and labels.
+  if (state.stats.current.length) {
+    // Base styles.
+    ctx.strokeStyle = '#000000';
+    ctx.fillStyle = '#000000';
+    ctx.lineWidth = 0.2;
+
+    for (let i = 0; i < state.stats.current.length; i++) {
+      const currentVar = state.stats.current[i];
+      // Check if there's data to draw with.
+      if (!currentVar.hasOwnProperty('labelLayout')) break;
+      // Reference element and layout info.
+      const labelLayout = currentVar.labelLayout;
+
+      // Draw each tick.
+      labelLayout.ticks.forEach((tick, j) => {
+        // Base info.
+        const x = tick.value.x;
+        const y = tick.value.y;
+        const label = tick.key;
+
+        // For scatter plots (they have label == true)...
+        if (currentVar.label) {
+          if (currentVar.axis === 'x') {
+            ctx.font = '10px Pangolin';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(label, x, y);
+
+            const xTickLine = x;
+            const y1TickLine = labelLayout.bbox.yMin;
+            const y2TickLine = y - 10;
+
+            ctx.beginPath();
+            ctx.moveTo(xTickLine, y1TickLine);
+            ctx.lineTo(xTickLine, y2TickLine);
+            ctx.stroke();
+          }
+          if (currentVar.axis === 'y') {
+            ctx.font = '10px Pangolin';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, x, y);
+
+            const x1TickLine = labelLayout.bbox.xMin;
+            const x2TickLine = x - 10;
+            const yTickLine = y;
+
+            ctx.beginPath();
+            ctx.moveTo(x1TickLine, yTickLine);
+            ctx.lineTo(x2TickLine, yTickLine);
+            ctx.stroke();
+          }
+        }
+
+        // For frequency plots (they have label == false)...
+        if (!currentVar.label) {
+          // Set the lengths of ticks.
+          const y1 = y - tickPadding * 0.5;
+          let y2 = y - tickPadding * 0.1;
+
+          // Overwrite y2 if we should arrange long labels in zig zag.
+          const zigzagCondition =
+            currentVar.axis === 'x' && tick.value.zigzag && j % 2 === 0;
+          if (zigzagCondition) y2 += 15;
+
+          // Draw label.
+          ctx.font = '10px Pangolin';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          ctx.fillText(label, x, y2 + 5);
+
+          // Draw ticks.
+          ctx.beginPath();
+          ctx.moveTo(x, y1);
+          ctx.lineTo(x, y2);
+          ctx.stroke();
+        }
+      });
+
+      // Draw the header.
+      if (currentVar.header) {
+        const xHeader = labelLayout.label.header.x;
+        const yHeader = labelLayout.label.header.y;
+        const labelHeader = capitalise(currentVar.name).replace('_', ' ');
+
+        ctx.font = '50px Amatic SC';
+        ctx.fillText(labelHeader, xHeader, yHeader - 50);
+      }
+
+      // Draw the axis labels.
+      if (currentVar.label) {
+        const xAxisLabel = labelLayout.label.axisLabel.x;
+        const yAxisLabel = labelLayout.label.axisLabel.y;
+        const labelAxis = capitalise(currentVar.name).replace('_', ' ');
+
+        ctx.font = '20px Amatic SC';
+        ctx.fillText(labelAxis, xAxisLabel, yAxisLabel);
+      }
+    }
+  }
+
+  // Draw dots.
   state.stats.data.forEach(d => {
     if (!state.stats.colourDots) {
       ctx.drawImage(dot, d.x, d.y);
@@ -63,58 +163,6 @@ function drawStats(ctx) {
       ctx.drawImage(d.quality_binary ? dotBad : dotGood, d.x, d.y);
     }
   });
-
-  // if (state.stats.current.length && axisPoints.length && !state.stats.scatter) {
-  if (state.stats.current.length && !state.stats.scatter) {
-    // Styles.
-    ctx.strokeStyle = '#000000';
-    ctx.fillStyle = '#000000';
-    ctx.font = '10px Pangolin';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.lineWidth = 0.2;
-
-    for (let i = 0; i < state.stats.current.length; i++) {
-      const variable = state.stats.current[i];
-      if (!variable.hasOwnProperty('ticks')) break;
-
-      // TODO:
-      // - Add tick lines (depend on axis and alignment)
-      // - header (depends on type of chart)
-
-      variable.ticks.forEach(tick => {
-        const x = tick.value.x;
-        const y = tick.value.y;
-
-        // const y1 = tick.value.y + 10;
-        // let y2 = tick.value.y + 20;
-        // let y2 = tick.value.y;
-
-        // Overwrite y2 if we should arrange long labels in zig zag
-        // if (tick.value.zigzag)
-        //   y2 = i % 2 === 0 ? tick.value.y + 20 : tick.value.y + 35;
-        const label = tick.key;
-
-        // Draw.
-        // ctx.beginPath();
-        // ctx.moveTo(x, y1);
-        // ctx.lineTo(x, y2);
-        // ctx.stroke();
-        // ctx.fillText(label, x, y2 + 5);
-        ctx.fillText(label, x, y);
-      });
-
-      // // Header.
-      // const xHeader = headerPoint.value.x;
-      // const yHeader = headerPoint.value.yHeader - 60;
-      // const labelHeader = capitalise(state.stats.current[0].name).replace(
-      //   '_',
-      //   ' '
-      // );
-      // ctx.font = '50px Amatic SC';
-      // ctx.fillText(labelHeader, xHeader, yHeader);
-    }
-  }
 
   ctx.restore();
 }
@@ -145,19 +193,14 @@ function getLabelCoordinates() {
   // Get tick values and the cloud's bounding box.
   state.stats.current.forEach(el => {
     const { name, axis, straight } = el;
-    const labelPositions = labels()
+    const labelLayout = labels()
       .nestKey(d => d.layout[name].value)
       .axis(axis)
+      .padding(tickPadding)
       .align(straight)(state.stats.data);
 
-    el.ticks = labelPositions.ticks;
-    el.bbox = labelPositions.bbox;
-
-    // Get the header position for frequencies (highest bar) and scatter (top left).
-    // prettier-ignore
-    const yMinTick = el.ticks.filter(d => d.value.yRange[0] === el.bbox.yMin)[0];
-    el.headerFreq = { x: yMinTick.value.x, y: el.bbox.yMin };
-    el.headerScatter = { x: el.bbox.xMin, y: el.bbox.yMin };
+    // Add layout to the current variable object.
+    el.labelLayout = labelLayout;
   });
 }
 
@@ -168,7 +211,7 @@ function getLabelCoordinates() {
 // can move the dots to these with forceX, forceY.
 function addLayouts() {
   // Get all variable based layouts.
-  const variableLayouts = [
+  const frequencyLayouts = [
     {
       name: 'alcohol',
       layout: frequency().variable('alcohol')(state.stats.data),
@@ -195,17 +238,20 @@ function addLayouts() {
     },
   ];
 
-  const sAlc = scaleLinear().domain(extent(state.stats.data, d => d.alcohol));
-  const sQual = scaleLinear().domain(extent(state.stats.data, d => d.quality));
+  // Prep the scatter layout loop, with the predictors to use...
+  const scatterLayouts = [
+    { name: 'alcohol__quality', var: 'alcohol' },
+    { name: 'vol_acid__quality', var: 'volatile_acidity' },
+  ];
+
+  // ...and the quality scale to use.
+  const qualityScale = scaleLinear().domain(
+    extent(state.stats.data, d => d.quality)
+  );
 
   // Add all layouts to the main data.
   state.stats.data.forEach(d => {
     d.layout = {};
-
-    d.layout.qualAlc = {
-      x: xScale(sQual(d.quality)),
-      y: yScale(sAlc(d.alcohol)),
-    };
 
     // That point where the globe disappears to.
     d.layout.globeExit = {
@@ -216,11 +262,20 @@ function addLayouts() {
     // Note, the Lattice layout is controlled by the link dataset.
 
     // Add all variable layouts to the data.
-    variableLayouts.forEach(el => {
+    frequencyLayouts.forEach(el => {
       d.layout[el.name] = {
         x: xScale(el.layout.get(d.id).x),
         y: yScale(el.layout.get(d.id).y),
         value: el.layout.get(d.id).value,
+      };
+    });
+
+    // Add scatter plot layouts
+    scatterLayouts.forEach(el => {
+      const varScale = getLinearScale(el.var);
+      d.layout[el.name] = {
+        x: xScale(varScale(d[el.var])),
+        y: yScale(qualityScale(d.quality)),
       };
     });
   });
@@ -238,7 +293,7 @@ function setLayout(name) {
 // -----------
 
 // All the stuff we run per tick.
-function tick() {
+function handleTick() {
   getLabelCoordinates();
   renderStats();
 }
@@ -258,7 +313,7 @@ function boundingBox() {
 function setSimulation() {
   sim = forceSimulation(state.stats.data)
     .force('boxForce', boundingBox)
-    .on('tick', tick)
+    .on('tick', handleTick)
     .stop();
 }
 

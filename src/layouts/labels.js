@@ -1,18 +1,22 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-return-assign */
 import { nest } from 'd3-collection';
 import { min, max, extent, median } from 'd3-array';
 
 // We want to calculate each group's label x position only on the points lower to
 // the bottom. Not on all points as the shape might be wavey. We do this here...
-function focus(leaves) {
-  return leaves.filter(
-    (_, i, nodes) => i < Math.max(Math.ceil(nodes.length * 0.1), 10)
-  );
+function focus(leaves, axis) {
+  // Sort the node leaves descendingly by their y position for
+  // the x axis and by their x position for the y axis labels.
+  return axis === 'x'
+    ? leaves.sort((a, b) => b.y - a.y).filter((_, i) => i < 10)
+    : leaves.sort((a, b) => b.x - a.x).filter((_, i) => i < 10);
 }
 
 // Values for an x axis.
-function xAxisValues(values, key, p) {
+function xAxisValues(values, key, ax, p) {
   return {
-    x: median(focus(values), d => d.x),
+    x: median(focus(values, ax), d => d.x),
     y: max(values, d => d.y) + p,
     xRange: extent(values, d => d.x),
     yRange: extent(values, d => d.y),
@@ -21,10 +25,10 @@ function xAxisValues(values, key, p) {
 }
 
 // Values for a y axis.
-function yAxisValues(values, key, p) {
+function yAxisValues(values, key, ax, p) {
   return {
     x: max(values, d => d.x) + p,
-    y: median(focus(values), d => d.y),
+    y: median(focus(values, ax), d => d.y),
     xRange: extent(values, d => d.x),
     yRange: extent(values, d => d.y),
     zigzag: String(median(values, key)).length > 3,
@@ -42,8 +46,8 @@ function labels() {
     const ticks = nest()
       .key(nestKey)
       .rollup(v => {
-        if (axis === 'x') return xAxisValues(v, nestKey, padding);
-        if (axis === 'y') return yAxisValues(v, nestKey, padding);
+        if (axis === 'x') return xAxisValues(v, nestKey, axis, padding);
+        if (axis === 'y') return yAxisValues(v, nestKey, axis, padding);
         throw Error('Label axis parameter needs to be x or y');
       })
       .entries(data)
@@ -65,12 +69,27 @@ function labels() {
       ticks.forEach(tick => (tick.value.x = bbox.xMax + padding));
     }
 
+    // Get heading or axis label positions.
+    const yMinTick = ticks.filter(d => d.value.yRange[0] === bbox.yMin)[0];
+    const label = {};
+    label.header = { x: yMinTick.value.x, y: bbox.yMin };
+    label.axisLabel =
+      axis === 'x'
+        ? { x: ticks[0].value.x, y: ticks[0].value.y + padding }
+        : {
+            x: ticks[ticks.length - 1].value.x,
+            y: ticks[ticks.length - 1].value.y - padding * 1.5,
+          };
+
+    // Return the info.
     return {
       ticks,
       bbox,
+      label,
     };
   }
 
+  // Getters/setters.
   layout.nestKey = _ => (_ ? ((nestKey = _), layout) : nestKey);
   layout.axis = _ => (_ ? ((axis = _), layout) : axis);
   layout.padding = _ => (_ ? ((padding = _), layout) : padding);
