@@ -136,6 +136,7 @@ export default {
     progress: {
       draw: 0,
       extend: 0,
+      logistic: 0,
     },
   },
 };

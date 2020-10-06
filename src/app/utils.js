@@ -262,6 +262,22 @@ function euclideanDistance(left, right) {
   return Math.sqrt(sum);
 }
 
+/**
+ * Draw a 2d point circle.
+ * @param { object } ctx Canvas context
+ * @param { 2d array } p 2d Point to draw
+ * @param { string } c Colour
+ * @param { number } r Radius
+ * @param { boolean } s true for stroke, false for fill
+ */
+function drawPoints(ctx, p, c, r, s) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(p[0], p[1], r, 0, 2 * Math.PI);
+  s ? ((ctx.strokeStyle = c), ctx.stroke()) : ((ctx.fillStyle = c), ctx.fill());
+  ctx.restore();
+}
+
 export {
   capitalise,
   isSelection,
@@ -275,4 +291,5 @@ export {
   bezWithArrowheads,
   getLinearScale,
   euclideanDistance,
+  drawPoints,
 };

@@ -16,6 +16,7 @@ import 'd3-transition';
 import { linearRegression, linearRegressionLine } from 'simple-statistics';
 
 // Internal modules.
+import { nest } from 'd3-collection/src';
 import state from '../app/state';
 import frequency from '../layouts/frequency';
 import labels from '../layouts/labels';
@@ -34,8 +35,11 @@ let sim;
 let tickPadding = 20;
 
 // Regression line data.
+let lrLine;
 let start = [];
 let end = [];
+let cp1 = [];
+let cp2 = [];
 let length;
 let offset;
 
@@ -58,9 +62,8 @@ function getScales() {
 function getLabelCoordinates() {
   if (!state.stats.current.length) return;
 
-  // Get tick values and the cloud's bounding box.
+  // Get the tick values, the cloud's bounding box and the label positions.
   state.stats.current.forEach(el => {
-    if (!el) debugger;
     const { name, axis, straight } = el;
     const labelLayout = labels()
       .nestKey(d => d.layout[name].value)
@@ -73,29 +76,85 @@ function getLabelCoordinates() {
   });
 }
 
-function getExtension(range) {
-  return state.stats.progress.extend * (range[1] - range[0]);
-}
-
-// Calculates the regression line.
-function getLinearRegressionLine() {
-  // Only do all this work, if we want to show a regression line.
-  if (!state.stats.lr) return;
-
+// Draw Line functions
+function getLinearLine(xRange) {
   // Calculate the line function.
   const lrInput = state.stats.data.map(d => [d.x, d.y]);
   const lr = linearRegression(lrInput);
-  const lrLine = linearRegressionLine(lr);
+  lrLine = linearRegressionLine(lr);
 
   // Calculate the length and offset and save the
   // variables for the draw func in module scope.
-  const xRange = extent(state.stats.data, d => d.x);
-  const extend = getExtension(xRange);
-
-  start = [xRange[0] - extend, lrLine(xRange[0] - extend)];
-  end = [xRange[1] + extend, lrLine(xRange[1] + extend)];
+  start = [xRange[0], lrLine(xRange[0])];
+  cp1 = start.slice();
+  end = [xRange[1], lrLine(xRange[1])];
+  cp2 = end.slice();
   length = euclideanDistance(start, end);
   offset = (1 - state.stats.progress.draw) * length;
+}
+
+function getLinearLineExtension(xRange) {
+  const extension = state.stats.progress.extend * (xRange[1] - xRange[0]);
+  start = [xRange[0] - extension, lrLine(xRange[0] - extension)];
+  cp1 = start.slice();
+  end = [xRange[1] + extension, lrLine(xRange[1] + extension)];
+  cp2 = end.slice();
+  length = euclideanDistance(start, end);
+  offset = (1 - state.stats.progress.draw) * length;
+}
+
+function getLogisticLine(xRange) {
+  // Need this to get the exact y positions.
+  const yAxisValues = state.stats.current.filter(d => d.axis === 'y');
+
+  // Run it only if stars align.
+  if (!yAxisValues.length || !yAxisValues[0].labelLayout) return;
+
+  // How to debug:
+  // if (state.stats.progress.logistic > 0) debugger;
+
+  // Get the exact x and y position is a bit of a song and dance.
+  // Basically, we need the tick values from the labels for
+  // the axes positions we'll use as logistic start and end curve points.
+  const yTicks = yAxisValues[0].labelLayout.ticks;
+  const yValues = [yTicks[0].value.y, yTicks[1].value.y];
+  const startDest = [
+    state.stats.current[0].labelLayout.bbox.xMin - 10,
+    yValues[0],
+  ];
+  const endDest = [
+    state.stats.current[0].labelLayout.bbox.xMax + 10,
+    yValues[1],
+  ];
+
+  // The control points are fractions of the xRange distance.
+  const cp1xDest = xRange[0] + (xRange[1] - xRange[0]) * 0.8;
+  const cp2xDest = xRange[0] + (xRange[1] - xRange[0]) * 0.5;
+
+  // Interpolating (could use gsap here, but that would require state and stuff..)
+  start[0] += state.stats.progress.logistic * (startDest[0] - start[0]);
+  start[1] += state.stats.progress.logistic * (startDest[1] - start[1]);
+  end[0] += state.stats.progress.logistic * (endDest[0] - end[0]);
+  end[1] += state.stats.progress.logistic * (endDest[1] - end[1]);
+  cp1[1] = start[1];
+  cp2[1] = end[1];
+  cp1[0] += state.stats.progress.logistic * (cp1xDest - cp1[0]);
+  cp2[0] += state.stats.progress.logistic * (cp2xDest - cp2[0]);
+}
+
+// Calculates the regression lines.
+function getLineDrawingParams() {
+  // Only do all this work, if we want to show a regression line.
+  if (!state.stats.lr) return;
+
+  // The points x ranges (not the layout, the actual simulated points)
+  // help calculate the x, y positions of the linear regression line.
+  const xRange = extent(state.stats.data, d => d.x);
+
+  // Calculate the line positions.
+  getLinearLine(xRange);
+  getLinearLineExtension(xRange);
+  getLogisticLine(xRange);
 }
 
 // Layouts
@@ -208,8 +267,9 @@ function drawLine(ctx) {
   ctx.beginPath();
   ctx.setLineDash([length - offset, offset]);
   ctx.moveTo(start[0], start[1]);
-  ctx.lineTo(end[0], end[1]);
-  ctx.lineWidth = 1;
+  ctx.bezierCurveTo(cp1[0], cp1[1], cp2[0], cp2[1], end[0], end[1]);
+  ctx.lineCap = 'round';
+  ctx.lineWidth = 3;
   ctx.stroke();
 
   ctx.restore();
@@ -228,6 +288,7 @@ function drawStats(ctx) {
     ctx.fillStyle = '#000000';
     ctx.lineWidth = 0.2;
 
+    // Loop through each of the variables we want to show.
     for (let i = 0; i < state.stats.current.length; i++) {
       const currentVar = state.stats.current[i];
       // Check if there's data to draw with.
@@ -336,8 +397,7 @@ function drawStats(ctx) {
 }
 
 function renderStats() {
-  getLinearRegressionLine();
-
+  getLineDrawingParams();
   requestAnimationFrame(() => {
     drawStats(state.ctx.lolli);
     drawLine(state.ctx.lolli);

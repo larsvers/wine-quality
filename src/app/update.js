@@ -408,6 +408,16 @@ function setScroll() {
     onEnter: simulateQualBinAlc,
   });
 
+  ScrollTrigger.create({
+    trigger: '.section-10',
+    id: 'statsLogisticLine',
+    onLeaveBack: simulateQualBinAlc,
+    onUpdate(self) {
+      state.stats.progress.logistic = self.progress;
+      renderStats();
+    },
+  });
+
   // Recalculate all scroll positions.
   ScrollTrigger.refresh();
 }
