@@ -33,7 +33,7 @@ import tweenBottleGridOut from '../tweens/bottleGridOut';
 import tweenDataset from '../tweens/dataset';
 
 import tweenGlobe from '../tweens/globe';
-import tweenStats from '../tweens/stats';
+import tweenStats, { renderStats } from '../tweens/stats';
 import {
   simulateGlobePosition,
   simulateLattice,
@@ -378,8 +378,22 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
-    // trigger: '.section-35',
     trigger: '.section-7',
+    id: 'statsDrawLR',
+    onEnter: () => (state.stats.lr = true),
+    onLeaveBack: () => {
+      state.stats.lr = false;
+      simulateQualAlc();
+    },
+    onUpdate(self) {
+      state.stats.progress = self.progress;
+      renderStats();
+    },
+  });
+
+  ScrollTrigger.create({
+    // trigger: '.section-35',
+    trigger: '.section-8',
     id: 'statsVolatileQuality',
     onEnter: simulateQualVol,
     onLeaveBack: simulateQualAlc,

@@ -32,7 +32,12 @@ let xScale;
 let yScale;
 let sim;
 let tickPadding = 20;
-let lrLine;
+
+// Regression line data.
+let start = [];
+let end = [];
+let length;
+let offset;
 
 // Render and draw
 // ---------------
@@ -47,6 +52,21 @@ function drawDot(r, colour) {
   ctx.fill();
 
   return can;
+}
+
+function drawLine(ctx) {
+  // Check for the regression line flag and if there's data to draw.
+  if (!state.stats.lr && start.length) return;
+
+  // Draw the regression line dynamically.
+  ctx.save();
+  ctx.beginPath();
+  ctx.setLineDash([length - offset, offset]);
+  ctx.moveTo(start[0], start[1]);
+  ctx.lineTo(end[0], end[1]);
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.restore();
 }
 
 function drawStats(ctx) {
@@ -167,39 +187,40 @@ function drawStats(ctx) {
   });
 
   // Draw regression line.
-  // TODOD
-  // This needs to be its own draw function propelled by the scroll
-  // as it stops drawing when the ticking stops.
-  if (state.stats.lr) {
-    // Data.
-    const xRange = extent(state.stats.data, d => d.x);
-    const start = [xRange[0], lrLine(xRange[0])];
-    const end = [xRange[1], lrLine(xRange[1])];
-    const length = euclideanDistance(start, end);
-    const offset = (1 - state.stats.progress) * length;
+  // // TODOD
+  // // This needs to be its own draw function propelled by the scroll
+  // // as it stops drawing when the ticking stops.
+  // if (state.stats.lr) {
+  //   // Data.
+  //   const xRange = extent(state.stats.data, d => d.x);
+  //   const start = [xRange[0], lrLine(xRange[0])];
+  //   const end = [xRange[1], lrLine(xRange[1])];
+  //   const length = euclideanDistance(start, end);
+  //   const offset = (1 - state.stats.progress) * length;
 
-    console.log(length);
+  //   // Take the scrolltrigger process to move the distance from 0 to full length:
 
-    // Take the scrolltrigger process to move the distance from 0 to full length:
-
-    // Draw/
-    ctx.beginPath();
-    ctx.setLineDash([length - offset, offset]);
-    ctx.moveTo(start[0], start[1]);
-    ctx.lineTo(end[0], end[1]);
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
+  //   // Draw/
+  //   ctx.beginPath();
+  //   ctx.setLineDash([length - offset, offset]);
+  //   ctx.moveTo(start[0], start[1]);
+  //   ctx.lineTo(end[0], end[1]);
+  //   ctx.lineWidth = 1;
+  //   ctx.stroke();
+  // }
 
   ctx.restore();
 }
 
 function renderStats() {
-  requestAnimationFrame(() => drawStats(state.ctx.lolli));
+  requestAnimationFrame(() => {
+    drawStats(state.ctx.lolli);
+    drawLine(state.ctx.lolli);
+  });
 }
 
-// Scales
-// ------
+// Scales and Data
+// ---------------
 function getScales() {
   margin = {
     top: state.height * 0.3,
@@ -229,6 +250,25 @@ function getLabelCoordinates() {
     // Add layout to the current variable object.
     el.labelLayout = labelLayout;
   });
+}
+
+// Calculates the regression line.
+function getLinearRegressionLine() {
+  // Only do all this work, if we want to show a regression line.
+  if (!state.stats.lr) return;
+
+  // Calculate the line function.
+  const lrInput = state.stats.data.map(d => [d.x, d.y]);
+  const lr = linearRegression(lrInput);
+  const lrLine = linearRegressionLine(lr);
+
+  // Calculate the length and offset and save the
+  // variables for the draw func in module scope.
+  const xRange = extent(state.stats.data, d => d.x);
+  start = [xRange[0], lrLine(xRange[0])];
+  end = [xRange[1], lrLine(xRange[1])];
+  length = euclideanDistance(start, end);
+  offset = (1 - state.stats.progress) * length;
 }
 
 // Layouts
@@ -316,12 +356,6 @@ function setLayout(name) {
   });
 }
 
-function getLinearRegressionLine() {
-  const lrInput = state.stats.data.map(d => [d.x, d.y]);
-  const lr = linearRegression(lrInput);
-  lrLine = linearRegressionLine(lr);
-}
-
 // Simulations
 // -----------
 
@@ -363,6 +397,6 @@ function tweenStats() {
 }
 
 export default tweenStats;
-export { sim };
+export { sim, renderStats };
 
 // 1. Math.random to disperse them a little to start with.
