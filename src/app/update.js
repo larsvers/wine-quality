@@ -45,7 +45,11 @@ import {
   simulateQuality,
 } from '../tweens/statsFrequencies';
 
-import { simulateQualAlc, simulateQualVol } from '../tweens/statsScatter';
+import {
+  simulateQualAlc,
+  simulateQualVol,
+  simulateQualBinAlc,
+} from '../tweens/statsScatter';
 
 // Set ScrollTrigger defaults.
 ScrollTrigger.defaults({
@@ -298,16 +302,16 @@ function setScroll() {
     // trigger: '.section-34',
     trigger: '.section-1',
     id: 'statsLattice',
-    onEnter: simulateLattice,
     onLeaveBack: simulateGlobePosition,
+    onEnter: simulateLattice,
   });
 
   ScrollTrigger.create({
     // trigger: '.section-35',
     trigger: '.section-2',
     id: 'statsAlcohol',
-    onEnter: simulateAlcohol,
     onLeaveBack: simulateLattice,
+    onEnter: simulateAlcohol,
   });
 
   // ScrollTrigger.create({
@@ -346,42 +350,42 @@ function setScroll() {
     // trigger: '.section-40',
     trigger: '.section-3',
     id: 'statsQuality',
-    onEnter: simulateQuality,
     onLeaveBack: simulateVolatile,
+    onEnter: simulateQuality,
   });
 
   ScrollTrigger.create({
     // trigger: '.section-40',
     trigger: '.section-4',
     id: 'qualityDots',
-    onEnter: () => (state.stats.colourDots = true),
     onLeaveBack: () => (state.stats.colourDots = false),
+    onEnter: () => (state.stats.colourDots = true),
   });
 
   ScrollTrigger.create({
     // trigger: '.section-35',
     trigger: '.section-5',
     id: 'statsAlcoholColoured',
-    onEnter: simulateAlcohol,
     onLeaveBack: simulateQuality,
+    onEnter: simulateAlcohol,
   });
 
   ScrollTrigger.create({
     // trigger: '.section-35',
     trigger: '.section-6',
     id: 'statsAlcoholQuality',
-    onEnter: simulateQualAlc,
     onLeaveBack: simulateAlcohol,
+    onEnter: simulateQualAlc,
   });
 
   ScrollTrigger.create({
     trigger: '.section-7',
     id: 'statsDrawLR',
-    onEnter: () => (state.stats.lr = true),
     onLeaveBack: () => {
       state.stats.lr = false;
       simulateQualAlc();
     },
+    onEnter: () => (state.stats.lr = true),
     onUpdate(self) {
       state.stats.progress.draw = self.progress;
       renderStats();
@@ -398,11 +402,10 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
-    // trigger: '.section-35',
     trigger: '.section-9',
-    id: 'statsVolatileQuality',
-    onEnter: simulateQualVol,
+    id: 'statsQualityBinarayAlcohol',
     onLeaveBack: simulateQualAlc,
+    onEnter: simulateQualBinAlc,
   });
 
   // Recalculate all scroll positions.

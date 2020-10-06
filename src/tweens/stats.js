@@ -39,6 +39,151 @@ let end = [];
 let length;
 let offset;
 
+// Scales and Data
+// ---------------
+function getScales() {
+  margin = {
+    top: state.height * 0.3,
+    right: state.width * 0.3,
+    bottom: state.height * 0.3,
+    left: state.width * 0.3,
+  };
+
+  xScale = scaleLinear().range([margin.left, state.width - margin.right]);
+  yScale = scaleLinear().range([state.height - margin.bottom, margin.top]);
+}
+
+// At each tick, this returns an object with the x and y position
+// for each label as well as their text value.
+function getLabelCoordinates() {
+  if (!state.stats.current.length) return;
+
+  // Get tick values and the cloud's bounding box.
+  state.stats.current.forEach(el => {
+    if (!el) debugger;
+    const { name, axis, straight } = el;
+    const labelLayout = labels()
+      .nestKey(d => d.layout[name].value)
+      .axis(axis)
+      .padding(tickPadding)
+      .align(straight)(state.stats.data);
+
+    // Add layout to the current variable object.
+    el.labelLayout = labelLayout;
+  });
+}
+
+function getExtension(range) {
+  return state.stats.progress.extend * (range[1] - range[0]);
+}
+
+// Calculates the regression line.
+function getLinearRegressionLine() {
+  // Only do all this work, if we want to show a regression line.
+  if (!state.stats.lr) return;
+
+  // Calculate the line function.
+  const lrInput = state.stats.data.map(d => [d.x, d.y]);
+  const lr = linearRegression(lrInput);
+  const lrLine = linearRegressionLine(lr);
+
+  // Calculate the length and offset and save the
+  // variables for the draw func in module scope.
+  const xRange = extent(state.stats.data, d => d.x);
+  const extend = getExtension(xRange);
+
+  start = [xRange[0] - extend, lrLine(xRange[0] - extend)];
+  end = [xRange[1] + extend, lrLine(xRange[1] + extend)];
+  length = euclideanDistance(start, end);
+  offset = (1 - state.stats.progress.draw) * length;
+}
+
+// Layouts
+// -------
+
+// Layouts to save in each data row. The simulations
+// can move the dots to these with forceX, forceY.
+function addLayouts() {
+  // Get all variable based layouts.
+  const frequencyLayouts = [
+    {
+      name: 'alcohol',
+      layout: frequency().variable('alcohol')(state.stats.data),
+    },
+    {
+      name: 'density',
+      layout: frequency().variable('density')(state.stats.data),
+    },
+    {
+      name: 'citric_acid',
+      layout: frequency().variable('citric_acid')(state.stats.data),
+    },
+    {
+      name: 'ph',
+      layout: frequency().variable('ph')(state.stats.data),
+    },
+    {
+      name: 'volatile_acidity',
+      layout: frequency().variable('volatile_acidity')(state.stats.data),
+    },
+    {
+      name: 'quality',
+      layout: frequency().variable('quality')(state.stats.data),
+    },
+    {
+      name: 'quality_binary',
+      layout: frequency().variable('quality_binary')(state.stats.data),
+    },
+  ];
+
+  // Prep the scatter layout loop, with the predictors to use...
+  const scatterLayouts = [
+    { name: 'alcohol__quality', pred: 'alcohol', out: 'quality' },
+    { name: 'alcohol__quality_binary', pred: 'alcohol', out: 'quality_binary' },
+    { name: 'vol_acid__quality', pred: 'volatile_acidity', out: 'quality' },
+  ];
+
+  // Add all layouts to the main data.
+  state.stats.data.forEach(d => {
+    d.layout = {};
+
+    // That point where the globe disappears to.
+    d.layout.globeExit = {
+      x: txScale(1) + Math.random(), // 1
+      y: tyScale(1) + Math.random(),
+    };
+
+    // Note, the Lattice layout is controlled by the link dataset.
+
+    // Add all variable layouts to the data.
+    frequencyLayouts.forEach(el => {
+      d.layout[el.name] = {
+        x: xScale(el.layout.get(d.id).x),
+        y: yScale(el.layout.get(d.id).y),
+        value: el.layout.get(d.id).value,
+      };
+    });
+
+    // Add scatter plot layouts
+    scatterLayouts.forEach(el => {
+      const predictorScale = getLinearScale(el.pred);
+      const outcomeScale = getLinearScale(el.out);
+      d.layout[el.name] = {
+        x: xScale(predictorScale(d[el.pred])),
+        y: yScale(outcomeScale(d[el.out])),
+      };
+    });
+  });
+}
+
+// Set an initial layout.
+function setLayout(name) {
+  state.stats.data.forEach(d => {
+    d.x = d.layout[name].x;
+    d.y = d.layout[name].y;
+  });
+}
+
 // Render and draw
 // ---------------
 function drawDot(r, colour) {
@@ -196,149 +341,6 @@ function renderStats() {
   requestAnimationFrame(() => {
     drawStats(state.ctx.lolli);
     drawLine(state.ctx.lolli);
-  });
-}
-
-// Scales and Data
-// ---------------
-function getScales() {
-  margin = {
-    top: state.height * 0.3,
-    right: state.width * 0.3,
-    bottom: state.height * 0.3,
-    left: state.width * 0.3,
-  };
-
-  xScale = scaleLinear().range([margin.left, state.width - margin.right]);
-  yScale = scaleLinear().range([state.height - margin.bottom, margin.top]);
-}
-
-// At each tick, this returns an object with the x and y position
-// for each label as well as their text value.
-function getLabelCoordinates() {
-  if (!state.stats.current.length) return;
-
-  // Get tick values and the cloud's bounding box.
-  state.stats.current.forEach(el => {
-    const { name, axis, straight } = el;
-    const labelLayout = labels()
-      .nestKey(d => d.layout[name].value)
-      .axis(axis)
-      .padding(tickPadding)
-      .align(straight)(state.stats.data);
-
-    // Add layout to the current variable object.
-    el.labelLayout = labelLayout;
-  });
-}
-
-function getExtension(range) {
-  return state.stats.progress.extend * (range[1] - range[0]);
-}
-
-// Calculates the regression line.
-function getLinearRegressionLine() {
-  // Only do all this work, if we want to show a regression line.
-  if (!state.stats.lr) return;
-
-  // Calculate the line function.
-  const lrInput = state.stats.data.map(d => [d.x, d.y]);
-  const lr = linearRegression(lrInput);
-  const lrLine = linearRegressionLine(lr);
-
-  // Calculate the length and offset and save the
-  // variables for the draw func in module scope.
-  const xRange = extent(state.stats.data, d => d.x);
-  const extend = getExtension(xRange);
-  console.log(extend);
-  start = [xRange[0] - extend, lrLine(xRange[0] - extend)];
-  end = [xRange[1] + extend, lrLine(xRange[1] + extend)];
-  length = euclideanDistance(start, end);
-  offset = (1 - state.stats.progress.draw) * length;
-}
-
-// Layouts
-// -------
-
-// Layouts to save in each data row. The simulations
-// can move the dots to these with forceX, forceY.
-function addLayouts() {
-  // Get all variable based layouts.
-  const frequencyLayouts = [
-    {
-      name: 'alcohol',
-      layout: frequency().variable('alcohol')(state.stats.data),
-    },
-    {
-      name: 'density',
-      layout: frequency().variable('density')(state.stats.data),
-    },
-    {
-      name: 'citric_acid',
-      layout: frequency().variable('citric_acid')(state.stats.data),
-    },
-    {
-      name: 'ph',
-      layout: frequency().variable('ph')(state.stats.data),
-    },
-    {
-      name: 'volatile_acidity',
-      layout: frequency().variable('volatile_acidity')(state.stats.data),
-    },
-    {
-      name: 'quality',
-      layout: frequency().variable('quality')(state.stats.data),
-    },
-  ];
-
-  // Prep the scatter layout loop, with the predictors to use...
-  const scatterLayouts = [
-    { name: 'alcohol__quality', var: 'alcohol' },
-    { name: 'vol_acid__quality', var: 'volatile_acidity' },
-  ];
-
-  // ...and the quality scale to use.
-  const qualityScale = scaleLinear().domain(
-    extent(state.stats.data, d => d.quality)
-  );
-
-  // Add all layouts to the main data.
-  state.stats.data.forEach(d => {
-    d.layout = {};
-
-    // That point where the globe disappears to.
-    d.layout.globeExit = {
-      x: txScale(1) + Math.random(), // 1
-      y: tyScale(1) + Math.random(),
-    };
-
-    // Note, the Lattice layout is controlled by the link dataset.
-
-    // Add all variable layouts to the data.
-    frequencyLayouts.forEach(el => {
-      d.layout[el.name] = {
-        x: xScale(el.layout.get(d.id).x),
-        y: yScale(el.layout.get(d.id).y),
-        value: el.layout.get(d.id).value,
-      };
-    });
-
-    // Add scatter plot layouts
-    scatterLayouts.forEach(el => {
-      const varScale = getLinearScale(el.var);
-      d.layout[el.name] = {
-        x: xScale(varScale(d[el.var])),
-        y: yScale(qualityScale(d.quality)),
-      };
-    });
-  });
-}
-
-// Set an initial layout.
-function setLayout(name) {
-  state.stats.data.forEach(d => {
-    d.x = d.layout[name].x;
-    d.y = d.layout[name].y;
   });
 }
 

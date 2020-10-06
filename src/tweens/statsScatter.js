@@ -28,6 +28,8 @@ function simulateQualAlc() {
     .force('yPosQualAlc', yPosQualAlc)
     .force('xPosQualVol', null)
     .force('yPosQualVol', null)
+    .force('xPosQualBinAlc', null)
+    .force('yPosQualBinAlc', null)
     .alpha(0.8)
     .restart();
 }
@@ -50,8 +52,6 @@ function simulateQualVol() {
 
   sim
     .nodes(state.stats.data)
-    .force('chargeFrequencies', null)
-    .force('chargeScatter', chargeScatter)
     .force('xPosQualAlc', null)
     .force('yPosQualAlc', null)
     .force('xPosQualVol', xPosQualVol)
@@ -60,4 +60,42 @@ function simulateQualVol() {
     .restart();
 }
 
-export { simulateQualAlc, simulateQualVol };
+// Move to Volatile Acidity scatter.
+const xPosQualBinAlc = forceX(d => d.layout.alcohol__quality_binary.x).strength(
+  0.3
+);
+const yPosQualBinAlc = forceY(d => d.layout.alcohol__quality_binary.y).strength(
+  0.3
+);
+
+function simulateQualBinAlc() {
+  state.stats.current = [
+    {
+      name: 'alcohol',
+      axis: 'x',
+      straight: true,
+      header: false,
+      label: true,
+    },
+    {
+      name: 'quality_binary',
+      axis: 'y',
+      straight: true,
+      header: false,
+      label: true,
+    },
+  ];
+
+  sim
+    .nodes(state.stats.data)
+    .force('xPosQualAlc', null)
+    .force('yPosQualAlc', null)
+    .force('xPosQualVol', null)
+    .force('yPosQualVol', null)
+    .force('xPosQualBinAlc', xPosQualBinAlc)
+    .force('yPosQualBinAlc', yPosQualBinAlc)
+    .alpha(0.8)
+    .restart();
+}
+
+export { simulateQualAlc, simulateQualVol, simulateQualBinAlc };
