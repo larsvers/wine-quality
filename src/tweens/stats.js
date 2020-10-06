@@ -57,15 +57,16 @@ function drawDot(r, colour) {
 function drawLine(ctx) {
   // Check for the regression line flag and if there's data to draw.
   if (!state.stats.lr && start.length) return;
+  ctx.save();
 
   // Draw the regression line dynamically.
-  ctx.save();
   ctx.beginPath();
   ctx.setLineDash([length - offset, offset]);
   ctx.moveTo(start[0], start[1]);
   ctx.lineTo(end[0], end[1]);
   ctx.lineWidth = 1;
   ctx.stroke();
+
   ctx.restore();
 }
 
@@ -186,33 +187,12 @@ function drawStats(ctx) {
     }
   });
 
-  // Draw regression line.
-  // // TODOD
-  // // This needs to be its own draw function propelled by the scroll
-  // // as it stops drawing when the ticking stops.
-  // if (state.stats.lr) {
-  //   // Data.
-  //   const xRange = extent(state.stats.data, d => d.x);
-  //   const start = [xRange[0], lrLine(xRange[0])];
-  //   const end = [xRange[1], lrLine(xRange[1])];
-  //   const length = euclideanDistance(start, end);
-  //   const offset = (1 - state.stats.progress) * length;
-
-  //   // Take the scrolltrigger process to move the distance from 0 to full length:
-
-  //   // Draw/
-  //   ctx.beginPath();
-  //   ctx.setLineDash([length - offset, offset]);
-  //   ctx.moveTo(start[0], start[1]);
-  //   ctx.lineTo(end[0], end[1]);
-  //   ctx.lineWidth = 1;
-  //   ctx.stroke();
-  // }
-
   ctx.restore();
 }
 
 function renderStats() {
+  getLinearRegressionLine();
+
   requestAnimationFrame(() => {
     drawStats(state.ctx.lolli);
     drawLine(state.ctx.lolli);
@@ -252,6 +232,10 @@ function getLabelCoordinates() {
   });
 }
 
+function getExtension(range) {
+  return state.stats.progress.extend * (range[1] - range[0]);
+}
+
 // Calculates the regression line.
 function getLinearRegressionLine() {
   // Only do all this work, if we want to show a regression line.
@@ -265,10 +249,12 @@ function getLinearRegressionLine() {
   // Calculate the length and offset and save the
   // variables for the draw func in module scope.
   const xRange = extent(state.stats.data, d => d.x);
-  start = [xRange[0], lrLine(xRange[0])];
-  end = [xRange[1], lrLine(xRange[1])];
+  const extend = getExtension(xRange);
+  console.log(extend);
+  start = [xRange[0] - extend, lrLine(xRange[0] - extend)];
+  end = [xRange[1] + extend, lrLine(xRange[1] + extend)];
   length = euclideanDistance(start, end);
-  offset = (1 - state.stats.progress) * length;
+  offset = (1 - state.stats.progress.draw) * length;
 }
 
 // Layouts
@@ -361,8 +347,7 @@ function setLayout(name) {
 
 // All the stuff we run per tick.
 function handleTick() {
-  getLabelCoordinates();
-  getLinearRegressionLine();
+  getLabelCoordinates(); // should maybe be in renderStats? TODO
   renderStats();
 }
 

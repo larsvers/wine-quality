@@ -133,6 +133,9 @@ export default {
     alpha: { value: 1 },
     colourDots: false,
     lr: false, // linear regression
-    progress: 0,
+    progress: {
+      draw: 0,
+      extend: 0,
+    },
   },
 };

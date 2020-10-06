@@ -372,9 +372,6 @@ function setScroll() {
     id: 'statsAlcoholQuality',
     onEnter: simulateQualAlc,
     onLeaveBack: simulateAlcohol,
-    onUpdate(self) {
-      state.stats.progress = self.progress;
-    },
   });
 
   ScrollTrigger.create({
@@ -386,14 +383,23 @@ function setScroll() {
       simulateQualAlc();
     },
     onUpdate(self) {
-      state.stats.progress = self.progress;
+      state.stats.progress.draw = self.progress;
+      renderStats();
+    },
+  });
+
+  ScrollTrigger.create({
+    trigger: '.section-8',
+    id: 'statsExtendLR',
+    onUpdate(self) {
+      state.stats.progress.extend = self.progress;
       renderStats();
     },
   });
 
   ScrollTrigger.create({
     // trigger: '.section-35',
-    trigger: '.section-8',
+    trigger: '.section-9',
     id: 'statsVolatileQuality',
     onEnter: simulateQualVol,
     onLeaveBack: simulateQualAlc,
