@@ -156,230 +156,221 @@ function updateTransforms() {
 }
 
 function setScroll() {
-  // // Create the scroll triggers.
-  // ScrollTrigger.create({
-  //   animation: state.tween.wineScape,
-  //   trigger: '.section-1',
-  //   id: 'wineScape',
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.glassBottle,
-  //   trigger: '.section-2',
-  //   id: 'glassBottle',
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.bottleText,
-  //   trigger: '.section-3',
-  //   id: 'bottleText',
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.bottleWave,
-  //   trigger: '.section-4',
-  //   id: 'bottleWave',
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.lolliChart,
-  //   trigger: '.section-5',
-  //   id: 'lolliChart',
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.lolliUpdate1,
-  //   trigger: '.section-6',
-  //   id: 'lolliUpdate1',
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.lolliUpdate2,
-  //   trigger: '.section-7',
-  //   id: 'lolliUpdate2',
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.lolliUpdate3,
-  //   trigger: '.section-8',
-  //   id: 'lolliUpdate3',
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.blackBox,
-  //   trigger: '.section-9',
-  //   id: 'blackBox',
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.cleanup,
-  //   trigger: '.section-10',
-  //   id: 'cleanup',
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.bottleTextOut,
-  //   trigger: '.section-11',
-  //   id: 'bottleTextOut',
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.bottleEmpty,
-  //   trigger: '.section-12',
-  //   id: 'bottleEmpty',
-  //   onLeave: stopWave,
-  //   onEnterBack: startWave,
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.animals,
-  //   trigger: '.section-13',
-  //   id: 'animals',
-  //   end: 'bottom center',
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.bottleFill,
-  //   trigger: '.section-14',
-  //   id: 'bottleFill',
-  //   onLeave: stopWave,
-  //   onEnterBack: startWave,
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.bottleColour,
-  //   trigger: '.section-15',
-  //   id: 'bottleColour',
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.bottleGrid,
-  //   trigger: '.section-16',
-  //   id: 'bottleGrid',
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.bottleGridColour,
-  //   trigger: '.section-17',
-  //   id: 'bottleGridColour',
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.bottleGridSort,
-  //   trigger: '.section-18',
-  //   id: 'bottleGridSort',
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.bottleGridOut,
-  //   trigger: '.section-19',
-  //   id: 'bottleGridOut',
-  // });
-
-  // // Setting up all the scrolltriggers for the dataset.
-  // // We set up a scrolltrigger/tween for each column and the grid.
-  // state.dataset.info.forEach((d, i) => {
-  //   ScrollTrigger.create({
-  //     animation: state.tween[d.tween],
-  //     trigger: `.section-${20 + i}`, // first section +1
-  //     id: d.tween,
-  //   });
-  // });
-
-  // ScrollTrigger.create({
-  //   animation: state.tween.globe,
-  //   trigger: '.section-33',
-  //   // trigger: '.section-1',
-  //   end: '95% center',
-  //   id: 'globe',
-  //   onUpdate(self) {
-  //     state.globe.scroll.progress = self.progress;
-  //     state.globe.scroll.direction = self.direction;
-  //   },
-  // });
+  // Create the scroll triggers.
+  ScrollTrigger.create({
+    animation: state.tween.wineScape,
+    trigger: '.section-1',
+    id: 'wineScape',
+  });
 
   ScrollTrigger.create({
-    // trigger: '.section-34',
-    trigger: '.section-1',
+    animation: state.tween.glassBottle,
+    trigger: '.section-2',
+    id: 'glassBottle',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.bottleText,
+    trigger: '.section-3',
+    id: 'bottleText',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.bottleWave,
+    trigger: '.section-4',
+    id: 'bottleWave',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.lolliChart,
+    trigger: '.section-5',
+    id: 'lolliChart',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.lolliUpdate1,
+    trigger: '.section-6',
+    id: 'lolliUpdate1',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.lolliUpdate2,
+    trigger: '.section-7',
+    id: 'lolliUpdate2',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.lolliUpdate3,
+    trigger: '.section-8',
+    id: 'lolliUpdate3',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.blackBox,
+    trigger: '.section-9',
+    id: 'blackBox',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.cleanup,
+    trigger: '.section-10',
+    id: 'cleanup',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.bottleTextOut,
+    trigger: '.section-11',
+    id: 'bottleTextOut',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.bottleEmpty,
+    trigger: '.section-12',
+    id: 'bottleEmpty',
+    onLeave: stopWave,
+    onEnterBack: startWave,
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.animals,
+    trigger: '.section-13',
+    id: 'animals',
+    end: 'bottom center',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.bottleFill,
+    trigger: '.section-14',
+    id: 'bottleFill',
+    onLeave: stopWave,
+    onEnterBack: startWave,
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.bottleColour,
+    trigger: '.section-15',
+    id: 'bottleColour',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.bottleGrid,
+    trigger: '.section-16',
+    id: 'bottleGrid',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.bottleGridColour,
+    trigger: '.section-17',
+    id: 'bottleGridColour',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.bottleGridSort,
+    trigger: '.section-18',
+    id: 'bottleGridSort',
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.bottleGridOut,
+    trigger: '.section-19',
+    id: 'bottleGridOut',
+  });
+
+  // Setting up all the scrolltriggers for the dataset.
+  // We set up a scrolltrigger/tween for each column and the grid.
+  state.dataset.info.forEach((d, i) => {
+    ScrollTrigger.create({
+      animation: state.tween[d.tween],
+      trigger: `.section-${20 + i}`, // first section +1
+      id: d.tween,
+    });
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.globe,
+    trigger: '.section-33',
+    end: '95% center',
+    id: 'globe',
+    onUpdate(self) {
+      // Remove dataset
+      state.ctx.glassBottle.clearRect(0, 0, state.width, state.height);
+      // Save the progress.
+      state.globe.scroll.progress = self.progress;
+    },
+  });
+
+  ScrollTrigger.create({
+    trigger: '.section-34',
     id: 'statsLattice',
     onLeaveBack: simulateGlobePosition,
     onEnter: simulateLattice,
   });
 
   ScrollTrigger.create({
-    // trigger: '.section-35',
-    trigger: '.section-2',
+    trigger: '.section-35',
     id: 'statsAlcohol',
     onLeaveBack: simulateLattice,
     onEnter: simulateAlcohol,
   });
 
-  // ScrollTrigger.create({
-  //   // trigger: '.section-36',
-  //   trigger: '.section-3',
-  //   id: 'statsDensity',
-  //   onEnter: simulateDensity,
-  //   onLeaveBack: simulateAlcohol,
-  // });
-
-  // ScrollTrigger.create({
-  //   // trigger: '.section-37',
-  //   trigger: '.section-4',
-  //   id: 'statsCitric',
-  //   onEnter: simulateCitric,
-  //   onLeaveBack: simulateDensity,
-  // });
-
-  // ScrollTrigger.create({
-  //   // trigger: '.section-38',
-  //   trigger: '.section-5',
-  //   id: 'statsPh',
-  //   onEnter: simulatePh,
-  //   onLeaveBack: simulateCitric,
-  // });
-
-  // ScrollTrigger.create({
-  //   // trigger: '.section-39',
-  //   trigger: '.section-6',
-  //   id: 'statsVolatile',
-  //   onEnter: simulateVolatile,
-  //   onLeaveBack: simulatePh,
-  // });
+  ScrollTrigger.create({
+    trigger: '.section-36',
+    id: 'statsDensity',
+    onLeaveBack: simulateAlcohol,
+    onEnter: simulateDensity,
+  });
 
   ScrollTrigger.create({
-    // trigger: '.section-40',
-    trigger: '.section-3',
+    trigger: '.section-37',
+    id: 'statsCitric',
+    onLeaveBack: simulateDensity,
+    onEnter: simulateCitric,
+  });
+
+  ScrollTrigger.create({
+    trigger: '.section-38',
+    id: 'statsPh',
+    onLeaveBack: simulateCitric,
+    onEnter: simulatePh,
+  });
+
+  ScrollTrigger.create({
+    trigger: '.section-39',
+    id: 'statsVolatile',
+    onLeaveBack: simulatePh,
+    onEnter: simulateVolatile,
+  });
+
+  ScrollTrigger.create({
+    trigger: '.section-40',
     id: 'statsQuality',
     onLeaveBack: simulateVolatile,
     onEnter: simulateQuality,
   });
 
   ScrollTrigger.create({
-    // trigger: '.section-40',
-    trigger: '.section-4',
+    trigger: '.section-41',
     id: 'qualityDots',
     onLeaveBack: () => (state.stats.colourDots = false),
     onEnter: () => (state.stats.colourDots = true),
   });
 
   ScrollTrigger.create({
-    // trigger: '.section-35',
-    trigger: '.section-5',
+    trigger: '.section-42',
     id: 'statsAlcoholColoured',
     onLeaveBack: simulateQuality,
     onEnter: simulateAlcohol,
   });
 
   ScrollTrigger.create({
-    // trigger: '.section-35',
-    trigger: '.section-6',
+    trigger: '.section-43',
     id: 'statsAlcoholQuality',
     onLeaveBack: simulateAlcohol,
     onEnter: simulateQualAlc,
   });
 
   ScrollTrigger.create({
-    trigger: '.section-7',
+    trigger: '.section-44',
     id: 'statsDrawLR',
     onLeaveBack: () => {
       state.stats.lr = false;
@@ -393,7 +384,7 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-8',
+    trigger: '.section-45',
     id: 'statsDrawLRPoint',
     onUpdate(self) {
       state.stats.progress.point = self.progress;
@@ -402,7 +393,7 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-9',
+    trigger: '.section-46',
     id: 'statsExtendLR',
     onUpdate(self) {
       state.stats.progress.extend = self.progress;
@@ -411,14 +402,14 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-10',
+    trigger: '.section-47',
     id: 'statsQualityBinarayAlcohol',
     onLeaveBack: simulateQualAlc,
     onEnter: simulateQualBinAlc,
   });
 
   ScrollTrigger.create({
-    trigger: '.section-11',
+    trigger: '.section-48',
     id: 'statsLogisticLine',
     onLeaveBack: simulateQualBinAlc,
     onUpdate(self) {
@@ -440,26 +431,26 @@ function update(wineScapeImg) {
   setVisualStructure();
   updateTransforms();
 
-  // tweenWineScape();
-  // tweenGlassBottle();
-  // tweenBottleText();
-  // tweenBottleWave();
-  // tweenLolliChart();
-  // tweenLolliUpdate1();
-  // tweenLolliUpdate2();
-  // tweenLolliUpdate3();
-  // tweenBlackBox();
-  // tweenCleanup();
-  // tweenBottleEmpty();
-  // tweenBottleTextOut();
-  // tweenAnimals();
-  // tweenBottleFill();
-  // tweenBottleColour();
-  // tweenBottleGrid();
-  // tweenBottleGridColour();
-  // tweenBottleGridSort();
-  // tweenBottleGridOut();
-  // tweenDataset();
+  tweenWineScape();
+  tweenGlassBottle();
+  tweenBottleText();
+  tweenBottleWave();
+  tweenLolliChart();
+  tweenLolliUpdate1();
+  tweenLolliUpdate2();
+  tweenLolliUpdate3();
+  tweenBlackBox();
+  tweenCleanup();
+  tweenBottleEmpty();
+  tweenBottleTextOut();
+  tweenAnimals();
+  tweenBottleFill();
+  tweenBottleColour();
+  tweenBottleGrid();
+  tweenBottleGridColour();
+  tweenBottleGridSort();
+  tweenBottleGridOut();
+  tweenDataset();
   tweenGlobe();
   tweenStats();
 

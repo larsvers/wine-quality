@@ -139,5 +139,6 @@ export default {
       point: 0,
       logistic: 0,
     },
+    pointTickInfo: null,
   },
 };

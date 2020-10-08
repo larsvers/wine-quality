@@ -4,6 +4,7 @@ import state from '../app/state';
 
 function drawPath(ctx, paths, t, length, offset) {
   ctx.save();
+
   ctx.translate(t.x, t.y);
   ctx.scale(t.scale, t.scale);
   ctx.setLineDash([length - offset, offset]);

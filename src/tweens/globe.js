@@ -26,7 +26,7 @@ let point0;
 let point1;
 let point2;
 
-// The center of the world (Northern Portigal in our case).
+// The center of the world (Northern Portugal in our case).
 const rBase = [8, -42, 0];
 
 // Values for the gradient. // 1

@@ -17,7 +17,6 @@ function simulateGlobePosition() {
   sim
     .nodes(state.stats.data)
     .force('chargeLattice', null)
-    .force('boxForce', null)
     .force('link', null)
     .force('xCentre', null)
     .force('xCentre', null)
@@ -27,7 +26,7 @@ function simulateGlobePosition() {
     .restart();
 
   // Switch the global alpha off.
-  gsap.to(alpha, { value: 0, duration: 0.5 });
+  gsap.to(state.stats.alpha, { value: 0, duration: 0.5 });
 }
 
 // Move to lattice.
@@ -56,10 +55,10 @@ function simulateLattice() {
     .force('chargeFrequencies', null)
     .force('xGlobe', null)
     .force('yGlobe', null)
-    .force('xAlcohol', null)
-    .force('yAlcohol', null)
     .force('xCentre', xPosCentre)
     .force('xCentre', yPosCentre)
+    .force('xAlcohol', null)
+    .force('yAlcohol', null)
     .alpha(0.8)
     .restart();
 
@@ -77,6 +76,7 @@ function simulateAlcohol() {
     { name: 'alcohol', axis: 'x', straight: false, header: true, label: false },
   ];
 
+  // this sim is triggered on two occasions.
   sim
     .nodes(state.stats.data)
     .force('link', null)
@@ -84,14 +84,14 @@ function simulateAlcohol() {
     .force('chargeFrequencies', chargeFrequencies)
     .force('xCentre', null)
     .force('xCentre', null)
-    .force('xDensity', null)
-    .force('yDensity', null)
-    .force('xQuality', null) // this sim is triggered on two occasions.
+    .force('xQuality', null)
     .force('yQuality', null)
     .force('xPosQualAlc', null)
     .force('yPosQualAlc', null)
     .force('xAlcohol', xPosAlcohol)
     .force('yAlcohol', yPosAlcohol)
+    .force('xDensity', null)
+    .force('yDensity', null)
     .alpha(0.8)
     .restart();
 }
@@ -109,10 +109,10 @@ function simulateDensity() {
     .nodes(state.stats.data)
     .force('xAlcohol', null)
     .force('yAlcohol', null)
-    .force('xCitric', null)
-    .force('yCitric', null)
     .force('xDensity', xPosDensity)
     .force('yDensity', yPosDensity)
+    .force('xCitric', null)
+    .force('yCitric', null)
     .alpha(0.8)
     .restart();
 }
@@ -136,10 +136,10 @@ function simulateCitric() {
     .nodes(state.stats.data)
     .force('xDensity', null)
     .force('yDensity', null)
-    .force('xPh', null)
-    .force('yPh', null)
     .force('xCitric', xPosCitric)
     .force('yCitric', yPosCitric)
+    .force('xPh', null)
+    .force('yPh', null)
     .alpha(0.8)
     .restart();
 }
@@ -157,10 +157,10 @@ function simulatePh() {
     .nodes(state.stats.data)
     .force('xCitric', null)
     .force('yCitric', null)
-    .force('xVolatile', null)
-    .force('yVolatile', null)
     .force('xPh', xPosPh)
     .force('yPh', yPosPh)
+    .force('xVolatile', null)
+    .force('yVolatile', null)
     .alpha(0.8)
     .restart();
 }
@@ -184,10 +184,10 @@ function simulateVolatile() {
     .nodes(state.stats.data)
     .force('xPh', null)
     .force('yPh', null)
-    .force('xQuality', null)
-    .force('yQuality', null)
     .force('xVolatile', xPosVolatile)
     .force('yVolatile', yPosVolatile)
+    .force('xQuality', null)
+    .force('yQuality', null)
     .alpha(0.8)
     .restart();
 }
@@ -202,12 +202,12 @@ function simulateQuality() {
 
   sim
     .nodes(state.stats.data)
-    .force('xAlcohol', null)
-    .force('yAlcohol', null)
     .force('xVolatile', null)
     .force('yVolatile', null)
     .force('xQuality', xPosQuality)
     .force('yQuality', yPosQuality)
+    .force('xAlcohol', null)
+    .force('yAlcohol', null)
     .alpha(0.8)
     .restart();
 }
