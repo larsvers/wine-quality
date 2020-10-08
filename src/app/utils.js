@@ -274,6 +274,7 @@ function drawPoints(ctx, p, c, r, s) {
   ctx.save();
   ctx.beginPath();
   ctx.arc(p[0], p[1], r, 0, 2 * Math.PI);
+  // eslint-disable-next-line no-unused-expressions
   s ? ((ctx.strokeStyle = c), ctx.stroke()) : ((ctx.fillStyle = c), ctx.fill());
   ctx.restore();
 }

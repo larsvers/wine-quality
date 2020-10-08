@@ -394,6 +394,15 @@ function setScroll() {
 
   ScrollTrigger.create({
     trigger: '.section-8',
+    id: 'statsDrawLRPoint',
+    onUpdate(self) {
+      state.stats.progress.point = self.progress;
+      renderStats();
+    },
+  });
+
+  ScrollTrigger.create({
+    trigger: '.section-9',
     id: 'statsExtendLR',
     onUpdate(self) {
       state.stats.progress.extend = self.progress;
@@ -402,14 +411,14 @@ function setScroll() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-9',
+    trigger: '.section-10',
     id: 'statsQualityBinarayAlcohol',
     onLeaveBack: simulateQualAlc,
     onEnter: simulateQualBinAlc,
   });
 
   ScrollTrigger.create({
-    trigger: '.section-10',
+    trigger: '.section-11',
     id: 'statsLogisticLine',
     onLeaveBack: simulateQualBinAlc,
     onUpdate(self) {

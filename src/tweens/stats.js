@@ -21,7 +21,12 @@ import state from '../app/state';
 import frequency from '../layouts/frequency';
 import labels from '../layouts/labels';
 import { txScale, tyScale } from './globe';
-import { capitalise, getLinearScale, euclideanDistance } from '../app/utils';
+import {
+  capitalise,
+  getLinearScale,
+  euclideanDistance,
+  drawPoints,
+} from '../app/utils';
 
 // Module scope.
 let dotRadius = 1.5;
@@ -42,6 +47,13 @@ let cp1 = [];
 let cp2 = [];
 let length;
 let offset;
+
+// Point on regression line data.
+let pointStart = [];
+let point = [];
+let pointEnd = [];
+let pointRadius;
+let pointAlpha;
 
 // Scales and Data
 // ---------------
@@ -108,6 +120,7 @@ function getLogisticLine(xRange) {
   const yAxisValues = state.stats.current.filter(d => d.axis === 'y');
 
   // Run it only if stars align.
+  // TODO: we should probably also condition this on progress.logistic being > 0
   if (!yAxisValues.length || !yAxisValues[0].labelLayout) return;
 
   // How to debug:
@@ -144,7 +157,7 @@ function getLogisticLine(xRange) {
 
 // Calculates the regression lines.
 function getLineDrawingParams() {
-  // Only do all this work, if we want to show a regression line.
+  // Only do all this work, when we want to show the regression line.
   if (!state.stats.lr) return;
 
   // The points x ranges (not the layout, the actual simulated points)
@@ -155,6 +168,60 @@ function getLineDrawingParams() {
   getLinearLine(xRange);
   getLinearLineExtension(xRange);
   getLogisticLine(xRange);
+}
+
+// Helper func to find the y tick corresponding to the point's x tick.
+function gatherTickInfo(xTick, array) {
+  const yValue = lrLine(xTick.value.x);
+
+  // Get the closest y tick.
+  const yTick = array.reduce((a, b) => {
+    return Math.abs(b.value.y - yValue) < Math.abs(a.value.y - yValue) ? b : a;
+  });
+
+  // A higher x value means we are below the ticl.
+  const delta = yValue > yTick.value.y ? 'below' : 'above';
+
+  // Store the data in state so we can fetch it later from the article.
+  state.stats.pointTickInfo = { x: xTick.key, y: yTick.key, yDelta: delta };
+}
+
+// Set the point coordinates we draw in `drawPoint`.
+function getPointDrawingParams() {
+  if (!state.stats.lr) return;
+  const xAxisValues = state.stats.current.filter(d => d.axis === 'x')[0];
+  const bbox = xAxisValues.labelLayout.bbox;
+  const tickNumber = xAxisValues.labelLayout.ticks.length;
+  // This needs to go in state / be picked up by the story
+  const xTick = xAxisValues.labelLayout.ticks[Math.ceil(tickNumber / 2)];
+
+  // The points' final destination.
+  pointStart = [xTick.value.x, bbox.yMax];
+  const pointFinal = [pointStart[0], lrLine(pointStart[0])];
+  const pointEndFinal = [bbox.xMax, lrLine(pointStart[0])];
+
+  // The initial point positions.
+  point = pointStart.slice();
+  pointEnd = point.slice();
+
+  // Interpolating from the initial to the final positions.
+  point[0] += state.stats.progress.point * (pointFinal[0] - point[0]);
+  point[1] += state.stats.progress.point * (pointFinal[1] - point[1]);
+
+  pointEnd[0] += state.stats.progress.point * (pointEndFinal[0] - pointEnd[0]);
+  pointEnd[1] += state.stats.progress.point * (pointEndFinal[1] - pointEnd[1]);
+
+  pointRadius = state.stats.progress.point * 5;
+  pointAlpha = 1 - state.stats.progress.extend;
+
+  // Get the tick inofo (what is the x and what the y key?) for the articla.
+  // We only need this once to begin with (this func runs repeatedly on render).
+  if (!state.stats.pointTickInfo) {
+    gatherTickInfo(
+      xTick,
+      state.stats.current.filter(d => d.axis === 'y')[0].labelLayout.ticks
+    );
+  }
 }
 
 // Layouts
@@ -256,6 +323,31 @@ function drawDot(r, colour) {
   ctx.fill();
 
   return can;
+}
+
+function drawPoint(ctx) {
+  ctx.save();
+
+  ctx.globalAlpha = pointAlpha;
+
+  // Vertical line.
+  ctx.beginPath();
+  ctx.moveTo(pointStart[0], pointStart[1]);
+  ctx.lineTo(point[0], point[1]);
+  ctx.stroke();
+
+  // Point.
+  ctx.beginPath();
+  ctx.arc(point[0], point[1], pointRadius, 0, 2 * Math.PI);
+  ctx.fill();
+
+  // Horizontal line.
+  ctx.beginPath();
+  ctx.moveTo(point[0], point[1]);
+  ctx.lineTo(pointEnd[0], pointEnd[1]);
+  ctx.stroke();
+
+  ctx.restore();
 }
 
 function drawLine(ctx) {
@@ -398,9 +490,11 @@ function drawStats(ctx) {
 
 function renderStats() {
   getLineDrawingParams();
+  getPointDrawingParams();
   requestAnimationFrame(() => {
     drawStats(state.ctx.lolli);
     drawLine(state.ctx.lolli);
+    drawPoint(state.ctx.lolli);
   });
 }
 
