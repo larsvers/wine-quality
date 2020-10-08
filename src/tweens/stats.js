@@ -190,6 +190,7 @@ function gatherTickInfo(xTick, array) {
 function getPointDrawingParams() {
   if (!state.stats.lr) return;
   const xAxisValues = state.stats.current.filter(d => d.axis === 'x')[0];
+  if (!xAxisValues.labelLayout) return; // double safety net due to random race condition issue.
   const bbox = xAxisValues.labelLayout.bbox;
   const tickNumber = xAxisValues.labelLayout.ticks.length;
   // This needs to go in state / be picked up by the story
