@@ -33,7 +33,7 @@ import tweenBottleGridOut from '../tweens/bottleGridOut';
 import tweenDataset from '../tweens/dataset';
 
 import tweenGlobe from '../tweens/globe';
-import tweenStats, { renderStats, tweenStatsAlpha } from '../tweens/stats';
+import tweenStats, { renderStats, tweenStatsAlpha, sim } from '../tweens/stats';
 import {
   simulateGlobePosition,
   simulateLattice,
@@ -51,6 +51,8 @@ import {
   simulateQualBinAlc,
   simulateRemove,
 } from '../tweens/statsScatter';
+
+import tweenImportance, { renderImportance } from '../tweens/importance';
 
 // Set ScrollTrigger defaults.
 ScrollTrigger.defaults({
@@ -440,6 +442,22 @@ function setScroll() {
     },
   });
 
+  ScrollTrigger.create({
+    animation: state.tween.importance,
+    trigger: '.section-8',
+    // trigger: '.section-50',
+    id: 'importance',
+    // Stop the simulation as it would otherwise continue to draw on the context.
+    onEnter: () => sim.stop(),
+  });
+
+  ScrollTrigger.create({
+    animation: state.tween.importanceRemove,
+    trigger: '.section-9',
+    // trigger: '.section-51',
+    id: 'importanceRemove',
+  });
+
   // Recalculate all scroll positions.
   ScrollTrigger.refresh();
 }
@@ -475,6 +493,7 @@ function update(wineScapeImg) {
   // tweenDataset();
   tweenGlobe();
   tweenStats();
+  tweenImportance();
 
   setScroll();
 }

@@ -42,6 +42,8 @@ export default {
     bottleGridOut: null,
     // dataset tweens are being added in tween func
     globe: null,
+    importance: null,
+    importanceRemove: null,
   },
   scape: {
     image: null,
@@ -140,5 +142,8 @@ export default {
       logistic: 0,
     },
     pointTickInfo: null,
+  },
+  varImp: {
+    data: null,
   },
 };

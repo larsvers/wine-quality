@@ -1,3 +1,4 @@
+/* eslint-disable prefer-destructuring */
 import { gsap } from 'gsap/all';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import { scaleLinear, scalePoint } from 'd3-scale/src/index';

@@ -57,7 +57,7 @@ import dataset12Alcohol from '../../static/dataset-12-alcohol';
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
 
 // Prep visual.
-function prepareVisuals(globeData, wineData) {
+function prepareVisuals(globeData, wineData, varImpData) {
   const svg = select('#svg-hidden');
   const stageGroup = svg.append('g').attr('id', 'stage-group');
   const rg = rough.svg(svg.node()).generator;
@@ -238,6 +238,9 @@ function prepareVisuals(globeData, wineData) {
     }
   }
   state.stats.links = links;
+
+  // Variable importance.
+  state.varImp.data = varImpData.sort((a, b) => (b.importance = a.importance));
 }
 
 function buildStory(data) {
@@ -252,8 +255,8 @@ function buildStory(data) {
     .html(d => d.text);
 }
 
-function ready([scrollData, wineScape, globeData, wineData]) {
-  prepareVisuals(globeData, wineData);
+function ready([scrollData, wineScape, globeData, wineData, varImpData]) {
+  prepareVisuals(globeData, wineData, varImpData);
   buildStory(scrollData);
 
   // TODO: add flag to bypass redraw of canvases on resize.
@@ -269,8 +272,11 @@ function init() {
   const wineScape = image('../../static/wine-scape.png');
   const globeData = json('../../data/world-simple.json');
   const wineData = csv('../../data/winedata.csv', autoType);
+  const varImpData = csv('../../data/importance.csv', autoType);
 
-  Promise.all([scrollData, wineScape, globeData, wineData]).then(ready);
+  Promise.all([scrollData, wineScape, globeData, wineData, varImpData]).then(
+    ready
+  );
 }
 
 export default init;
