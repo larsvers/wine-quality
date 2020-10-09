@@ -17,6 +17,7 @@ import { linearRegression, linearRegressionLine } from 'simple-statistics';
 
 // Internal modules.
 import { nest } from 'd3-collection/src';
+import gsap from 'gsap/gsap-core';
 import state from '../app/state';
 import frequency from '../layouts/frequency';
 import labels from '../layouts/labels';
@@ -54,6 +55,11 @@ let point = [];
 let pointEnd = [];
 let pointRadius;
 let pointAlpha;
+
+// Utils
+function tweenStatsAlpha(value) {
+  gsap.to(state.stats.alpha, { value, duration: 0.5 });
+}
 
 // Scales and Data
 // ---------------
@@ -372,7 +378,7 @@ function drawStats(ctx) {
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
 
-  ctx.globalAlpha = state.stats.alpha.value;
+  // ctx.globalAlpha = state.stats.alpha.value;
 
   // Draw axes and labels.
   if (state.stats.current.length) {
@@ -493,6 +499,7 @@ function renderStats() {
   getLineDrawingParams();
   getPointDrawingParams();
   requestAnimationFrame(() => {
+    state.ctx.lolli.globalAlpha = state.stats.alpha.value;
     drawStats(state.ctx.lolli);
     drawLine(state.ctx.lolli);
     drawPoint(state.ctx.lolli);
@@ -539,6 +546,6 @@ function tweenStats() {
 }
 
 export default tweenStats;
-export { sim, renderStats };
+export { sim, renderStats, boundingBox, tweenStatsAlpha };
 
 // 1. Math.random to disperse them a little to start with.

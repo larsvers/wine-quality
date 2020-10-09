@@ -1,9 +1,10 @@
 // External libs.
+import gsap from 'gsap/gsap-core';
 import { forceManyBody, forceX, forceY } from 'd3-force';
 
 // Internal modules.
 import state from '../app/state';
-import { sim } from './stats';
+import { sim, boundingBox, tweenStatsAlpha } from './stats';
 
 // Individual simulations:
 
@@ -88,14 +89,34 @@ function simulateQualBinAlc() {
 
   sim
     .nodes(state.stats.data)
+    .force('chargeScatter', chargeScatter)
+    .force('boxForce', boundingBox)
     .force('xPosQualAlc', null)
     .force('yPosQualAlc', null)
     .force('xPosQualVol', null)
     .force('yPosQualVol', null)
     .force('xPosQualBinAlc', xPosQualBinAlc)
     .force('yPosQualBinAlc', yPosQualBinAlc)
+    .force('chargeRemove', null)
     .alpha(0.8)
     .restart();
 }
 
-export { simulateQualAlc, simulateQualVol, simulateQualBinAlc };
+const chargeRemove = forceManyBody().strength(-6);
+
+function simulateRemove() {
+  sim
+    .nodes(state.stats.data)
+    .force('chargeScatter', null)
+    .force('boxForce', null)
+    .force('xPosQualBinAlc', null)
+    .force('yPosQualBinAlc', null)
+    .force('chargeRemove', chargeRemove)
+    .alpha(0.8)
+    .restart();
+
+  // Switch the global alpha off.
+  tweenStatsAlpha(0);
+}
+
+export { simulateQualAlc, simulateQualVol, simulateQualBinAlc, simulateRemove };

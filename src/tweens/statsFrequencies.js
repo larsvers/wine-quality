@@ -4,7 +4,7 @@ import { forceLink, forceManyBody, forceX, forceY } from 'd3-force';
 
 // Internal modules.
 import state from '../app/state';
-import { sim } from './stats';
+import { sim, tweenStatsAlpha } from './stats';
 
 // Individual simulations:
 
@@ -26,7 +26,7 @@ function simulateGlobePosition() {
     .restart();
 
   // Switch the global alpha off.
-  gsap.to(state.stats.alpha, { value: 0, duration: 0.5 });
+  tweenStatsAlpha(0);
 }
 
 // Move to lattice.
