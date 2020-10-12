@@ -53,6 +53,7 @@ import {
 } from '../tweens/statsScatter';
 
 import tweenImportance from '../tweens/importance';
+import { buildModelControls } from '../model/model.js';
 
 // Set ScrollTrigger defaults.
 ScrollTrigger.defaults({
@@ -501,6 +502,8 @@ function update(wineScapeImg) {
   tweenGlobe();
   tweenStats();
   tweenImportance();
+
+  buildModelControls();
 
   setScroll();
 }
