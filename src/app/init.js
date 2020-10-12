@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-return-assign */
 // Libs.
 import { select } from 'd3-selection/src/index';
@@ -18,6 +19,7 @@ import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import state from './state';
 import update from './update';
 import { getBox, splitPath, getPathData } from './utils';
+import { getProbability } from '../model/model';
 
 // Paths general.
 import glass from '../../static/wine-glass-clean';
@@ -58,6 +60,14 @@ import dataset12Alcohol from '../../static/dataset-12-alcohol';
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
 
 // Helpers.
+function setModelWeightMap(array) {
+  array.forEach(d => (d.term = d.term.toLowerCase()));
+
+  let mapResult = map();
+  array.forEach(d => mapResult.set(d.term, d.estimate));
+  return mapResult;
+}
+
 function setInitialModelValues(data) {
   const predictors = data.columns.filter(
     d =>
@@ -264,11 +274,11 @@ function prepareVisuals(
   state.stats.links = links;
 
   // Variable importance.
-  state.varImp.data = varImpData.sort((a, b) => (b.importance = a.importance));
+  state.varImp.data = varImpData.sort((a, b) => b.importance - a.importance);
 
   // Model.
   state.model.intercept = modelIntercept[0].estimate;
-  state.model.weights = map(modelWeights, d => d.term);
+  state.model.weights = setModelWeightMap(modelWeights);
   state.model.values = setInitialModelValues(state.stats.data);
 }
 
