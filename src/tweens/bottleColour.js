@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable no-use-before-define */
 import { gsap } from 'gsap/all';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
@@ -87,7 +88,7 @@ function tweenBottleColour() {
 
   // Kill old - set up new timeline.
   if (state.tween.bottleColour) state.tween.bottleColour.kill();
-  state.tween.bottleColour = defineTweenBottleColour(0, 0.8);
+  state.tween.bottleColour = defineTweenBottleColour();
   state.tween.bottleColour.totalProgress(progress);
 }
 

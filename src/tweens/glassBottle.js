@@ -4,7 +4,7 @@ import { drawScape } from './wineScape';
 import state from '../app/state';
 
 // TODO: export this and draw the
-// bottle outline in the respective ciolours
+// bottle outline in the respective colours
 function drawBottle(ctx, path, t) {
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
@@ -61,8 +61,6 @@ function defineTweenGlassBottle() {
       map: 'complexity',
       updateTarget: false,
       render(path) {
-        // TODO: continue here. Can we store the path in a
-        // a generic state variable>
         state.glassBottle.path = path;
       },
     },

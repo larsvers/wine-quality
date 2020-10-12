@@ -2,7 +2,8 @@
 // Libs.
 import { select } from 'd3-selection/src/index';
 import { csv, image, json } from 'd3-fetch/src/index';
-import { max } from 'd3-array/src/index';
+import { max, mean } from 'd3-array/src/index';
+import { map } from 'd3-collection/src/index';
 import { autoType } from 'd3-dsv/src/index';
 import rough from 'roughjs/bundled/rough.esm';
 import cloneDeep from 'lodash.clonedeep';
@@ -56,8 +57,31 @@ import dataset12Alcohol from '../../static/dataset-12-alcohol';
 // Gsap register.
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
 
+// Helpers.
+function setInitialModelValues(data) {
+  const predictors = data.columns.filter(
+    d =>
+      d !== 'id' && d !== 'index' && d !== 'quality' && d !== 'quality_binary'
+  );
+
+  const meanMap = map();
+  predictors.forEach(col => {
+    meanMap.set(
+      col,
+      mean(data, d => d[col])
+    );
+  });
+  return meanMap;
+}
+
 // Prep visual.
-function prepareVisuals(globeData, wineData, varImpData) {
+function prepareVisuals(
+  globeData,
+  wineData,
+  varImpData,
+  modelIntercept,
+  modelWeights
+) {
   const svg = select('#svg-hidden');
   const stageGroup = svg.append('g').attr('id', 'stage-group');
   const rg = rough.svg(svg.node()).generator;
@@ -241,6 +265,11 @@ function prepareVisuals(globeData, wineData, varImpData) {
 
   // Variable importance.
   state.varImp.data = varImpData.sort((a, b) => (b.importance = a.importance));
+
+  // Model.
+  state.model.intercept = modelIntercept[0].estimate;
+  state.model.weights = map(modelWeights, d => d.term);
+  state.model.values = setInitialModelValues(state.stats.data);
 }
 
 function buildStory(data) {
@@ -255,8 +284,16 @@ function buildStory(data) {
     .html(d => d.text);
 }
 
-function ready([scrollData, wineScape, globeData, wineData, varImpData]) {
-  prepareVisuals(globeData, wineData, varImpData);
+function ready([
+  scrollData,
+  wineScape,
+  globeData,
+  wineData,
+  varImpData,
+  modelIntercept,
+  modelWeights,
+]) {
+  prepareVisuals(globeData, wineData, varImpData, modelIntercept, modelWeights);
   buildStory(scrollData);
 
   // TODO: add flag to bypass redraw of canvases on resize.
@@ -273,10 +310,18 @@ function init() {
   const globeData = json('../../data/world-simple.json');
   const wineData = csv('../../data/winedata.csv', autoType);
   const varImpData = csv('../../data/importance.csv', autoType);
+  const modelIntercept = csv('../../data/model-intercept.csv', autoType);
+  const modelWeights = csv('../../data/model-weights.csv', autoType);
 
-  Promise.all([scrollData, wineScape, globeData, wineData, varImpData]).then(
-    ready
-  );
+  Promise.all([
+    scrollData,
+    wineScape,
+    globeData,
+    wineData,
+    varImpData,
+    modelIntercept,
+    modelWeights,
+  ]).then(ready);
 }
 
 export default init;

@@ -146,4 +146,9 @@ export default {
   varImp: {
     data: null,
   },
+  model: {
+    intercept: null,
+    weights: null,
+    values: null,
+  },
 };
