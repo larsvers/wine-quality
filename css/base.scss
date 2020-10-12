@@ -1,0 +1,49 @@
+body {
+  margin: 0;
+  // set overflow to hidden everywhere
+  // apart from the scrolly container
+  overflow: hidden;
+}
+
+div {
+  // border: 1px solid tomato;
+}
+
+// Buttons
+button {
+  margin: 1em;
+  font-size: 0.7em;
+  color: #555;
+}
+
+// The wrapping set up.
+#container {
+  position: absolute;
+  display: flex;
+  flex-wrap: wrap;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+#visual-container {
+  position: relative;
+  flex-grow: 1;
+  flex-basis: 1%;
+  background-color: lightskyblue;
+}
+#text-container {
+  flex-grow: 1;
+  flex-basis: 1%;
+  background-color: papayawhip;
+}
+.wrapper {
+  min-width: 400px; // the paralell divs will wrap at 800px screensize
+  overflow: hidden;
+}
+
+// Make the text wrapper scrollable.
+#text-wrap {
+  position: absolute;
+  overflow: auto;
+}
+
