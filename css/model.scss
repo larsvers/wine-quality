@@ -1,0 +1,13 @@
+#model-app {
+  background-color: #f7f7f7;
+  overflow: scroll;
+}
+
+#model-app-wrap {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.model-value-control {
+  border: 1px solid #ccc;
+}

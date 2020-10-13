@@ -69,6 +69,7 @@ function updateDimensions() {
   const container = document.querySelector('#canvas-main-container');
   state.width = container.clientWidth;
   state.height = container.clientHeight;
+  console.log(state.width);
 }
 
 // Get contexts and rezize canvases.
@@ -80,6 +81,7 @@ function updateContexts(names) {
   });
 }
 
+// TODO Do i need this?
 function updateSvg() {
   const svg = select('svg#axes');
 
@@ -503,7 +505,7 @@ function update(wineScapeImg) {
   tweenStats();
   tweenImportance();
 
-  buildModelControls();
+  // buildModelControls();
 
   setScroll();
 }
