@@ -25,7 +25,8 @@ button {
   height: 100vh;
   overflow: hidden;
 
-  @media (min-width: $tablet-up) {
+  // @media (min-width: $tablet-up) {
+  @media #{$tablet-up} {
     flex-direction: row;
   }
 }

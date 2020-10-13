@@ -26,11 +26,13 @@ function getProbability(values, weights, intercept) {
 
 // TODO add to init module.
 function initModelControls() {
-  select('#text-wrap')
+  const modelApp = select('#text-wrap')
     .insert('div', '.section-0')
-    .attr('id', 'model-app')
-    .append('div')
-    .attr('id', 'model-app-wrap');
+    .attr('id', 'model-app');
+
+  modelApp.append('div').attr('id', 'model-app-header');
+
+  modelApp.append('div').attr('id', 'model-app-wrap');
 }
 
 function buildControl(sel) {
@@ -58,7 +60,7 @@ function buildModelControls() {
     .data(state.model.values.entries())
     .join('div')
     .attr('class', 'model-value-control')
-    .style('width', `${Math.min(200, state.width / 2)}px`)
+    .style('width', `${Math.min(200, state.width * 0.475)}px`) // 1
     .style('height', `${100}px`)
     .call(buildControl);
 
@@ -67,3 +69,7 @@ function buildModelControls() {
 }
 
 export { getProbability, buildModelControls };
+
+// 1. We want at least 2 controls sided by side.
+//    Hence the minimum would be 0.5% of the width.
+//    However, we give it a little leeway here with 0.475

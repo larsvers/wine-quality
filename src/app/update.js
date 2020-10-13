@@ -503,7 +503,7 @@ function update(wineScapeImg) {
   tweenStats();
   tweenImportance();
 
-  // buildModelControls();
+  buildModelControls();
 
   setScroll();
 }
