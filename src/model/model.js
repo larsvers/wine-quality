@@ -1,7 +1,13 @@
 import isequal from 'lodash.isequal';
+import { max, mean } from 'd3-array/src';
+import { scaleLinear } from 'd3-scale/src';
 import { select } from 'd3-selection';
+import { curveBasis, line } from 'd3-shape/src';
 
 import state from '../app/state';
+
+// Module state.
+const margin = { top: 20, right: 20, bottom: 20, left: 20 };
 
 /**
  * Calculates the Logistic Regression probability for the
@@ -27,31 +33,112 @@ function getProbability(values, weights, intercept) {
 // TODO add to init module.
 function initModelControls() {
   const modelApp = select('#text-wrap')
+    .selectAll('#model-app') // Won't need this when
+    .data([1]) // we move this to init.
+    .enter() // ------------------------------------
     .insert('div', '.section-0')
     .attr('id', 'model-app');
 
   modelApp.append('div').attr('id', 'model-app-header');
-
   modelApp.append('div').attr('id', 'model-app-wrap');
 }
 
-function buildControl(sel) {
-  const margin = { top: 20, right: 20, bottom: 20, left: 20 };
+// Function to compute density
+function kernelDensityEstimator(kernel, X) {
+  return function(V) {
+    return X.map(function(x) {
+      return [
+        x,
+        mean(V, function(v) {
+          return kernel(x - v);
+        }),
+      ];
+    });
+  };
+}
 
-  const { key: variable, value } = sel.datum();
+function kernelEpanechnikov(k) {
+  return function(v) {
+    return Math.abs((v /= k)) <= 1 ? (0.75 * (1 - v * v)) / k : 0;
+  };
+}
 
-  // Build the density
+function buildControl(d) {
+  const { key: variable, value } = d;
+
+  // Set up.
+  const sel = select(this);
+  const svg = sel.append('svg').attr('class', 'control');
+  const width = parseInt(svg.style('width')) - margin.left - margin.right;
+  const height = parseInt(svg.style('height')) - margin.top - margin.bottom;
+  const g = svg
+    .append('g')
+    .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+  // x Scale.
+  const xScale = scaleLinear()
+    .domain(state.model.ranges.get(variable))
+    .range([0, width]);
+
+  // Label.
+  g.append('text')
+    .attr('x', 0)
+    .attr('y', -margin.top / 2)
+    .attr('dy', '0.35em')
+    .style('font-family', 'sans-serif')
+    .style('font-size', 10)
+    .text(variable);
+
+  // Axis.
+  g.append('line')
+    .attr('y1', height)
+    .attr('x2', width)
+    .attr('y2', height)
+    .style('stroke-width', 1)
+    .style('stroke', '#000');
+
+  // Handle.
+  g.append('circle')
+    .attr('cx', xScale(value))
+    .attr('cy', height)
+    .attr('r', 5)
+    .style('fill', '#000');
+
+  // Density data.
+  const k =
+    (state.model.ranges.get(variable)[1] -
+      state.model.ranges.get(variable)[0]) *
+    0.05;
+  const kde = kernelDensityEstimator(kernelEpanechnikov(k), xScale.ticks(40));
+  const density = kde(state.stats.data.map(d => d[variable]));
+  density.unshift([density[0][0], 0]);
+  density.push([density[density.length - 1][0], 0]);
+
+  // y Scale.
+  const yScale = scaleLinear()
+    .domain([0, max(density.map(d => d[1]))])
+    .range([height, 0]);
+
+  // Line generator.
+  const lineGen = line()
+    .curve(curveBasis)
+    .x(d => xScale(d[0]))
+    .y(d => yScale(d[1]));
+
+  // Density chart.
+  g.append('path')
+    .attr('class', `density ${variable}`)
+    .datum(density)
+    .style('fill', '#000')
+    .style('fill-opacity', 0.2)
+    .style('stroke-width', 1)
+    .style('stroke', '#000')
+    .style('stroke-linejoin', 'round')
+    .attr('d', lineGen);
 }
 
 function buildModelControls() {
   initModelControls();
-
-  // TODO Change this: We want as many divs as there are
-  // variables. Each div gets a little svg with the density chart
-  // controls. The div's will be arranged with flex box.
-  // The svg sizes will be dependent on the div's dimensions.
-
-  // Minimial case: 2 columns and 6 columns.
 
   select('#model-app').style('height', `${state.height}px`);
 
@@ -62,10 +149,7 @@ function buildModelControls() {
     .attr('class', 'model-value-control')
     .style('width', `${Math.min(200, state.width * 0.475)}px`) // 1
     .style('height', `${100}px`)
-    .call(buildControl);
-
-  // console.log(Math.min(200, state.width / 2));
-  // console.log(state.width / 2);
+    .each(buildControl);
 }
 
 export { getProbability, buildModelControls };

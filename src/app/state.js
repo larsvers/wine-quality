@@ -150,5 +150,6 @@ export default {
     intercept: null,
     weights: null,
     values: null,
+    ranges: null,
   },
 };

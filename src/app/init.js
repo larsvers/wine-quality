@@ -3,7 +3,7 @@
 // Libs.
 import { select } from 'd3-selection/src/index';
 import { csv, image, json } from 'd3-fetch/src/index';
-import { max, mean } from 'd3-array/src/index';
+import { max, mean, extent } from 'd3-array/src/index';
 import { map } from 'd3-collection/src/index';
 import { autoType } from 'd3-dsv/src/index';
 import rough from 'roughjs/bundled/rough.esm';
@@ -68,20 +68,25 @@ function setModelWeightMap(array) {
   return mapResult;
 }
 
-function setInitialModelValues(data) {
+function getModelValues(data) {
   const predictors = data.columns.filter(
     d =>
       d !== 'id' && d !== 'index' && d !== 'quality' && d !== 'quality_binary'
   );
 
   const meanMap = map();
+  const rangeMap = map();
   predictors.forEach(col => {
     meanMap.set(
       col,
       mean(data, d => d[col])
     );
+    rangeMap.set(
+      col,
+      extent(data, d => d[col])
+    );
   });
-  return meanMap;
+  return { meanMap, rangeMap };
 }
 
 // Prep visual.
@@ -279,7 +284,9 @@ function prepareVisuals(
   // Model.
   state.model.intercept = modelIntercept[0].estimate;
   state.model.weights = setModelWeightMap(modelWeights);
-  state.model.values = setInitialModelValues(state.stats.data);
+  const modelValues = getModelValues(state.stats.data);
+  state.model.values = modelValues.meanMap;
+  state.model.ranges = modelValues.rangeMap;
 }
 
 function buildStory(data) {
