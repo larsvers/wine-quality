@@ -6,7 +6,7 @@ import cloneDeep from 'lodash.clonedeep';
 import { select } from 'd3-selection/src';
 
 import state from './state';
-import { setWrapHeight, resizeCanvas, getTransform } from './utils';
+import { resizeCanvas, getTransform } from './utils';
 import tweenBottleWave, { startWave, stopWave } from '../tweens/bottleWave';
 import tweenWineScape from '../tweens/wineScape';
 
@@ -69,7 +69,6 @@ function updateDimensions() {
   const container = document.querySelector('#canvas-main-container');
   state.width = container.clientWidth;
   state.height = container.clientHeight;
-  console.log(state.width);
 }
 
 // Get contexts and rezize canvases.
@@ -476,7 +475,6 @@ function setScroll() {
 function update(wineScapeImg) {
   state.scape.image = wineScapeImg;
 
-  setWrapHeight();
   updateDimensions();
   setVisualStructure();
   updateTransforms();

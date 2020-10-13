@@ -42,15 +42,6 @@ function getBox(el, path) {
   return box;
 }
 
-/**
- * Set height of scrollydiv deterministically. It's flex-wrap, which
- * is a fucker to set otherwise (if at all possible).
- */
-function setWrapHeight() {
-  const contHeight = select('#text-container').node().offsetHeight;
-  select('#text-wrap').style('height', `${contHeight}px`);
-}
-
 // Update functions.
 function resizeCanvas(canvas, width, height) {
   const context = canvas.getContext('2d');
@@ -283,7 +274,6 @@ export {
   capitalise,
   isSelection,
   getBox,
-  setWrapHeight,
   resizeCanvas,
   getTransform,
   splitPath,

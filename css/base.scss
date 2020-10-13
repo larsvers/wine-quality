@@ -20,29 +20,31 @@ button {
 #container {
   position: absolute;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+
+  @media (min-width: $tablet-up) {
+    flex-direction: row;
+  }
 }
 #visual-container {
-  position: relative;
   flex-grow: 1;
-  flex-basis: 1%;
   background-color: lightskyblue;
 }
 #text-container {
   flex-grow: 1;
-  flex-basis: 1%;
   background-color: papayawhip;
 }
 .wrapper {
-  min-width: 400px; // the paralell divs will wrap at 800px screensize
   overflow: hidden;
+  position: relative;
 }
 
 // Make the text wrapper scrollable.
 #text-wrap {
+  height: 100%;
   position: absolute;
   overflow: auto;
 }
