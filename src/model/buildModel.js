@@ -1,29 +1,7 @@
-import isequal from 'lodash.isequal';
 import { select } from 'd3-selection';
 
 import state from '../app/state';
 import buildControl from './densityControl';
-
-/**
- * Calculates the Logistic Regression probability for the
- * given values based on the given model parameters.
- * @param { map } values map of the values
- * @param { map } weights map of the weights
- * @param { number } intercept the model intercept
- */
-function getProbability(values, weights, intercept) {
-  const check = isequal(values.keys(), weights.keys());
-  if (!check) throw Error('values and weights are not equal.');
-
-  let logOdds = intercept;
-  values.keys().forEach(variable => {
-    logOdds += values.get(variable) * weights.get(variable);
-  });
-
-  const odds = Math.exp(logOdds);
-  const prob = odds / (1 + odds);
-  return prob;
-}
 
 // TODO add to init module.
 function initModelControls() {
@@ -59,7 +37,7 @@ function buildModelControls() {
     .each(buildControl);
 }
 
-export { getProbability, buildModelControls };
+export default buildModelControls;
 
 // 1. We want at least 2 controls sided by side.
 //    Hence the minimum would be 0.5% of the width.

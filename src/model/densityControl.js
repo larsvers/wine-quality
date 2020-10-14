@@ -36,8 +36,14 @@ function kernelEpanechnikov(k) {
 }
 
 function buildControl(datapoint) {
+  // Get the datum's values.
   const variable = datapoint.key;
   let { value } = datapoint;
+
+  // Identify # of decimals to show.
+  const valueRange = state.model.ranges.get(variable);
+  const rangeDelta = valueRange[1] - valueRange[0];
+  const decimals = rangeDelta > 0.09 ? 2 : 3;
 
   // Set up.
   const sel = select(this);
@@ -159,7 +165,7 @@ function buildControl(datapoint) {
     .attr('dominant-baseline', 'hanging')
     .style('font-family', 'Pangolin')
     .style('font-size', 12)
-    .text(value.toFixed(2));
+    .text(value.toFixed(decimals));
 
   // Drag handler.
   function handleDrag(datum) {
@@ -182,7 +188,7 @@ function buildControl(datapoint) {
     });
     circle.attr('cx', (datum.x = x));
     marker.attr('x1', (datum.x = x)).attr('x2', (datum.x = x));
-    label.attr('x', (datum.x = x)).text(value.toFixed(2));
+    label.attr('x', (datum.x = x)).text(value.toFixed(decimals));
   }
 
   // Drag rectangle.

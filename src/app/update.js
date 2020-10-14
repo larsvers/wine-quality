@@ -53,7 +53,7 @@ import {
 } from '../tweens/statsScatter';
 
 import tweenImportance from '../tweens/importance';
-import { buildModelControls } from '../model/model';
+import buildModelControls from '../model/buildModel';
 
 // Set ScrollTrigger defaults.
 ScrollTrigger.defaults({

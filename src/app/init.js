@@ -19,7 +19,6 @@ import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import state from './state';
 import update from './update';
 import { getBox, splitPath, getPathData } from './utils';
-import { getProbability } from '../model/model';
 
 // Paths general.
 import glass from '../../static/wine-glass-clean';
