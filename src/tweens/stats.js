@@ -23,7 +23,7 @@ import frequency from '../layouts/frequency';
 import labels from '../layouts/labels';
 import { txScale, tyScale } from './globe';
 import {
-  capitalise,
+  prettyLabel,
   getLinearScale,
   euclideanDistance,
   drawPoints,
@@ -465,7 +465,7 @@ function drawStats(ctx) {
       if (currentVar.header) {
         const xHeader = labelLayout.label.header.x;
         const yHeader = labelLayout.label.header.y;
-        const labelHeader = capitalise(currentVar.name).replace('_', ' ');
+        const labelHeader = prettyLabel(currentVar.name).replace('_', ' ');
 
         ctx.font = '50px Amatic SC';
         ctx.fillText(labelHeader, xHeader, yHeader - 50);
@@ -475,7 +475,7 @@ function drawStats(ctx) {
       if (currentVar.label) {
         const xAxisLabel = labelLayout.label.axisLabel.x;
         const yAxisLabel = labelLayout.label.axisLabel.y;
-        const labelAxis = capitalise(currentVar.name).replace('_', ' ');
+        const labelAxis = prettyLabel(currentVar.name).replace('_', ' ');
 
         ctx.font = '20px Amatic SC';
         ctx.fillText(labelAxis, xAxisLabel, yAxisLabel);

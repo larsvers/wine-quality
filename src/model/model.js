@@ -3,14 +3,19 @@
 /* eslint-disable no-return-assign */
 import isequal from 'lodash.isequal';
 import { max, mean } from 'd3-array/src';
+import { format } from 'd3-format/src';
 import { scaleLinear } from 'd3-scale/src';
 import { select } from 'd3-selection';
 import { curveBasis, line } from 'd3-shape/src';
 
 import state from '../app/state';
+import { prettyLabel } from '../app/utils';
 
 // Module state.
-const margin = { top: 20, right: 20, bottom: 20, left: 20 };
+const margin = { top: 20, right: 20, bottom: 30, left: 20 };
+
+// Helpers.
+const formatNum = format('~s');
 
 /**
  * Calculates the Logistic Regression probability for the
@@ -73,6 +78,11 @@ function buildControl(datum) {
   const sel = select(this);
   sel.select('svg').remove(); // No join mechanics here - let's be deterministic.
   const svg = sel.append('svg').attr('class', 'control');
+  const clippy = svg
+    .append('defs')
+    .append('clipPath')
+    .attr('id', `clippy-${variable}`)
+    .append('path');
   // SVG is defined as 100% width/height in CSS.
   const width = parseInt(svg.style('width'), 10) - margin.left - margin.right;
   const height = parseInt(svg.style('height'), 10) - margin.top - margin.bottom;
@@ -87,12 +97,13 @@ function buildControl(datum) {
 
   // Label.
   g.append('text')
-    .attr('x', 0)
+    .attr('x', width)
     .attr('y', -margin.top / 2)
     .attr('dy', '0.35em')
-    .style('font-family', 'sans-serif')
+    .attr('text-anchor', 'end')
+    .style('font-family', 'Pangolin')
     .style('font-size', 10)
-    .text(variable);
+    .text(prettyLabel(variable));
 
   // Axis.
   g.append('line')
@@ -102,13 +113,6 @@ function buildControl(datum) {
     .style('stroke-width', 1)
     .style('stroke', '#000');
 
-  // Handle.
-  g.append('circle')
-    .attr('cx', xScale(value))
-    .attr('cy', height)
-    .attr('r', 5)
-    .style('fill', '#000');
-
   // Density data.
   const k =
     (state.model.ranges.get(variable)[1] -
@@ -116,6 +120,8 @@ function buildControl(datum) {
     0.05;
   const kde = kernelDensityEstimator(kernelEpanechnikov(k), xScale.ticks(40));
   const density = kde(state.stats.data.map(d => d[variable]));
+
+  // Add a start and an end point at x = 0 to the mix.
   density.unshift([density[0][0], 0]);
   density.push([density[density.length - 1][0], 0]);
 
@@ -130,16 +136,49 @@ function buildControl(datum) {
     .x(d => xScale(d[0]))
     .y(d => yScale(d[1]));
 
+  // Get density path.
+  const densityPath = lineGen(density);
+
   // Density chart.
   g.append('path')
     .attr('class', `density ${variable}`)
-    .datum(density)
     .style('fill', '#000')
     .style('fill-opacity', 0.2)
     .style('stroke-width', 1)
     .style('stroke', '#000')
     .style('stroke-linejoin', 'round')
-    .attr('d', lineGen);
+    .attr('d', densityPath);
+
+  // Clip path data.
+  clippy.attr('d', densityPath);
+
+  // Marker.
+  g.append('line')
+    .attr('x1', xScale(value))
+    .attr('y1', height)
+    .attr('x2', xScale(value))
+    .attr('y2', 0)
+    .attr('clip-path', `url(#clippy-${variable})`)
+    .style('stroke-width', 1)
+    .style('stroke', 'black');
+
+  // Handle.
+  g.append('circle')
+    .attr('cx', xScale(value))
+    .attr('cy', height)
+    .attr('r', 5)
+    .style('fill', '#000');
+
+  // Number.
+  g.append('text')
+    .attr('x', xScale(value))
+    .attr('y', height)
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'hanging')
+    .attr('dy', '0.7em')
+    .style('font-family', 'Pangolin')
+    .style('font-size', 12)
+    .text(value.toFixed(2));
 }
 
 function buildModelControls() {

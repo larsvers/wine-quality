@@ -5,8 +5,9 @@ import { select, selection } from 'd3-selection/src/index';
 import { scaleLinear } from 'd3-scale/src';
 import state from './state';
 
-function capitalise(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
+function prettyLabel(string) {
+  const capitals = string.charAt(0).toUpperCase() + string.slice(1);
+  return capitals.replaceAll('_', ' ');
 }
 
 function isSelection(el) {
@@ -271,7 +272,7 @@ function drawPoints(ctx, p, c, r, s) {
 }
 
 export {
-  capitalise,
+  prettyLabel,
   isSelection,
   getBox,
   resizeCanvas,

@@ -6,7 +6,7 @@ import { max } from 'd3-array';
 import { scaleLinear, scalePoint } from 'd3-scale';
 
 import state from '../app/state';
-import { capitalise } from '../app/utils';
+import { prettyLabel } from '../app/utils';
 
 // Module scope.
 let area = {
@@ -94,11 +94,7 @@ function drawImportanceChart(ctx) {
     ctx.font = '16px Pangolin';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillText(
-      capitalise(d.variable).replaceAll('_', ' '),
-      xScale(0),
-      yScale(d.variable) + 5
-    );
+    ctx.fillText(prettyLabel(d.variable), xScale(0), yScale(d.variable) + 5);
     ctx.restore();
   });
 
