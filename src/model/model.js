@@ -1,3 +1,6 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-cond-assign */
+/* eslint-disable no-return-assign */
 import isequal from 'lodash.isequal';
 import { max, mean } from 'd3-array/src';
 import { scaleLinear } from 'd3-scale/src';
@@ -63,14 +66,16 @@ function kernelEpanechnikov(k) {
   };
 }
 
-function buildControl(d) {
-  const { key: variable, value } = d;
+function buildControl(datum) {
+  const { key: variable, value } = datum;
 
   // Set up.
   const sel = select(this);
+  sel.select('svg').remove(); // No join mechanics here - let's be deterministic.
   const svg = sel.append('svg').attr('class', 'control');
-  const width = parseInt(svg.style('width')) - margin.left - margin.right;
-  const height = parseInt(svg.style('height')) - margin.top - margin.bottom;
+  // SVG is defined as 100% width/height in CSS.
+  const width = parseInt(svg.style('width'), 10) - margin.left - margin.right;
+  const height = parseInt(svg.style('height'), 10) - margin.top - margin.bottom;
   const g = svg
     .append('g')
     .attr('transform', `translate(${margin.left}, ${margin.top})`);
@@ -142,9 +147,15 @@ function buildModelControls() {
 
   select('#model-app').style('height', `${state.height}px`);
 
+  // Sort the controls by their variable importance.
+  const order = state.varImp.data.map(d => d.variable);
+  const controlData = state.model.values.entries();
+  controlData.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
+
+  // Mount the app.
   select('#model-app-wrap')
     .selectAll('.model-value-control')
-    .data(state.model.values.entries())
+    .data(controlData)
     .join('div')
     .attr('class', 'model-value-control')
     .style('width', `${Math.min(200, state.width * 0.475)}px`) // 1

@@ -61,8 +61,6 @@ gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
 
 // Helpers.
 function setModelWeightMap(array) {
-  array.forEach(d => (d.term = d.term.toLowerCase()));
-
   let mapResult = map();
   array.forEach(d => mapResult.set(d.term, d.estimate));
   return mapResult;
@@ -310,6 +308,7 @@ function ready([
   modelIntercept,
   modelWeights,
 ]) {
+  // Make sure all variable names are lower case! This is not checked in the app.
   prepareVisuals(globeData, wineData, varImpData, modelIntercept, modelWeights);
   buildStory(scrollData);
 
