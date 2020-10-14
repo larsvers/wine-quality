@@ -1,13 +1,16 @@
+/* eslint-disable no-nested-ternary */
+/* eslint-disable no-restricted-globals */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-cond-assign */
 /* eslint-disable no-return-assign */
 import { max, mean } from 'd3-array/src';
+import { drag } from 'd3-drag';
 import { scaleLinear } from 'd3-scale/src';
-import { select } from 'd3-selection';
+import { select, event } from 'd3-selection';
 import { curveBasis, line } from 'd3-shape/src';
-import { prettyLabel } from '../app/utils';
 
 import state from '../app/state';
+import { prettyLabel } from '../app/utils';
 
 // Module state.
 const margin = { top: 20, right: 20, bottom: 30, left: 20 };
@@ -32,8 +35,9 @@ function kernelEpanechnikov(k) {
   };
 }
 
-function buildControl(datum) {
-  const { key: variable, value } = datum;
+function buildControl(datapoint) {
+  const variable = datapoint.key;
+  let { value } = datapoint;
 
   // Set up.
   const sel = select(this);
@@ -115,33 +119,81 @@ function buildControl(datum) {
   // Clip path data.
   clippy.attr('d', densityPath);
 
+  // Position data for the drag subjects.
+  const position = {
+    x: xScale(value),
+    y: height,
+    width: 30,
+    height: height + margin.bottom,
+  };
+
   // Marker.
   g.append('line')
-    .attr('x1', xScale(value))
-    .attr('y1', height)
-    .attr('x2', xScale(value))
+    .datum(position)
+    .attr('x1', d => d.x)
+    .attr('y1', d => d.y)
+    .attr('x2', d => d.x)
     .attr('y2', 0)
+    .attr('class', 'marker')
     .attr('clip-path', `url(#clippy-${variable})`)
     .style('stroke-width', 1)
     .style('stroke', 'black');
 
   // Handle.
   g.append('circle')
-    .attr('cx', xScale(value))
-    .attr('cy', height)
+    .datum(position)
+    .attr('cx', d => d.x)
+    .attr('cy', d => d.y)
     .attr('r', 5)
+    .attr('class', 'handle')
     .style('fill', '#000');
 
   // Number.
   g.append('text')
-    .attr('x', xScale(value))
-    .attr('y', height)
+    .datum(position)
+    .attr('x', d => d.x)
+    .attr('y', d => d.y)
+    .attr('class', 'label')
+    .attr('dy', '0.7em')
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'hanging')
-    .attr('dy', '0.7em')
     .style('font-family', 'Pangolin')
     .style('font-size', 12)
     .text(value.toFixed(2));
+
+  // Drag handler.
+  function handleDrag(datum) {
+    // Clamp the x value.
+    const x = event.x > width ? width : event.x < 0 ? 0 : event.x;
+
+    // Update data.
+    value = xScale.invert(x);
+    state.model.values.set(variable, value);
+
+    // Update DOM.
+    const dragrect = select(this);
+    const circle = select(this.parentNode).select('circle.handle');
+    const marker = select(this.parentNode).select('line.marker');
+    const label = select(this.parentNode).select('text.label');
+
+    dragrect.attr('x', () => {
+      datum.x = x;
+      return datum.x - datum.width / 2;
+    });
+    circle.attr('cx', (datum.x = x));
+    marker.attr('x1', (datum.x = x)).attr('x2', (datum.x = x));
+    label.attr('x', (datum.x = x)).text(value.toFixed(2));
+  }
+
+  // Drag rectangle.
+  g.append('rect')
+    .datum(position)
+    .attr('x', d => d.x - d.width / 2)
+    .attr('y', 0)
+    .attr('width', d => d.width)
+    .attr('height', d => d.height)
+    .style('opacity', 0) // can't see it - no no.
+    .call(drag().on('drag', handleDrag));
 }
 
 export default buildControl;
