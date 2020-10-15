@@ -44,6 +44,8 @@ export default {
     globe: null,
     importance: null,
     importanceRemove: null,
+    modelBottleIn: null,
+    modelBottleOut: null,
   },
   scape: {
     image: null,
@@ -152,5 +154,11 @@ export default {
     values: null,
     ranges: null,
     probability: 0,
+  },
+  modelBottle: {
+    paths: null,
+    maxLength: null,
+    dashOffset: null,
+    colour: null,
   },
 };

@@ -292,6 +292,12 @@ function prepareVisuals(
 
   modelApp.append('div').attr('id', 'model-app-header');
   modelApp.append('div').attr('id', 'model-app-wrap');
+
+  // Model bottle.
+  const bottlePath = roughBottlePath.map(d => d.d).join();
+  const bottlePathInfo = getPathData(bottlePath);
+  state.modelBottle.paths = bottlePathInfo.paths;
+  state.modelBottle.maxLength = bottlePathInfo.length;
 }
 
 function buildStory(data) {
