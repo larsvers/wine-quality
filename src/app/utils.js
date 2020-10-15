@@ -7,7 +7,7 @@ import state from './state';
 
 function prettyLabel(string) {
   const capitals = string.charAt(0).toUpperCase() + string.slice(1);
-  return capitals.replaceAll('_', ' ');
+  return capitals.replace(/_/g, ' ');
 }
 
 function isSelection(el) {

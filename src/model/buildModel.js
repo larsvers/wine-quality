@@ -32,8 +32,6 @@ function buildModelControls() {
     .data(controlData)
     .join('div')
     .attr('class', 'model-value-control')
-    .style('width', `${Math.min(200, state.width * 0.475)}px`) // 1
-    .style('height', `${100}px`)
     .each(buildControl);
 }
 

@@ -10,9 +10,15 @@
 }
 
 #model-app-wrap {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 150px);
+  grid-auto-rows: 100px;
+  gap: 1rem;;
   justify-content: center;
+
+  @media #{$tablet-up} {
+    grid-template-columns: repeat(auto-fill, 200px);
+  }
 }
 
 .model-value-control {
