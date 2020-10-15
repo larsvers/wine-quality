@@ -10,6 +10,7 @@ import { select, event } from 'd3-selection';
 import { curveBasis, line } from 'd3-shape/src';
 
 import state from '../app/state';
+import getProbability from './probability';
 import { prettyLabel } from '../app/utils';
 
 // Module state.
@@ -35,6 +36,7 @@ function kernelEpanechnikov(k) {
   };
 }
 
+// Control build function.
 function buildControl(datapoint) {
   // Get the datum's values.
   const variable = datapoint.key;
@@ -172,9 +174,14 @@ function buildControl(datapoint) {
     // Clamp the x value.
     const x = event.x > width ? width : event.x < 0 ? 0 : event.x;
 
-    // Update data.
+    // Update the data.
     value = xScale.invert(x);
     state.model.values.set(variable, value);
+    state.model.probability = getProbability(
+      state.model.values,
+      state.model.weights,
+      state.model.intercept
+    );
 
     // Update DOM.
     const dragrect = select(this);

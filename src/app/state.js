@@ -151,5 +151,6 @@ export default {
     weights: null,
     values: null,
     ranges: null,
+    probability: 0,
   },
 };
