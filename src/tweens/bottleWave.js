@@ -1,17 +1,11 @@
 /* eslint-disable no-use-before-define */
 import { gsap } from 'gsap/all';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
-import { range } from 'd3-array/src/index';
+import { range, mean } from 'd3-array/src/index';
 import { scalePoint } from 'd3-scale/src/index';
 import { line, curveBasis } from 'd3-shape/src/index';
 
 import state from '../app/state';
-
-// Module state.
-// const n = 20; // n of wave points.
-// let state.bottleWave.xWaveScale;
-// let state.bottleWave.waveLine;
-// let state.bottleWave.waveAlpha;
 
 // Utils.
 
@@ -43,10 +37,8 @@ function makeWave(time) {
   state.bottleWave.wavePoints = range(state.bottleWave.n).map((d, i) => {
     // For each point (indexed from 0 to n), we add
     // a few parameters. x0 and y0 decide the position.
-    const x0 = state.bottleWave.xWaveScale(d);
-    const y0 =
-      ((1 - state.bottleWave.lift) * state.height) /
-      state.transform.shape.scale;
+    let x0 = state.bottleWave.xWaveScale(d);
+    let y0 = (1 - state.bottleWave.lift) * state.glassBottle.bottleBox.height;
 
     // The main point generation function, which sets x and y
     // based on the time passed in.
@@ -101,6 +93,7 @@ function drawBottleWave(ctx, path, t) {
 
   // Clip path.
   ctx.beginPath();
+
   state.bottleWave.waveLine.context(ctx)(state.bottleWave.wavePoints);
   ctx.lineTo(state.width, state.height);
   ctx.lineTo(0, state.height);
@@ -109,6 +102,13 @@ function drawBottleWave(ctx, path, t) {
 
   // Background.
   ctx.fill(path);
+
+  // // TODO DEBUG draw x0, y0;
+  // const yMean = mean(state.bottleWave.wavePoints, d => d[1]);
+  // ctx.beginPath();
+  // ctx.arc(0, yMean, 5, 0, 2 * Math.PI);
+  // ctx.fillStyle = 'tomato';
+  // ctx.fill();
 
   ctx.restore();
 }
@@ -126,14 +126,15 @@ function renderBottleWave() {
 
 function defineTweenBottleWave(liftStart, liftTarget) {
   // The wave's x scale and line generator.
-  state.bottleWave.xWaveScale = scalePoint(range(state.bottleWave.n), [
-    0,
-    state.width,
-  ]);
+  state.bottleWave.xWaveScale = scalePoint()
+    .domain(range(state.bottleWave.n))
+    .range([0, state.width]);
+
   state.bottleWave.waveLine = line()
     .x(d => d[0])
     .y(d => d[1])
     .curve(curveBasis);
+
   state.bottleWave.waveAlpha = state.width / state.height < 0.5 ? 1 : 5;
 
   // Set up timeline.
@@ -142,6 +143,7 @@ function defineTweenBottleWave(liftStart, liftTarget) {
   // Note the lift's start and target are arguments as this tween is being
   // built in two situations.
   const tl = gsap.timeline({ onStart: startWave, onUpdate: decayWave });
+
   const lift = gsap.fromTo(
     state.bottleWave,
     { lift: liftStart },
@@ -158,7 +160,7 @@ function tweenBottleWave() {
 
   // Kill old - set up new timeline.
   if (state.tween.bottleWave) state.tween.bottleWave.kill();
-  state.tween.bottleWave = defineTweenBottleWave(0, 0.8);
+  state.tween.bottleWave = defineTweenBottleWave(-0.05, 0.8);
   state.tween.bottleWave.totalProgress(progress);
 }
 

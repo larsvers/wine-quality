@@ -11,7 +11,7 @@ function tweenBottleEmpty() {
 
   // Kill old - set up new timeline.
   if (state.tween.bottleEmpty) state.tween.bottleEmpty.kill();
-  state.tween.bottleEmpty = defineTweenBottleWave(0.8, 0);
+  state.tween.bottleEmpty = defineTweenBottleWave(0.8, -0.05);
   state.tween.bottleEmpty.totalProgress(progress);
 }
 

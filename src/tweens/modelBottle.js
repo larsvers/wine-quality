@@ -11,9 +11,11 @@ import state from '../app/state';
  * @param { Number } length Max length of the (longest) path
  * @param { Number } offset Length of the path to draw (ideally animated)
  */
-function drawPaths(ctx, paths, t, length, offset) {
+function drawPaths(ctx, paths, t, length, offset, alpha) {
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
+  console.log(alpha);
+  ctx.globalAlpha = alpha;
   ctx.translate(t.x, t.y);
   ctx.scale(t.scale, t.scale);
   ctx.setLineDash([length - offset, offset]);
@@ -25,6 +27,7 @@ function drawPaths(ctx, paths, t, length, offset) {
 }
 
 function renderModelBottle() {
+  console.log('triggered?');
   state.ctx.glassBottle.strokeStyle = 'black';
   requestAnimationFrame(() => {
     drawPaths(
@@ -32,7 +35,8 @@ function renderModelBottle() {
       state.modelBottle.paths,
       state.transform.shape,
       state.modelBottle.maxLength,
-      state.modelBottle.dashOffset
+      state.modelBottle.dashOffset,
+      state.modelBottle.alpha
     );
   });
 }
@@ -52,16 +56,14 @@ function defineTweenModelBottle(offsetDraw, alphaStart, alphaTarget) {
     { dashOffset: state.modelBottle.maxLength }
   );
 
-  const colourvalue = gsap.fromTo(
+  const alphavalue = gsap.fromTo(
     state.modelBottle,
-    { colour: `rgba(0, 0, 0, ${alphaStart})` },
-    {
-      colour: `rgba(0, 0, 0, ${alphaTarget})`,
-      ease: 'circ.out',
-    }
+    { alpha: alphaStart },
+    // { alpha: alphaTarget, ease: 'circ.out' }
+    { alpha: alphaTarget }
   );
 
-  return tl.add(offsetDraw ? offsetIn : offsetOut).add(colourvalue, 0);
+  return tl.add(offsetDraw ? offsetIn : offsetOut).add(alphavalue, 0);
 }
 
 function tweenIn() {
@@ -88,7 +90,7 @@ function tweenOut() {
 
 function tweenModelBottle() {
   tweenIn();
-  tweenOut();
+  // tweenOut(); // TODO not needed yet. Switch on if and when required.
 }
 
 export default tweenModelBottle;

@@ -53,9 +53,10 @@ import {
 } from '../tweens/statsScatter';
 
 import tweenImportance from '../tweens/importance';
-import tweenModelBottle from '../tweens/modelBottle';
 
 import buildModelControls from '../model/buildModel';
+import tweenModelBottle from '../tweens/modelBottle';
+import tweenModelWaveInit from '../tweens/modelWaveInit';
 
 // Set ScrollTrigger defaults.
 ScrollTrigger.defaults({
@@ -186,6 +187,7 @@ function setScroll() {
     animation: state.tween.bottleWave,
     trigger: '.section-4',
     id: 'bottleWave',
+    markers: true,
   });
 
   ScrollTrigger.create({
@@ -464,17 +466,21 @@ function setScroll() {
 
   ScrollTrigger.create({
     animation: state.tween.modelBottleIn,
-    // trigger: '.section-10',
     trigger: '.section-52',
     id: 'modelBottleIn',
   });
 
   ScrollTrigger.create({
-    animation: state.tween.modelBottleOut,
-    // trigger: '.section-10',
+    animation: state.tween.modelWaveInit,
     trigger: '.section-53',
-    id: 'modelBottleOut',
+    id: 'modelWaveInit',
   });
+
+  // ScrollTrigger.create({
+  //   animation: state.tween.modelBottleOut,
+  //   trigger: '.section-54',
+  //   id: 'modelBottleOut',
+  // });
 
   // Recalculate all scroll positions.
   ScrollTrigger.refresh();
@@ -511,9 +517,11 @@ function update(wineScapeImg) {
   tweenGlobe();
   tweenStats();
   tweenImportance();
-  tweenModelBottle();
 
   buildModelControls();
+
+  tweenModelBottle();
+  tweenModelWaveInit();
 
   setScroll();
 }

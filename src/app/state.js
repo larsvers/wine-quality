@@ -46,6 +46,7 @@ export default {
     importanceRemove: null,
     modelBottleIn: null,
     modelBottleOut: null,
+    modelWaveInit: null,
   },
   scape: {
     image: null,
@@ -159,6 +160,6 @@ export default {
     paths: null,
     maxLength: null,
     dashOffset: null,
-    colour: null,
+    alpha: 0,
   },
 };
