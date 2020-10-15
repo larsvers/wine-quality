@@ -284,6 +284,14 @@ function prepareVisuals(
   const modelValues = getModelValues(state.stats.data);
   state.model.values = modelValues.meanMap;
   state.model.ranges = modelValues.rangeMap;
+
+  // Add model base.
+  const modelApp = select('#text-wrap')
+    .insert('div', '.section-0')
+    .attr('id', 'model-app');
+
+  modelApp.append('div').attr('id', 'model-app-header');
+  modelApp.append('div').attr('id', 'model-app-wrap');
 }
 
 function buildStory(data) {

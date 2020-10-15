@@ -3,22 +3,7 @@ import { select } from 'd3-selection';
 import state from '../app/state';
 import buildControl from './densityControl';
 
-// TODO add to init module.
-function initModelControls() {
-  const modelApp = select('#text-wrap')
-    .selectAll('#model-app') // Won't need this when
-    .data([1]) // we move this to init.
-    .enter() // ------------------------------------
-    .insert('div', '.section-0')
-    .attr('id', 'model-app');
-
-  modelApp.append('div').attr('id', 'model-app-header');
-  modelApp.append('div').attr('id', 'model-app-wrap');
-}
-
 function buildModelControls() {
-  initModelControls();
-
   select('#model-app').style('height', `${state.height}px`);
 
   // Sort the controls by their variable importance.
