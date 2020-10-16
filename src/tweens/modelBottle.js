@@ -14,7 +14,7 @@ import state from '../app/state';
 function drawPaths(ctx, paths, t, length, offset, alpha) {
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
-  console.log(alpha);
+
   ctx.globalAlpha = alpha;
   ctx.translate(t.x, t.y);
   ctx.scale(t.scale, t.scale);
@@ -23,11 +23,11 @@ function drawPaths(ctx, paths, t, length, offset, alpha) {
   Array.isArray(paths)
     ? paths.forEach(path => ctx.stroke(path))
     : ctx.stroke(paths);
+
   ctx.restore();
 }
 
 function renderModelBottle() {
-  console.log('triggered?');
   state.ctx.glassBottle.strokeStyle = 'black';
   requestAnimationFrame(() => {
     drawPaths(

@@ -52,8 +52,10 @@ function makeWave(time) {
     );
 
     // The first and the last point are pinned to the sides.
-    if (i === 0) xy[0] = 0;
-    if (i === state.bottleWave.n - 1) xy[0] = state.width;
+    if (i === 0) xy[0] = state.glassBottle.bottleBox.x;
+    // if (i === state.bottleWave.n - 1) xy[0] = state.width;
+    // debugger;
+    if (i === state.bottleWave.n - 1) xy[0] = state.glassBottle.bottleBox.width;
     return xy;
   });
 
@@ -160,7 +162,7 @@ function tweenBottleWave() {
 
   // Kill old - set up new timeline.
   if (state.tween.bottleWave) state.tween.bottleWave.kill();
-  state.tween.bottleWave = defineTweenBottleWave(-0.05, 0.8);
+  state.tween.bottleWave = defineTweenBottleWave(-0.05, 0.6);
   state.tween.bottleWave.totalProgress(progress);
 }
 

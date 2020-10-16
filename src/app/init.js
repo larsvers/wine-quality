@@ -285,14 +285,6 @@ function prepareVisuals(
   state.model.values = modelValues.meanMap;
   state.model.ranges = modelValues.rangeMap;
 
-  // Add model base.
-  const modelApp = select('#text-wrap')
-    .insert('div', '.section-0')
-    .attr('id', 'model-app');
-
-  modelApp.append('div').attr('id', 'model-app-header');
-  modelApp.append('div').attr('id', 'model-app-wrap');
-
   // Model bottle.
   const bottlePath = roughBottlePath.map(d => d.d).join();
   const bottlePathInfo = getPathData(bottlePath);
@@ -310,6 +302,15 @@ function buildStory(data) {
     .join('div')
     .attr('class', d => `section section-${d.index}`)
     .html(d => d.text);
+
+  // Add model base.
+  // needs to come at the better end to stop at top and become scrollable.
+  const modelApp = select('#text-wrap')
+    .append('div')
+    .attr('id', 'model-app');
+
+  modelApp.append('div').attr('id', 'model-app-header');
+  modelApp.append('div').attr('id', 'model-app-wrap');
 }
 
 function ready([
