@@ -469,11 +469,12 @@ function setScroll() {
     id: 'modelBottleIn',
   });
 
-  // ScrollTrigger.create({
-  //   animation: state.tween.modelWaveInit,
-  //   trigger: '.section-53',
-  //   id: 'modelWaveInit',
-  // });
+  ScrollTrigger.create({
+    animation: state.tween.modelWaveInit,
+    trigger: '.section-53',
+    id: 'modelWaveInit',
+    markers: true,
+  });
 
   // ScrollTrigger.create({
   //   animation: state.tween.modelBottleOut,
@@ -520,7 +521,7 @@ function update(wineScapeImg) {
   buildModelControls();
 
   tweenModelBottle();
-  // tweenModelWaveInit();
+  tweenModelWaveInit();
 
   setScroll();
 }

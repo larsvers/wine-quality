@@ -12,6 +12,7 @@ import { curveBasis, line } from 'd3-shape/src';
 import state from '../app/state';
 import getProbability from './probability';
 import { prettyLabel } from '../app/utils';
+import { decayWave } from '../tweens/bottleWave';
 
 // Module state.
 const margin = { top: 20, right: 20, bottom: 30, left: 20 };
@@ -182,6 +183,10 @@ function buildControl(datapoint) {
       state.model.weights,
       state.model.intercept
     );
+
+    // Operate the bottle wave on change.
+    decayWave();
+    state.bottleWave.lift = state.model.probability;
 
     // Update DOM.
     const dragrect = select(this);

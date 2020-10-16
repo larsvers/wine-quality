@@ -19,6 +19,7 @@ import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import state from './state';
 import update from './update';
 import { getBox, splitPath, getPathData } from './utils';
+import getProbability from '../model/probability';
 
 // Paths general.
 import glass from '../../static/wine-glass-clean';
@@ -284,6 +285,11 @@ function prepareVisuals(
   const modelValues = getModelValues(state.stats.data);
   state.model.values = modelValues.meanMap;
   state.model.ranges = modelValues.rangeMap;
+  state.model.probability = getProbability(
+    state.model.values,
+    state.model.weights,
+    state.model.intercept
+  );
 
   // Model bottle.
   const bottlePath = roughBottlePath.map(d => d.d).join();

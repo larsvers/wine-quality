@@ -167,4 +167,10 @@ function tweenBottleWave() {
 }
 
 export default tweenBottleWave;
-export { defineTweenBottleWave, drawBottleWave, startWave, stopWave };
+export {
+  defineTweenBottleWave,
+  drawBottleWave,
+  startWave,
+  stopWave,
+  decayWave,
+};

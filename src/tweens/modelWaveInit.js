@@ -11,8 +11,10 @@ function tweenModelWaveInit() {
 
   // Kill old - set up new timeline.
   if (state.tween.modelWaveInit) state.tween.modelWaveInit.kill();
-  console.log(state.model.probability);
-  state.tween.modelWaveInit = defineTweenBottleWave(-0.05, 0.8);
+  state.tween.modelWaveInit = defineTweenBottleWave(
+    -0.05,
+    state.model.probability
+  );
   state.tween.modelWaveInit.totalProgress(progress);
 }
 
