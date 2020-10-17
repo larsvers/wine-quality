@@ -15,7 +15,7 @@ export default {
     glassBottle: null,
     bottleText: null,
     bottleWave: null,
-    lolli: null,
+    chart: null,
     blackBox: null,
     globe: null,
   },

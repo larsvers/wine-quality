@@ -98,7 +98,7 @@ function setVisualStructure() {
     'glassBottle',
     'bottleText',
     'bottleWave',
-    'lolli',
+    'chart',
     'blackBox',
     'globe',
   ];

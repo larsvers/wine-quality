@@ -499,10 +499,10 @@ function renderStats() {
   getLineDrawingParams();
   getPointDrawingParams();
   requestAnimationFrame(() => {
-    state.ctx.lolli.globalAlpha = state.stats.alpha.value;
-    drawStats(state.ctx.lolli);
-    drawLine(state.ctx.lolli);
-    drawPoint(state.ctx.lolli);
+    state.ctx.chart.globalAlpha = state.stats.alpha.value;
+    drawStats(state.ctx.chart);
+    drawLine(state.ctx.chart);
+    drawPoint(state.ctx.chart);
   });
 }
 

@@ -103,11 +103,11 @@ function drawImportanceChart(ctx) {
 
 function renderImportance() {
   // Need to set the alppa as it's 0 from before.
-  state.ctx.lolli.globalAlpha = 1;
-  state.ctx.lolli.lineWidth = lw;
+  state.ctx.chart.globalAlpha = 1;
+  state.ctx.chart.lineWidth = lw;
 
   requestAnimationFrame(() => {
-    drawImportanceChart(state.ctx.lolli);
+    drawImportanceChart(state.ctx.chart);
   });
 }
 

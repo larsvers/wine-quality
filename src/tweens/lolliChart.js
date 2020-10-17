@@ -92,7 +92,7 @@ function drawLolliChart(ctx, t) {
 
 function renderLolliChart() {
   requestAnimationFrame(() =>
-    drawLolliChart(state.ctx.lolli, state.transform.bottle)
+    drawLolliChart(state.ctx.chart, state.transform.bottle)
   );
 }
 

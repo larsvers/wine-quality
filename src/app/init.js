@@ -87,7 +87,7 @@ function getModelValues(data) {
   return { meanMap, rangeMap };
 }
 
-// Prep visual.
+// Build funcs.
 function prepareVisuals(
   globeData,
   wineData,
@@ -319,6 +319,7 @@ function buildStory(data) {
   modelApp.append('div').attr('id', 'model-app-wrap');
 }
 
+// Main func.
 function ready([
   scrollData,
   wineScape,

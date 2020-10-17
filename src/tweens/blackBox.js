@@ -125,7 +125,7 @@ function renderBlackBox() {
   requestAnimationFrame(() => {
     drawBlackBox(state.ctx.blackBox, state.transform.bottle);
     drawProperties(
-      state.ctx.lolli,
+      state.ctx.chart,
       state.transform.bottle,
       inputProperties,
       outputProperties
