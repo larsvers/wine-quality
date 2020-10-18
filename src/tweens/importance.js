@@ -56,6 +56,7 @@ function setScales() {
 
 // Draw and render.
 function drawImportanceChart(ctx) {
+  const rough = state.rough.chart;
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
 
@@ -69,11 +70,16 @@ function drawImportanceChart(ctx) {
   ctx.restore();
 
   // The bars.
-  state.varImp.data.forEach(d => {
+  state.varImp.data.forEach((d, i) => {
     // Lime.
     ctx.beginPath();
-    ctx.moveTo(xScale(0), yScale(d.variable));
-    ctx.lineTo(xScale(d.value), yScale(d.variable));
+    rough.line(
+      xScale(0),
+      yScale(d.variable),
+      xScale(d.value),
+      yScale(d.variable),
+      { seed: i + 1, roughness: 0.7 }
+    );
     ctx.stroke();
 
     ctx.save();
@@ -81,13 +87,10 @@ function drawImportanceChart(ctx) {
 
     // Circle.
     ctx.beginPath();
-    ctx.arc(
-      xScale(d.value) + (r + lw) / 2,
-      yScale(d.variable),
-      r,
-      0,
-      2 * Math.PI
-    );
+    rough.circle(xScale(d.value) + (r + lw) / 2, yScale(d.variable), r * 2, {
+      seed: i + 1,
+      roughness: 0.25,
+    });
     ctx.stroke();
 
     // Text.

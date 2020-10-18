@@ -450,6 +450,7 @@ function setScroll() {
     // trigger: '.section-8',
     trigger: '.section-50',
     id: 'importance',
+    markers: true,
     // Stop the simulation as it would otherwise continue to draw on the context.
     onEnter: () => sim.stop(),
   });
@@ -471,7 +472,6 @@ function setScroll() {
     animation: state.tween.modelWaveInit,
     trigger: '.section-53',
     id: 'modelWaveInit',
-    markers: true,
     onLeaveBack: () => {
       state.modelBottle.points = false;
       stopWaveMarkers();
