@@ -1,10 +1,12 @@
 import { mean } from 'd3-array';
+import { format } from 'd3-format';
 import gsap from 'gsap';
 import state from '../app/state';
 
 let position = {};
+const perc = format('.0%');
 
-// Control the marker funcx.
+// Control the marker funcs.
 function startWaveMarkers() {
   gsap.ticker.add(makeWaveMarkers);
 }
@@ -14,22 +16,33 @@ function stopWaveMarkers() {
 }
 
 function drawWaveMarkers(ctx, t, path) {
+  const rough = state.modelBottle.rc;
   ctx.save();
   ctx.translate(t.x, t.y);
   ctx.scale(t.scale, t.scale);
 
-  // Existing content.
+  // Line
+  ctx.lineWidth = 0.1;
   ctx.beginPath();
-  ctx.arc(position.x + 20, position.y, 2, 0, 2 * Math.PI);
-  ctx.fill();
-
-  ctx.lineWidth = 0.25;
-  ctx.beginPath();
-  ctx.moveTo(position.x / 2, position.y);
-  ctx.lineTo(position.x + 20, position.y);
+  rough.line(position.x / 2, position.y, position.x + 20, position.y, {
+    seed: 1,
+  });
   ctx.stroke();
 
-  // New content.
+  // ...marker
+  ctx.lineWidth = 0.25;
+  ctx.beginPath();
+  rough.line(position.x + 20, position.y - 3, position.x + 20, position.y + 3, {
+    seed: 1,
+  });
+  ctx.stroke();
+
+  // Text.
+  ctx.textBaseline = 'middle';
+  ctx.font = '8px Pangolin';
+  ctx.fillText(perc(state.model.probability), position.x + 25, position.y + 1);
+
+  // Clip.
   ctx.globalCompositeOperation = 'destination-out';
   ctx.translate(5, 0);
   ctx.fill(path);
@@ -49,19 +62,23 @@ function renderWaveMarkers() {
 }
 
 function makeWaveMarkers() {
+  // Prep.
   const wave = state.bottleWave;
   if (!wave.wavePoints || !wave.wavePoints.length) return;
 
+  // A more or less steady y position.
   const h = state.glassBottle.bottleBox.height;
   let y = mean(wave.wavePoints, d => d[1]);
   if (y > h * 0.98) y = h * 0.98;
   if (y < h * 0.005) y = h * 0.005;
 
+  // Position will be picked up by the draw function.
   position = {
     x: wave.wavePoints[wave.n - 1][0],
-    // y: mean(wave.wavePoints, d => d[1]),
     y,
   };
+
+  // Render it.
   renderWaveMarkers();
 }
 

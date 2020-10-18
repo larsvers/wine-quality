@@ -161,5 +161,6 @@ export default {
     maxLength: null,
     dashOffset: null,
     alpha: 0,
+    rc: null,
   },
 };

@@ -4,6 +4,7 @@
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import cloneDeep from 'lodash.clonedeep';
 import { select } from 'd3-selection/src';
+import rough from 'roughjs/bundled/rough.esm';
 
 import state from './state';
 import { resizeCanvas, getTransform } from './utils';
@@ -106,6 +107,9 @@ function setVisualStructure() {
 
   updateContexts(contextnames);
   updateSvg();
+
+  // Set roughjs for the model bottle.
+  state.modelBottle.rc = rough.canvas(state.ctx.chart.canvas);
 }
 
 function updateTransforms() {
