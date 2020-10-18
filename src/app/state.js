@@ -19,6 +19,9 @@ export default {
     blackBox: null,
     globe: null,
   },
+  rough: {
+    chart: null,
+  },
   // Tweens.
   tween: {
     wineScape: null,
@@ -161,6 +164,6 @@ export default {
     maxLength: null,
     dashOffset: null,
     alpha: 0,
-    rc: null,
+    points: false,
   },
 };

@@ -3,7 +3,6 @@
 /* eslint-disable no-param-reassign */
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import cloneDeep from 'lodash.clonedeep';
-import { select } from 'd3-selection/src';
 import rough from 'roughjs/bundled/rough.esm';
 
 import state from './state';
@@ -58,7 +57,7 @@ import tweenImportance from '../tweens/importance';
 import buildModelControls from '../model/buildModel';
 import tweenModelBottle from '../tweens/modelBottle';
 import tweenModelWaveInit from '../tweens/modelWaveInit';
-import { startWaveMarkers } from '../tweens/modelWaveMarker';
+import { startWaveMarkers, stopWaveMarkers } from '../tweens/modelWaveMarker';
 
 // Set ScrollTrigger defaults.
 ScrollTrigger.defaults({
@@ -86,7 +85,7 @@ function updateContexts(names) {
 }
 
 function setRoughCanvases() {
-  state.modelBottle.rc = rough.canvas(state.ctx.chart.canvas);
+  state.rough.chart = rough.canvas(state.ctx.chart.canvas);
 }
 
 // Set off canvas factory.
@@ -473,19 +472,28 @@ function setScroll() {
     trigger: '.section-53',
     id: 'modelWaveInit',
     markers: true,
+    onLeaveBack: () => {
+      state.modelBottle.points = false;
+      stopWaveMarkers();
+    },
     onEnter: () => {
+      state.modelBottle.points = true;
       startWaveMarkers();
     },
   });
 
-  // ScrollTrigger.create({
-  //   animation: state.tween.modelBottleOut,
-  //   trigger: '.section-54',
-  //   id: 'modelBottleOut',
-  // });
-
   // Recalculate all scroll positions.
   ScrollTrigger.refresh();
+}
+
+function checkWaveMarkers() {
+  if (state.modelBottle.points) {
+    startWave();
+    startWaveMarkers();
+  } else {
+    stopWave();
+    stopWaveMarkers();
+  }
 }
 
 // Main function.
@@ -495,6 +503,7 @@ function update(wineScapeImg) {
   updateDimensions();
   setVisualStructure();
   updateTransforms();
+  buildModelControls();
 
   tweenWineScape();
   tweenGlassBottle();
@@ -519,13 +528,11 @@ function update(wineScapeImg) {
   tweenGlobe();
   tweenStats();
   tweenImportance();
-
-  buildModelControls();
-
   tweenModelBottle();
   tweenModelWaveInit();
 
   setScroll();
+  checkWaveMarkers();
 }
 
 export default update;

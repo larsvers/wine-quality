@@ -11,7 +11,7 @@ const perc = format('.0%');
 
 // Draw and render.
 function drawWaveMarkers(ctx, t, path) {
-  const rough = state.modelBottle.rc;
+  const rough = state.rough.chart;
   ctx.save();
   ctx.translate(t.x, t.y);
   ctx.scale(t.scale, t.scale);
@@ -41,10 +41,15 @@ function drawWaveMarkers(ctx, t, path) {
   // Text.
   ctx.textBaseline = 'middle';
   ctx.font = '8px Pangolin';
-  ctx.fillText(perc(state.model.probability), position.x + pad, position.y + 1);
+  ctx.fillText(
+    perc(state.model.probability),
+    position.x + lw + pad,
+    position.y + 1
+  );
 
   // Clip.
   ctx.globalCompositeOperation = 'destination-out';
+  ctx.globalAlpha = 1; // to be safe.
   ctx.translate(5, 0);
   ctx.fill(path);
 
