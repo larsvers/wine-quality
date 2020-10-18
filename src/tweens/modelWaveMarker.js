@@ -4,17 +4,12 @@ import gsap from 'gsap';
 import state from '../app/state';
 
 let position = {};
+const lw = 20;
+const lh = 3;
+const pad = 5;
 const perc = format('.0%');
 
-// Control the marker funcs.
-function startWaveMarkers() {
-  gsap.ticker.add(makeWaveMarkers);
-}
-
-function stopWaveMarkers() {
-  gsap.ticker.remove(makeWaveMarkers);
-}
-
+// Draw and render.
 function drawWaveMarkers(ctx, t, path) {
   const rough = state.modelBottle.rc;
   ctx.save();
@@ -24,7 +19,7 @@ function drawWaveMarkers(ctx, t, path) {
   // Line
   ctx.lineWidth = 0.1;
   ctx.beginPath();
-  rough.line(position.x / 2, position.y, position.x + 20, position.y, {
+  rough.line(position.x / 2, position.y, position.x + lw, position.y, {
     seed: 1,
   });
   ctx.stroke();
@@ -32,15 +27,21 @@ function drawWaveMarkers(ctx, t, path) {
   // ...marker
   ctx.lineWidth = 0.25;
   ctx.beginPath();
-  rough.line(position.x + 20, position.y - 3, position.x + 20, position.y + 3, {
-    seed: 1,
-  });
+  rough.line(
+    position.x + lw,
+    position.y - lh,
+    position.x + lw,
+    position.y + lh,
+    {
+      seed: 1,
+    }
+  );
   ctx.stroke();
 
   // Text.
   ctx.textBaseline = 'middle';
   ctx.font = '8px Pangolin';
-  ctx.fillText(perc(state.model.probability), position.x + 25, position.y + 1);
+  ctx.fillText(perc(state.model.probability), position.x + pad, position.y + 1);
 
   // Clip.
   ctx.globalCompositeOperation = 'destination-out';
@@ -61,6 +62,7 @@ function renderWaveMarkers() {
   });
 }
 
+// Make.
 function makeWaveMarkers() {
   // Prep.
   const wave = state.bottleWave;
@@ -80,6 +82,15 @@ function makeWaveMarkers() {
 
   // Render it.
   renderWaveMarkers();
+}
+
+// Control the marker funcs.
+function startWaveMarkers() {
+  gsap.ticker.add(makeWaveMarkers);
+}
+
+function stopWaveMarkers() {
+  gsap.ticker.remove(makeWaveMarkers);
 }
 
 export { startWaveMarkers, stopWaveMarkers };

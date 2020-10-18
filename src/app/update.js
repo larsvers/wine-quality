@@ -85,13 +85,10 @@ function updateContexts(names) {
   });
 }
 
-// TODO Do i need this?
-function updateSvg() {
-  const svg = select('svg#axes');
-
-  svg.attr('width', state.width);
-  svg.attr('height', state.height);
+function setRoughCanvases() {
+  state.modelBottle.rc = rough.canvas(state.ctx.chart.canvas);
 }
+
 // Set off canvas factory.
 function setVisualStructure() {
   // Get contexts.
@@ -106,10 +103,7 @@ function setVisualStructure() {
   ];
 
   updateContexts(contextnames);
-  updateSvg();
-
-  // Set roughjs for the model bottle.
-  state.modelBottle.rc = rough.canvas(state.ctx.chart.canvas);
+  setRoughCanvases();
 }
 
 function updateTransforms() {
