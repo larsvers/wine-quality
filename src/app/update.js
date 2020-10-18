@@ -190,6 +190,7 @@ function setScroll() {
   ScrollTrigger.create({
     animation: state.tween.lolliChart,
     trigger: '.section-5',
+    markers: true,
     id: 'lolliChart',
   });
 
@@ -450,7 +451,6 @@ function setScroll() {
     // trigger: '.section-8',
     trigger: '.section-50',
     id: 'importance',
-    markers: true,
     // Stop the simulation as it would otherwise continue to draw on the context.
     onEnter: () => sim.stop(),
   });

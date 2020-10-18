@@ -48,12 +48,13 @@ function setDimensions() {
 
 // Canvas draw function.
 function drawLolliChart(ctx, t) {
+  const rough = state.rough.chart;
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
   ctx.translate(t.x, t.y);
   ctx.scale(t.scale, t.scale);
 
-  state.lolli.values.forEach(d => {
+  state.lolli.values.forEach((d, i) => {
     const datapoint = state.lolli.data[d];
 
     const xValue = datapoint.value;
@@ -63,8 +64,15 @@ function drawLolliChart(ctx, t) {
 
     // Line.
     ctx.beginPath();
-    ctx.moveTo(state.lolli.x(0), state.lolli.y(d));
-    ctx.lineTo(state.lolli.x(xValue), state.lolli.y(d));
+    rough.line(
+      state.lolli.x(0),
+      state.lolli.y(d),
+      state.lolli.x(xValue),
+      state.lolli.y(d),
+      { seed: i + 1, roughness: 0.5 }
+    );
+    // ctx.moveTo(state.lolli.x(0), state.lolli.y(d));
+    // ctx.lineTo(state.lolli.x(xValue), state.lolli.y(d));
     ctx.stroke();
 
     // Circle.
