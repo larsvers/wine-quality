@@ -53,8 +53,6 @@ function makeWave(time) {
 
     // The first and the last point are pinned to the sides.
     if (i === 0) xy[0] = state.glassBottle.bottleBox.x;
-    // if (i === state.bottleWave.n - 1) xy[0] = state.width;
-    // debugger;
     if (i === state.bottleWave.n - 1) xy[0] = state.glassBottle.bottleBox.width;
     return xy;
   });

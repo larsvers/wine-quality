@@ -57,6 +57,7 @@ import tweenImportance from '../tweens/importance';
 import buildModelControls from '../model/buildModel';
 import tweenModelBottle from '../tweens/modelBottle';
 import tweenModelWaveInit from '../tweens/modelWaveInit';
+import { startWaveMarkers } from '../tweens/modelWaveMarker';
 
 // Set ScrollTrigger defaults.
 ScrollTrigger.defaults({
@@ -474,6 +475,9 @@ function setScroll() {
     trigger: '.section-53',
     id: 'modelWaveInit',
     markers: true,
+    onEnter: () => {
+      startWaveMarkers();
+    },
   });
 
   // ScrollTrigger.create({
