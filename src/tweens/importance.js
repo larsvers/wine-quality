@@ -60,6 +60,9 @@ function drawImportanceChart(ctx) {
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
 
+  // General styles.
+  state.ctx.chart.lineWidth = lw;
+
   // Title.
   ctx.save();
   ctx.globalAlpha = title.alpha;
@@ -105,10 +108,6 @@ function drawImportanceChart(ctx) {
 }
 
 function renderImportance() {
-  // Need to set the alppa as it's 0 from before.
-  state.ctx.chart.globalAlpha = 1;
-  state.ctx.chart.lineWidth = lw;
-
   requestAnimationFrame(() => {
     drawImportanceChart(state.ctx.chart);
   });

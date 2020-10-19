@@ -28,7 +28,6 @@ function drawPaths(ctx, paths, t, length, offset, alpha) {
 }
 
 function renderModelBottle() {
-  state.ctx.glassBottle.strokeStyle = 'black';
   requestAnimationFrame(() => {
     drawPaths(
       state.ctx.glassBottle,

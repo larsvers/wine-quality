@@ -34,7 +34,6 @@ function drawBottle(ctx, path, t) {
 }
 
 function renderBottle() {
-  state.ctx.glassBottle.strokeStyle = state.glassBottle.colour;
   requestAnimationFrame(() => {
     // We need to draw on both contexts here, as the tween doesn't only cover
     // paramaters for the glassBottle but also the alpha for the scape context.
@@ -44,11 +43,15 @@ function renderBottle() {
       state.transform.scape,
       state.scape.alpha
     );
+
+    state.ctx.glassBottle.save();
+    state.ctx.glassBottle.strokeStyle = state.glassBottle.colour;
     drawBottle(
       state.ctx.glassBottle,
       state.glassBottle.path,
       state.transform.shape
     );
+    state.ctx.glassBottle.restore();
   });
 }
 

@@ -14,6 +14,7 @@ import state from '../app/state';
 function drawTextPath(ctx, paths, t, length, offset) {
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
+  state.ctx.bottleText.strokeStyle = state.bottleText.colour;
   ctx.translate(t.x, t.y);
   ctx.scale(t.scale, t.scale);
   ctx.setLineDash([length - offset, offset]);
@@ -25,7 +26,6 @@ function drawTextPath(ctx, paths, t, length, offset) {
 }
 
 function renderBottleText() {
-  state.ctx.bottleText.strokeStyle = state.bottleText.colour;
   requestAnimationFrame(() => {
     drawTextPath(
       state.ctx.bottleText,

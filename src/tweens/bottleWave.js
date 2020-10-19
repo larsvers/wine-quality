@@ -114,7 +114,6 @@ function drawBottleWave(ctx, path, t) {
 }
 
 function renderBottleWave() {
-  state.ctx.bottleWave.fillStyle = 'rgba(0, 0, 0, 1)';
   requestAnimationFrame(() => {
     drawBottleWave(
       state.ctx.bottleWave,

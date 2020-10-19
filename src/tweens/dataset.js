@@ -16,9 +16,11 @@ function drawPath(ctx, paths, t, length, offset) {
 }
 
 function renderPath() {
-  state.ctx.glassBottle.strokeStyle = '#000000';
-  state.ctx.glassBottle.lineWidth = 0.7;
   requestAnimationFrame(() => {
+    // Change global styles savely.
+    state.ctx.glassBottle.save();
+    state.ctx.glassBottle.strokeStyle = '#000000';
+    state.ctx.glassBottle.lineWidth = 0.7;
     // We clear the canvas before we draw each column (and the grid).
     state.ctx.glassBottle.clearRect(0, 0, state.width, state.height);
     // We draw the grid and each dataset column with their very own
@@ -32,6 +34,7 @@ function renderPath() {
         state.dataset[d.name].offset
       );
     });
+    state.ctx.glassBottle.restore();
   });
 }
 
