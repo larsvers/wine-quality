@@ -1,33 +1,40 @@
-/* eslint-disable no-use-before-define */
-import { gsap } from 'gsap/all';
-import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
-
 import state from '../app/state';
-import { defineTweenBottleWave, startWave, decayWave } from './bottleWave';
+import { startWave, stopWave, decayWave } from './bottleWave';
+import { startWaveMarkers, stopWaveMarkers } from './modelWaveMarker';
 
-function defineTweenModelBottleWave() {
-  // Set up timeline.
-  const tl = gsap.timeline({ onStart: startWave, onUpdate: decayWave });
+// These functions are triggered directly by the scroll trigger
+// as the tweening malarky wasn't fun and piled up edge cases.
 
-  const lift = gsap.to(state.bottleWave, { lift: state.model.probability });
+const subBottle = -0.1;
 
-  return tl.add(lift);
+// Scroll from below bottle to the current probability.
+function updateModelWave(scroll) {
+  state.modelBottle.points = true;
+  state.bottleWave.lift =
+    subBottle + scroll.progress * (state.model.probability - subBottle);
+  state.modelWave.alpha = scroll.progress;
+  startWave();
+  decayWave();
+  startWaveMarkers();
 }
 
-function tweenModelWaveInit() {
-  // Capture current progress.
-  const scroll = ScrollTrigger.getById('modelWaveInit');
-  const progress = scroll ? scroll.progress : 0;
-
-  // Kill old - set up new timeline.
-  if (state.tween.modelWaveInit) state.tween.modelWaveInit.kill();
-  // state.tween.modelWaveInit = defineTweenBottleWave(
-  //   -0.05,
-  //   state.model.probability
-  // );
-  state.tween.modelWaveInit = defineTweenModelBottleWave();
-
-  state.tween.modelWaveInit.totalProgress(progress);
+// Stop all wavey things when scrolling back up the story.
+function stopModelWave() {
+  state.modelBottle.points = false;
+  stopWaveMarkers();
+  stopWave();
 }
 
-export default tweenModelWaveInit;
+// Called each time on update (e.g. resize) to start, stop
+// any action based on the flags set in the control funs above ↑.
+function checkModelWave() {
+  if (state.modelBottle.points) {
+    startWave();
+    startWaveMarkers();
+  } else {
+    stopWave();
+    stopWaveMarkers();
+  }
+}
+
+export { updateModelWave, stopModelWave, checkModelWave };

@@ -7,11 +7,7 @@ import rough from 'roughjs/bundled/rough.esm';
 
 import state from './state';
 import { resizeCanvas, getTransform } from './utils';
-import tweenBottleWave, {
-  decayWave,
-  startWave,
-  stopWave,
-} from '../tweens/bottleWave';
+import tweenBottleWave, { startWave, stopWave } from '../tweens/bottleWave';
 import tweenWineScape from '../tweens/wineScape';
 
 import tweenGlassBottle from '../tweens/glassBottle';
@@ -60,8 +56,12 @@ import tweenImportance from '../tweens/importance';
 
 import buildModelControls from '../model/buildModel';
 import tweenModelBottle from '../tweens/modelBottle';
-import tweenModelWaveInit from '../tweens/modelWaveInit';
-import { startWaveMarkers, stopWaveMarkers } from '../tweens/modelWaveMarker';
+
+import {
+  updateModelWave,
+  stopModelWave,
+  checkModelWave,
+} from '../tweens/modelWaveInit';
 
 // Set ScrollTrigger defaults.
 ScrollTrigger.defaults({
@@ -471,39 +471,16 @@ function setScroll() {
     id: 'modelBottleIn',
   });
 
-  // TODO: clean up
   ScrollTrigger.create({
     trigger: '.section-53',
     id: 'modelWaveInit',
     markers: true,
-    onLeaveBack: () => {
-      state.modelBottle.points = false;
-      stopWaveMarkers();
-      stopWave();
-    },
-    onUpdate: self => {
-      state.modelBottle.points = true;
-      state.bottleWave.lift =
-        -0.1 + self.progress * (state.model.probability - -0.1);
-      state.modelWave.alpha = self.progress;
-      startWave();
-      decayWave();
-      startWaveMarkers();
-    },
+    onLeaveBack: stopModelWave,
+    onUpdate: self => updateModelWave(self),
   });
 
   // Recalculate all scroll positions.
   ScrollTrigger.refresh();
-}
-
-function checkWaveMarkers() {
-  if (state.modelBottle.points) {
-    startWave();
-    startWaveMarkers();
-  } else {
-    stopWave();
-    stopWaveMarkers();
-  }
 }
 
 // Main function.
@@ -539,10 +516,9 @@ function update(wineScapeImg) {
   tweenStats();
   tweenImportance();
   tweenModelBottle();
-  // tweenModelWaveInit();
 
   setScroll();
-  checkWaveMarkers();
+  checkModelWave();
 }
 
 export default update;
