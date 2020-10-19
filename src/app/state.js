@@ -166,4 +166,7 @@ export default {
     alpha: 0,
     points: false,
   },
+  modelWave: {
+    alpha: 0,
+  },
 };

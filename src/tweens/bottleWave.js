@@ -160,7 +160,7 @@ function tweenBottleWave() {
 
   // Kill old - set up new timeline.
   if (state.tween.bottleWave) state.tween.bottleWave.kill();
-  state.tween.bottleWave = defineTweenBottleWave(-0.05, 0.6);
+  state.tween.bottleWave = defineTweenBottleWave(-0.1, 0.6);
   state.tween.bottleWave.totalProgress(progress);
 }
 

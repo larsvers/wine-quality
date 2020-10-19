@@ -7,7 +7,11 @@ import rough from 'roughjs/bundled/rough.esm';
 
 import state from './state';
 import { resizeCanvas, getTransform } from './utils';
-import tweenBottleWave, { startWave, stopWave } from '../tweens/bottleWave';
+import tweenBottleWave, {
+  decayWave,
+  startWave,
+  stopWave,
+} from '../tweens/bottleWave';
 import tweenWineScape from '../tweens/wineScape';
 
 import tweenGlassBottle from '../tweens/glassBottle';
@@ -190,7 +194,6 @@ function setScroll() {
   ScrollTrigger.create({
     animation: state.tween.lolliChart,
     trigger: '.section-5',
-    markers: true,
     id: 'lolliChart',
   });
 
@@ -468,16 +471,23 @@ function setScroll() {
     id: 'modelBottleIn',
   });
 
+  // TODO: clean up
   ScrollTrigger.create({
-    animation: state.tween.modelWaveInit,
     trigger: '.section-53',
     id: 'modelWaveInit',
+    markers: true,
     onLeaveBack: () => {
       state.modelBottle.points = false;
       stopWaveMarkers();
+      stopWave();
     },
-    onEnter: () => {
+    onUpdate: self => {
       state.modelBottle.points = true;
+      state.bottleWave.lift =
+        -0.1 + self.progress * (state.model.probability - -0.1);
+      state.modelWave.alpha = self.progress;
+      startWave();
+      decayWave();
       startWaveMarkers();
     },
   });
@@ -529,7 +539,7 @@ function update(wineScapeImg) {
   tweenStats();
   tweenImportance();
   tweenModelBottle();
-  tweenModelWaveInit();
+  // tweenModelWaveInit();
 
   setScroll();
   checkWaveMarkers();

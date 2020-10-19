@@ -12,9 +12,12 @@ const perc = format('.0%');
 // Draw and render.
 function drawWaveMarkers(ctx, t, path) {
   const rough = state.rough.chart;
+  ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
   ctx.translate(t.x, t.y);
   ctx.scale(t.scale, t.scale);
+
+  ctx.globalAlpha = state.modelWave.alpha;
 
   // Line
   ctx.lineWidth = 0.1;
@@ -57,7 +60,6 @@ function drawWaveMarkers(ctx, t, path) {
 }
 
 function renderWaveMarkers() {
-  state.ctx.chart.clearRect(0, 0, state.width, state.height);
   requestAnimationFrame(() => {
     drawWaveMarkers(
       state.ctx.chart,
