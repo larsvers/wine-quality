@@ -36,14 +36,14 @@ export default {
     cleanup: null,
     bottleEmpty: null,
     bottleTextOut: null,
-    animals: null,
+    // animal tweens are being added in tween func.
     bottleFill: null,
     bottleColour: null,
     bottleGrid: null,
     bottleGridColour: null,
     bottleGridSort: null,
     bottleGridOut: null,
-    // dataset tweens are being added in tween func
+    // dataset tweens are being added in tween func.
     globe: null,
     importance: null,
     importanceRemove: null,
@@ -95,13 +95,8 @@ export default {
     xOffset: null,
   },
   animals: {
-    bird: null,
-    croc: null,
-    giraffe: null,
-    pig: null,
-    sloth1: null,
-    sloth2: null,
-    whale: null,
+    data: null,
+    // box info for each animal added in `init`.
   },
   bottleColour: {
     start: ['#619FFC', '#f5992c'],

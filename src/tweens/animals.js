@@ -2,6 +2,20 @@ import { gsap } from 'gsap/all';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import state from '../app/state';
 
+// The morphs to get through (also exported to be used
+// in the update function to set up the scroll triggers).
+const animalPaths = [
+  { id: '#bottle-path', name: 'bottle' },
+  { id: '#animalPig', name: 'animalPig' },
+  { id: '#animalCroc', name: 'animalCroc' },
+  { id: '#animalGiraffe', name: 'animalGiraffe' },
+  { id: '#animalSloth1', name: 'animalSloth1' },
+  { id: '#animalWhale', name: 'animalWhale' },
+  { id: '#animalBird', name: 'animalBird' },
+  { id: '#animalSloth2', name: 'animalSloth2' },
+  { id: '#bottle-path', name: 'bottle' },
+];
+
 function drawAnimals(ctx, path, t) {
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
@@ -41,74 +55,61 @@ function renderAnimals() {
   });
 }
 
-function defineTweenAnimals() {
+function defineTweenAnimals(from, to) {
   // The timeline.
   const tl = gsap.timeline({ onUpdate: renderAnimals });
 
-  // The morphs to get through.)
-  const things = [
-    { id: '#bottle-path', name: 'bottle', pos: 0 },
-    { id: '#animal-pig', name: 'pig', pos: '+=1' },
-    { id: '#animal-croc', name: 'croc', pos: '+=1' },
-    { id: '#animal-giraffe', name: 'giraffe', pos: '+=1' },
-    { id: '#animal-sloth1', name: 'sloth1', pos: '+=1' },
-    { id: '#animal-whale', name: 'whale', pos: '+=1' },
-    { id: '#animal-bird', name: 'bird', pos: '+=1' },
-    { id: '#animal-sloth2', name: 'sloth2', pos: '+=1' },
-    { id: '#bottle-path', name: 'bottle', pos: '+=1' },
-  ];
-
-  // Function for the loop that sets up 1 morph
-  // (in here as it needs to be within `tl` scope).
-  function setMorphs(from, to) {
-    const morph = gsap.to(from.id, {
-      morphSVG: {
-        shape: to.id,
-        map: 'complexity',
-        updateTarget: false,
-        render(path) {
-          state.glassBottle.path = path;
-        },
+  // The path morph.
+  const morph = gsap.to(from.id, {
+    morphSVG: {
+      shape: to.id,
+      map: 'complexity',
+      updateTarget: false,
+      render(path) {
+        state.glassBottle.path = path;
       },
-    });
+    },
+  });
 
-    const trans = gsap.fromTo(
-      state.transform.shape,
-      {
-        x: state.transform[from.name].x,
-        y: state.transform[from.name].y,
-        scale: state.transform[from.name].scale,
-      },
-      {
-        x: state.transform[to.name].x,
-        y: state.transform[to.name].y,
-        scale: state.transform[to.name].scale,
-        ease: 'none',
-      }
-    );
+  // The path's transforms.
+  const trans = gsap.fromTo(
+    state.transform.shape,
+    {
+      x: state.transform[from.name].x,
+      y: state.transform[from.name].y,
+      scale: state.transform[from.name].scale,
+    },
+    {
+      x: state.transform[to.name].x,
+      y: state.transform[to.name].y,
+      scale: state.transform[to.name].scale,
+      ease: 'none',
+    }
+  );
 
-    tl.add(morph, from.pos).add(trans, '<');
-  }
-
-  // Loop through the elements we'd like to morph.
-  for (let i = 0; i < things.length - 1; i++) {
-    const from = things[i];
-    const to = things[i + 1];
-    setMorphs(from, to);
-  }
+  tl.add(morph, from.pos).add(trans, '<');
 
   return tl;
 }
 
 function tweenAnimals() {
-  // Capture current progress.
-  const scroll = ScrollTrigger.getById('animals');
-  const progress = scroll ? scroll.progress : 0;
+  // Build a tween for each path transition (1 less than
+  // the array as each tween has a from and a to path).
+  for (let i = 0; i < animalPaths.length - 1; i++) {
+    // Get the from and the to element.
+    const from = animalPaths[i];
+    const to = animalPaths[i + 1];
 
-  // Kill old - set up new timeline.
-  if (state.tween.animals) state.tween.animals.kill();
-  state.tween.animals = defineTweenAnimals();
-  state.tween.animals.totalProgress(progress);
+    // Capture current progress.
+    const scroll = ScrollTrigger.getById(from.name);
+    const progress = scroll ? scroll.progress : 0;
+
+    // Kill old - set up new timeline.
+    if (state.tween[from.name]) state.tween[from.name].kill();
+    state.tween[from.name] = defineTweenAnimals(from, to);
+    state.tween[from.name].totalProgress(progress);
+  }
 }
 
 export default tweenAnimals;
+export { animalPaths };

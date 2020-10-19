@@ -204,17 +204,16 @@ function prepareVisuals(
 
   state.blackBox.boxDims = getBox('#black-box-path');
 
-  // Add animal morph paths.
-
-  // The animals we have paths for.
-  const animals = [
-    { name: 'bird', path: animalBird },
-    { name: 'croc', path: animalCroc },
-    { name: 'giraffe', path: animalGiraffe },
-    { name: 'pig', path: animalPig },
-    { name: 'sloth1', path: animalSloth1 },
-    { name: 'sloth2', path: animalSloth2 },
-    { name: 'whale', path: animalWhale },
+  // All animals, their paths and how they should be scaled.
+  // prettier-ignore
+  state.animals.data = [
+    { name: 'animalPig', path: animalPig, fit: { width: 0.5, height: 0 } },
+    { name: 'animalCroc', path: animalCroc, fit: { width: 0.5, height: 0 } },
+    { name: 'animalGiraffe', path: animalGiraffe, fit: { width: 0.5, height: 0 } },
+    { name: 'animalSloth1', path: animalSloth1, fit: { width: 0.5, height: 0 } },
+    { name: 'animalWhale', path: animalWhale, fit: { width: 0.5, height: 0 } },
+    { name: 'animalBird', path: animalBird, fit: { width: 0.5, height: 0 } },
+    { name: 'animalSloth2', path: animalSloth2, fit: { width: 0.5, height: 0 } },
   ];
 
   // Add the paths to the DOM.
@@ -222,10 +221,10 @@ function prepareVisuals(
     .append('g')
     .attr('class', 'animals')
     .selectAll('.animal')
-    .data(animals)
+    .data(state.animals.data)
     .join('path')
     .attr('class', 'animal')
-    .attr('id', d => `animal-${d.name}`)
+    .attr('id', d => d.name)
     .attr('d', d => d.path);
 
   // Get each animal path's BBox.
