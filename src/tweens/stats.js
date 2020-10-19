@@ -362,6 +362,8 @@ function drawLine(ctx) {
   if (!state.stats.lr && start.length) return;
   ctx.save();
 
+  ctx.globalAlpha = state.stats.alpha.value;
+
   // Draw the regression line dynamically.
   ctx.beginPath();
   ctx.setLineDash([length - offset, offset]);
@@ -378,7 +380,7 @@ function drawStats(ctx) {
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
 
-  // ctx.globalAlpha = state.stats.alpha.value;
+  ctx.globalAlpha = state.stats.alpha.value;
 
   // Draw axes and labels.
   if (state.stats.current.length) {
@@ -499,7 +501,6 @@ function renderStats() {
   getLineDrawingParams();
   getPointDrawingParams();
   requestAnimationFrame(() => {
-    state.ctx.chart.globalAlpha = state.stats.alpha.value;
     drawStats(state.ctx.chart);
     drawLine(state.ctx.chart);
     drawPoint(state.ctx.chart);
