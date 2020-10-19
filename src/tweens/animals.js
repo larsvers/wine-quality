@@ -5,6 +5,7 @@ import state from '../app/state';
 function drawAnimals(ctx, path, t) {
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
+  ctx.strokeStyle = state.glassBottle.colour;
   ctx.translate(t.x, t.y);
   ctx.scale(t.scale, t.scale);
   ctx.beginPath();
@@ -31,7 +32,6 @@ function drawAnimals(ctx, path, t) {
 }
 
 function renderAnimals() {
-  state.ctx.glassBottle.strokeStyle = state.glassBottle.colour;
   requestAnimationFrame(() => {
     drawAnimals(
       state.ctx.glassBottle,

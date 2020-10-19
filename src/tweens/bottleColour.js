@@ -7,8 +7,7 @@ import state from '../app/state';
 import { drawBottleWave } from './bottleWave';
 import { drawBottle } from './glassBottle';
 
-function setColours() {
-  // Gradient.
+function getColours() {
   const gradient = state.ctx.bottleWave.createLinearGradient(
     0,
     0,
@@ -19,15 +18,21 @@ function setColours() {
   gradient.addColorStop(0, state.bottleColour.colourStop0);
   gradient.addColorStop(0.2, state.bottleColour.colourStop1);
 
-  // Context styles.
-  state.ctx.bottleWave.fillStyle = gradient;
-  state.ctx.glassBottle.strokeStyle = gradient;
+  return gradient;
 }
 
 function renderBottleColour() {
-  setColours();
-
   requestAnimationFrame(() => {
+    // Save contexts.
+    state.ctx.bottleWave.save();
+    state.ctx.glassBottle.save();
+
+    // Set context styles.
+    const gradient = getColours();
+    state.ctx.bottleWave.fillStyle = gradient;
+    state.ctx.glassBottle.strokeStyle = gradient;
+
+    // Draw.
     drawBottleWave(
       state.ctx.bottleWave,
       state.bottleWave.bottlePath,
@@ -38,6 +43,10 @@ function renderBottleColour() {
       state.glassBottle.path,
       state.transform.bottle
     );
+
+    // Restore contexts.
+    state.ctx.bottleWave.restore();
+    state.ctx.glassBottle.restore();
   });
 }
 

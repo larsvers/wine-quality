@@ -58,8 +58,6 @@ function drawBlackBox(ctx, t) {
 function drawProperties(ctx, t, inputVars, outputVars) {
   ctx.clearRect(0, 0, state.width, state.height);
 
-  console.log(ctx.globalAlpha);
-
   ctx.save();
   ctx.translate(t.x, t.y);
   ctx.scale(t.scale, t.scale);
