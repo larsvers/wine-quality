@@ -21,6 +21,16 @@ function getColours() {
   return gradient;
 }
 
+// When scrolling back to start from the end of the story,
+// the bottle wave points are below the bottle from the model.
+// app. We simply set them to above the bottle neck.
+function fillUpBottleWave() {
+  state.bottleWave.wavePoints = [
+    [0, -20],
+    [state.width, -20],
+  ];
+}
+
 function renderBottleColour() {
   requestAnimationFrame(() => {
     // Save contexts.
@@ -31,6 +41,9 @@ function renderBottleColour() {
     const gradient = getColours();
     state.ctx.bottleWave.fillStyle = gradient;
     state.ctx.glassBottle.strokeStyle = gradient;
+
+    // Set the bottle wave line to be above bottle.
+    fillUpBottleWave();
 
     // Draw.
     drawBottleWave(
