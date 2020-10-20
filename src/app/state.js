@@ -32,6 +32,7 @@ export default {
     lolliUpdate1: null,
     lolliUpdate2: null,
     lolliUpdate3: null,
+    // blackbox/arrow tweens are being added in tween func.
     blackBox: null,
     cleanup: null,
     bottleEmpty: null,

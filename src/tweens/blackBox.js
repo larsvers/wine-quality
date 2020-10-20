@@ -113,7 +113,16 @@ function drawProperties(ctx, t, inputVars, outputVars) {
     const p2 = { x: output.p2.x, y: output.y.y };
 
     ctx.strokeStyle = 'white';
-    bezWithArrowheads(ctx, p0, p1, p2, undefined, 5, false, true);
+    bezWithArrowheads(
+      ctx,
+      p0,
+      p1,
+      p2,
+      undefined,
+      output.arrow.size,
+      false,
+      true
+    );
 
     ctx.restore();
   });
@@ -134,21 +143,11 @@ function renderBlackBox() {
 }
 
 // Tween function.
-function defineTweenBlackBox() {
+function defineTweenBlackBox(type) {
   // Things to tween.
   const tl = gsap.timeline({ onUpdate: renderBlackBox });
 
-  // Box path.
-  const boxoffset = gsap.fromTo(
-    state.blackBox.box,
-    { offset: state.blackBox.box.length },
-    { offset: 0 }
-  );
-
-  // Tween add.
-  tl.add(boxoffset);
-
-  // Arrown tweens.
+  // Arrow data.
   bottleWidth = state.glassBottle.bottleBox.width;
   letterHeight = max(
     state.lolli.data[outputProperties[0]].text.dims,
@@ -156,73 +155,96 @@ function defineTweenBlackBox() {
   );
   output.yAdd = -state.lolli.y.step() * 0.1;
 
-  // Input arrow tweens.
-  const p1tween = gsap.fromTo(input.p1, { x: 0 }, { x: -bottleWidth * 0.125 });
-  const p2tween = gsap.fromTo(input.p2, { x: 0 }, { x: -bottleWidth * 0.33 });
-  const yEndTween = gsap.fromTo(
-    input.yEndAdd,
-    [0, 0, 0],
-    [
-      +state.lolli.y.step() * 0.6,
-      +state.lolli.y.step() * 0.1,
-      -state.lolli.y.step() * 0.33,
-    ]
-  );
-  const arrowtween = gsap.fromTo(input.arrow, { size: 0 }, { size: 5 });
+  if (type === 'arrowIn') {
+    // Box path.
+    const boxoffset = gsap.fromTo(
+      state.blackBox.box,
+      { offset: state.blackBox.box.length },
+      { offset: 0 }
+    );
 
-  // Tween add.
-  tl.add(p1tween, '>');
-  tl.add(p2tween, '<');
-  tl.add(yEndTween, '<');
-  tl.add(arrowtween, '<');
+    // Tween add.
+    tl.add(boxoffset);
 
-  // Output arrow tweens.
-  const p1outtween = gsap.fromTo(
-    output.p1,
-    { x: -bottleWidth * 0.33 },
-    { x: -bottleWidth * 0.2 }
-  );
-  const p2outtween = gsap.fromTo(
-    output.p2,
-    { x: -bottleWidth * 0.33 },
-    { x: -5 }
-  );
-  const ytween = gsap.fromTo(
-    output.y,
-    { y: -letterHeight * 0.5 + output.yAdd },
-    { y: letterHeight * 0.5 }
-  );
-  const arrowOutTween = gsap.fromTo(output.arrow, { size: 0 }, { size: 5 });
+    // Input arrow tweens.
+    const p1tween = gsap.fromTo(
+      input.p1,
+      { x: 0 },
+      { x: -bottleWidth * 0.125 }
+    );
+    const p2tween = gsap.fromTo(input.p2, { x: 0 }, { x: -bottleWidth * 0.33 });
+    const yEndTween = gsap.fromTo(
+      input.yEndAdd,
+      [0, 0, 0],
+      [
+        +state.lolli.y.step() * 0.6,
+        +state.lolli.y.step() * 0.1,
+        -state.lolli.y.step() * 0.33,
+      ]
+    );
+    const arrowtween = gsap.fromTo(input.arrow, { size: 0 }, { size: 5 });
 
-  // Tween add.
-  tl.add(p1outtween, '>');
-  tl.add(p2outtween, '<');
-  tl.add(ytween, '<');
-  tl.add(arrowOutTween, '<');
+    // Tween add.
+    tl.add(p1tween, '>');
+    tl.add(p2tween, '<');
+    tl.add(yEndTween, '<');
+    tl.add(arrowtween, '<');
+  }
 
-  // Path dash offset.
-  const datapoint = state.lolli.data.quality;
-  const offsettween = gsap.fromTo(
-    datapoint.text,
-    { offset: datapoint.text.length },
-    { offset: 0 }
-  );
+  if (type === 'arrowOut') {
+    // Output arrow tweens.
+    const p1outtween = gsap.fromTo(
+      output.p1,
+      { x: -bottleWidth * 0.33 },
+      { x: -bottleWidth * 0.2 }
+    );
+    const p2outtween = gsap.fromTo(
+      output.p2,
+      { x: -bottleWidth * 0.33 },
+      { x: -5 }
+    );
+    const ytween = gsap.fromTo(
+      output.y,
+      { y: -letterHeight * 0.5 + output.yAdd },
+      { y: letterHeight * 0.5 }
+    );
+    const arrowOutTween = gsap.fromTo(output.arrow, { size: 0 }, { size: 5 });
 
-  // Tween add.
-  tl.add(offsettween, '<');
+    // Tween add.
+    tl.add(p1outtween, '>');
+    tl.add(p2outtween, '<');
+    tl.add(ytween, '<');
+    tl.add(arrowOutTween, '<');
+
+    // Path dash offset.
+    const datapoint = state.lolli.data.quality;
+    const offsettween = gsap.fromTo(
+      datapoint.text,
+      { offset: datapoint.text.length },
+      { offset: 0 }
+    );
+
+    // Tween add.
+    tl.add(offsettween, '<');
+  }
 
   return tl;
 }
 
-function tweenBlackBox() {
-  // Capture current progress.
-  const scroll = ScrollTrigger.getById('blackBox');
-  const progress = scroll ? scroll.progress : 0;
+const arrows = ['arrowIn', 'arrowOut'];
 
-  // Kill old - set up new timeline.
-  if (state.tween.blackBox) state.tween.blackBox.kill();
-  state.tween.blackBox = defineTweenBlackBox();
-  state.tween.blackBox.totalProgress(progress);
+function tweenBlackBox() {
+  arrows.forEach(d => {
+    // Capture current progress.
+    const scroll = ScrollTrigger.getById(d);
+    const progress = scroll ? scroll.progress : 0;
+
+    // Kill old - set up new timeline.
+    if (state.tween[d]) state.tween[d].kill();
+    state.tween[d] = defineTweenBlackBox(d);
+    state.tween[d].totalProgress(progress);
+  });
 }
 
 export default tweenBlackBox;
+export { arrows };
