@@ -7,16 +7,48 @@ import state from '../app/state';
 import { drawBottleWave } from './bottleWave';
 import { drawBottle } from './glassBottle';
 
+// Describe the colour stop journey.
+const bottleColours = [
+  {
+    name: 'colourGood',
+    fromStop0: '#000000',
+    toStop0: '#88B8FF',
+    fromStop1: '#000000',
+    toStop1: '#023B64',
+  },
+  {
+    name: 'colourBad',
+    fromStop0: '#88B8FF',
+    toStop0: '#FFDDBD',
+    fromStop1: '#023B64',
+    toStop1: '#AE5E00',
+  },
+  {
+    name: 'colourBase',
+    fromStop0: '#FFDDBD',
+    toStop0: '#000000',
+    fromStop1: '#AE5E00',
+    toStop1: '#000000',
+  },
+];
+
+// The object to tween to and from.
+const colourStops = {
+  stop0: null,
+  stop1: null,
+};
+
+// Helper func to create the colour gradient.
 function getColours() {
   const gradient = state.ctx.bottleWave.createLinearGradient(
     0,
-    0,
-    state.width,
-    state.height
+    state.glassBottle.bottleBox.height / 2,
+    state.glassBottle.bottleBox.width,
+    state.glassBottle.bottleBox.height / 2
   );
 
-  gradient.addColorStop(0, state.bottleColour.colourStop0);
-  gradient.addColorStop(0.2, state.bottleColour.colourStop1);
+  gradient.addColorStop(0, colourStops.stop0);
+  gradient.addColorStop(0.7, colourStops.stop1);
 
   return gradient;
 }
@@ -31,6 +63,7 @@ function fillUpBottleWave() {
   ];
 }
 
+// Render.
 function renderBottleColour() {
   requestAnimationFrame(() => {
     // Save contexts.
@@ -63,55 +96,37 @@ function renderBottleColour() {
   });
 }
 
-function defineTweenBottleColour() {
+// Tween set up.
+function defineTweenBottleColour(col) {
   const tl = gsap.timeline({ onUpdate: renderBottleColour });
 
-  const colourStop0_good = gsap.fromTo(
-    state.bottleColour,
-    { colourStop0: state.bottleColour.base },
-    { colourStop0: state.bottleColour.start[0] }
+  const stop0Tween = gsap.fromTo(
+    colourStops,
+    { stop0: col.fromStop0 },
+    { stop0: col.toStop0 }
   );
 
-  const colourStop1_good = gsap.fromTo(
-    state.bottleColour,
-    { colourStop1: state.bottleColour.base },
-    { colourStop1: state.bottleColour.stop[0] }
+  const stop1Tween = gsap.fromTo(
+    colourStops,
+    { stop1: col.fromStop1 },
+    { stop1: col.toStop1 }
   );
 
-  const colourStop0_bad = gsap.to(state.bottleColour, {
-    colourStop0: state.bottleColour.start[1],
-  });
-
-  const colourStop1_bad = gsap.to(state.bottleColour, {
-    colourStop1: state.bottleColour.stop[1],
-  });
-
-  const colourStop0_base = gsap.to(state.bottleColour, {
-    colourStop0: state.bottleColour.base,
-  });
-
-  const colourStop1_base = gsap.to(state.bottleColour, {
-    colourStop1: state.bottleColour.base,
-  });
-
-  return tl
-    .add(colourStop0_good)
-    .add(colourStop1_good, '<')
-    .add(colourStop0_bad, '+=1')
-    .add(colourStop1_bad, '<')
-    .add(colourStop0_base, '+=1')
-    .add(colourStop1_base, '<');
+  return tl.add(stop0Tween).add(stop1Tween, '<');
 }
 
 function tweenBottleColour() {
-  // Capture current progress.
-  const scroll = ScrollTrigger.getById('bottleColour');
-  const progress = scroll ? scroll.progress : 0;
+  bottleColours.forEach(d => {
+    // Capture current progress.
+    const scroll = ScrollTrigger.getById(d.name);
+    const progress = scroll ? scroll.progress : 0;
 
-  // Kill old - set up new timeline.
-  if (state.tween.bottleColour) state.tween.bottleColour.kill();
-  state.tween.bottleColour = defineTweenBottleColour();
-  state.tween.bottleColour.totalProgress(progress);
+    // Kill old - set up new timeline.
+    if (state.tween[d.name]) state.tween[d.name].kill();
+    state.tween[d.name] = defineTweenBottleColour(d);
+    state.tween[d.name].totalProgress(progress);
+  });
 }
 
 export default tweenBottleColour;
+export { bottleColours };

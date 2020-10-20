@@ -38,7 +38,7 @@ export default {
     bottleTextOut: null,
     // animal tweens are being added in tween func.
     bottleFill: null,
-    bottleColour: null,
+    // bottle colour tweens are being added in tween func.
     bottleGrid: null,
     bottleGridColour: null,
     bottleGridSort: null,
@@ -97,13 +97,6 @@ export default {
   animals: {
     data: null,
     // box info for each animal added in `init`.
-  },
-  bottleColour: {
-    start: ['#619FFC', '#f5992c'],
-    stop: ['#023B64', '#AE5E00'],
-    base: '#000000',
-    colourStop0: '#000000',
-    colourStop1: '#000000',
   },
   bottleGrid: {
     baseData: null,
