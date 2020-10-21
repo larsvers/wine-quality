@@ -1,11 +1,14 @@
 /* eslint-disable no-use-before-define */
 import { gsap } from 'gsap/all';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
-import { range, mean } from 'd3-array/src/index';
+import { range } from 'd3-array/src/index';
 import { scalePoint } from 'd3-scale/src/index';
 import { line, curveBasis } from 'd3-shape/src/index';
 
 import state from '../app/state';
+import { getGradient } from '../app/utils';
+
+let gradient;
 
 // Utils.
 
@@ -103,23 +106,21 @@ function drawBottleWave(ctx, path, t) {
   // Background.
   ctx.fill(path);
 
-  // // TODO DEBUG draw x0, y0;
-  // const yMean = mean(state.bottleWave.wavePoints, d => d[1]);
-  // ctx.beginPath();
-  // ctx.arc(0, yMean, 5, 0, 2 * Math.PI);
-  // ctx.fillStyle = 'tomato';
-  // ctx.fill();
-
   ctx.restore();
 }
 
 function renderBottleWave() {
   requestAnimationFrame(() => {
+    state.ctx.bottleWave.save();
+    state.ctx.bottleWave.fillStyle = gradient;
+
     drawBottleWave(
       state.ctx.bottleWave,
       state.bottleWave.bottlePath,
       state.transform.shape
     );
+
+    state.ctx.bottleWave.restore();
   });
 }
 
@@ -135,6 +136,9 @@ function defineTweenBottleWave(liftStart, liftTarget) {
     .curve(curveBasis);
 
   state.bottleWave.waveAlpha = state.width / state.height < 0.5 ? 1 : 5;
+
+  // The bottle's fill.
+  gradient = getGradient(state.bottleColour.base);
 
   // Set up timeline.
   // On scroll the lift gets updated, which startWave's

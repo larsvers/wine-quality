@@ -1,3 +1,9 @@
+// Used in two objects below, hence declared out here.
+const baseStops = {
+  stop0: '#4D4054',
+  stop1: '#040509',
+};
+
 export default {
   // General.
   width: null,
@@ -70,6 +76,17 @@ export default {
     dashOffset: null,
     colour: null,
   },
+  bottleColour: {
+    base: { ...baseStops },
+    good: {
+      stop0: '#88B8FF',
+      stop1: '#023B64',
+    },
+    bad: {
+      stop0: '#FFDDBD',
+      stop1: '#AE5E00',
+    },
+  },
   bottleWave: {
     bottlePath: null,
     wavePoints: null,
@@ -106,8 +123,9 @@ export default {
     dataSorted: null,
     dataOut: null,
     colour: {
-      good: '#000000',
-      bad: '#000000',
+      // initially base colours.
+      good: { ...baseStops },
+      bad: { ...baseStops },
     },
   },
   dataset: {

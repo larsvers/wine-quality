@@ -9,10 +9,13 @@ import { range } from 'd3-array/src';
 import state from '../app/state';
 
 import gridLayout from '../layouts/grid';
+import { getGradient } from '../app/utils';
 
 const smallBottleScale = 0.15;
 let xScale;
 let yScale;
+let gradientGood;
+let gradientBad;
 
 // Helper functions.
 function getBaseData(rows, cols) {
@@ -23,7 +26,7 @@ function getBaseData(rows, cols) {
 }
 
 function setScales() {
-  // Get scales (alos determining the space for our visual)
+  // Get scales (also determining the space for our visual)
   const xBottleCorrection =
     (state.glassBottle.bottleBox.width / 2) * smallBottleScale;
   const yBottleCorrection =
@@ -130,9 +133,7 @@ function drawBottleWaves(ctx, path, points) {
   points.forEach(point => {
     const { layout } = point;
     ctx.save();
-    ctx.fillStyle = point.quality
-      ? state.bottleGrid.colour.good
-      : state.bottleGrid.colour.bad;
+    ctx.fillStyle = point.quality ? gradientGood : gradientBad;
     ctx.translate(xScale(layout.x), yScale(layout.y));
     ctx.scale(layout.scale, layout.scale);
 
@@ -154,6 +155,8 @@ function drawBottleWaves(ctx, path, points) {
 
 function renderBottleGrid() {
   requestAnimationFrame(() => {
+    gradientGood = getGradient(state.bottleGrid.colour.good);
+    gradientBad = getGradient(state.bottleGrid.colour.bad);
     drawBottleWaves(
       state.ctx.bottleWave,
       state.bottleWave.bottlePath,

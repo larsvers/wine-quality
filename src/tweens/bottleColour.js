@@ -3,32 +3,34 @@
 import { gsap } from 'gsap/all';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import state from '../app/state';
+import { getGradient } from '../app/utils';
 
 import { drawBottleWave } from './bottleWave';
 import { drawBottle } from './glassBottle';
 
 // Describe the colour stop journey.
+const colours = state.bottleColour;
 const bottleColours = [
   {
     name: 'colourGood',
-    fromStop0: '#000000',
-    toStop0: '#88B8FF',
-    fromStop1: '#000000',
-    toStop1: '#023B64',
+    fromStop0: colours.base.stop0,
+    toStop0: colours.good.stop0,
+    fromStop1: colours.base.stop1,
+    toStop1: colours.good.stop1,
   },
   {
     name: 'colourBad',
-    fromStop0: '#88B8FF',
-    toStop0: '#FFDDBD',
-    fromStop1: '#023B64',
-    toStop1: '#AE5E00',
+    fromStop0: colours.good.stop0,
+    toStop0: colours.bad.stop0,
+    fromStop1: colours.good.stop1,
+    toStop1: colours.bad.stop1,
   },
   {
     name: 'colourBase',
-    fromStop0: '#FFDDBD',
-    toStop0: '#000000',
-    fromStop1: '#AE5E00',
-    toStop1: '#000000',
+    fromStop0: colours.bad.stop0,
+    toStop0: colours.base.stop0,
+    fromStop1: colours.bad.stop1,
+    toStop1: colours.base.stop1,
   },
 ];
 
@@ -37,21 +39,6 @@ const colourStops = {
   stop0: null,
   stop1: null,
 };
-
-// Helper func to create the colour gradient.
-function getColours() {
-  const gradient = state.ctx.bottleWave.createLinearGradient(
-    0,
-    state.glassBottle.bottleBox.height / 2,
-    state.glassBottle.bottleBox.width,
-    state.glassBottle.bottleBox.height / 2
-  );
-
-  gradient.addColorStop(0, colourStops.stop0);
-  gradient.addColorStop(0.7, colourStops.stop1);
-
-  return gradient;
-}
 
 // When scrolling back to start from the end of the story,
 // the bottle wave points are below the bottle from the model.
@@ -71,7 +58,7 @@ function renderBottleColour() {
     state.ctx.glassBottle.save();
 
     // Set context styles.
-    const gradient = getColours();
+    const gradient = getGradient(colourStops);
     state.ctx.bottleWave.fillStyle = gradient;
     state.ctx.glassBottle.strokeStyle = gradient;
 

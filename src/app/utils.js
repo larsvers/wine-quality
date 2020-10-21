@@ -271,6 +271,21 @@ function drawPoints(ctx, p, c, r, s) {
   ctx.restore();
 }
 
+// Helper func to create the colour gradient for the bottle fill.
+function getGradient(stops) {
+  const gradient = state.ctx.bottleWave.createLinearGradient(
+    0,
+    state.glassBottle.bottleBox.height / 2,
+    state.glassBottle.bottleBox.width,
+    state.glassBottle.bottleBox.height / 2
+  );
+
+  gradient.addColorStop(0, stops.stop0);
+  gradient.addColorStop(0.7, stops.stop1);
+
+  return gradient;
+}
+
 export {
   prettyLabel,
   isSelection,
@@ -284,4 +299,5 @@ export {
   getLinearScale,
   euclideanDistance,
   drawPoints,
+  getGradient,
 };

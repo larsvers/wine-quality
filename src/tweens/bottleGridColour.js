@@ -9,19 +9,40 @@ function defineTweenBottleGridColour() {
   // Tween
   const tl = gsap.timeline({ onUpdate: renderBottleGrid });
 
-  const colourGood = gsap.fromTo(
-    state.bottleGrid.colour,
-    { good: '#000000' },
-    { good: '#0000ff' }
+  // For shortness.
+  const colours = state.bottleColour;
+
+  // Tween from the base to a good gradient.
+  const colourGood0 = gsap.fromTo(
+    state.bottleGrid.colour.good,
+    { stop0: colours.base.stop0 },
+    { stop0: colours.good.stop0 }
   );
 
-  const colourBad = gsap.fromTo(
-    state.bottleGrid.colour,
-    { bad: '#000000' },
-    { bad: '#ff0000' }
+  const colourGood1 = gsap.fromTo(
+    state.bottleGrid.colour.good,
+    { stop1: colours.base.stop1 },
+    { stop1: colours.good.stop1 }
   );
 
-  return tl.add(colourGood).add(colourBad);
+  // Tween from the base to a bad gradient.
+  const colourBad0 = gsap.fromTo(
+    state.bottleGrid.colour.bad,
+    { stop0: colours.base.stop0 },
+    { stop0: colours.bad.stop0 }
+  );
+
+  const colourBad1 = gsap.fromTo(
+    state.bottleGrid.colour.bad,
+    { stop1: colours.base.stop1 },
+    { stop1: colours.bad.stop1 }
+  );
+
+  return tl
+    .add(colourGood0)
+    .add(colourGood1, '<')
+    .add(colourBad0)
+    .add(colourBad1, '<');
 }
 
 function tweenBottleGridColour() {
