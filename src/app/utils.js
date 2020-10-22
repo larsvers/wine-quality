@@ -286,6 +286,10 @@ function getGradient(stops) {
   return gradient;
 }
 
+function clear(ctx) {
+  ctx.clearRect(0, 0, state.width, state.height);
+}
+
 export {
   prettyLabel,
   isSelection,
@@ -300,4 +304,5 @@ export {
   euclideanDistance,
   drawPoints,
   getGradient,
+  clear,
 };

@@ -58,7 +58,6 @@ function defineTweenModelBottle(offsetDraw, alphaStart, alphaTarget) {
   const alphavalue = gsap.fromTo(
     state.modelBottle,
     { alpha: alphaStart },
-    // { alpha: alphaTarget, ease: 'circ.out' }
     { alpha: alphaTarget }
   );
 
@@ -89,7 +88,7 @@ function tweenOut() {
 
 function tweenModelBottle() {
   tweenIn();
-  // tweenOut(); // TODO not needed yet. Switch on if and when required.
+  // tweenOut(); // not needed but here for if and when required.
 }
 
 export default tweenModelBottle;

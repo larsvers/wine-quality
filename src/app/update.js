@@ -6,7 +6,7 @@ import cloneDeep from 'lodash.clonedeep';
 import rough from 'roughjs/bundled/rough.esm';
 
 import state from './state';
-import { resizeCanvas, getTransform } from './utils';
+import { resizeCanvas, getTransform, clear } from './utils';
 import tweenBottleWave, { startWave, stopWave } from '../tweens/bottleWave';
 import tweenWineScape from '../tweens/wineScape';
 
@@ -201,6 +201,7 @@ function setScroll() {
     animation: state.tween.lolliUpdate3,
     trigger: '.section-8',
     id: 'lolliUpdate3',
+    onEnterBack: () => clear(state.ctx.blackBox),
   });
 
   // 2 items.
@@ -228,7 +229,10 @@ function setScroll() {
     animation: state.tween.bottleEmpty,
     trigger: '.section-13',
     id: 'bottleEmpty',
-    onLeave: stopWave,
+    onLeave() {
+      stopWave();
+      clear(state.ctx.bottleWave);
+    },
     onEnterBack: startWave,
   });
 
@@ -282,6 +286,8 @@ function setScroll() {
     animation: state.tween.bottleGridOut,
     trigger: '.section-29',
     id: 'bottleGridOut',
+    // glassBottle shows the dataset.
+    onEnterBack: () => clear(state.ctx.glassBottle),
   });
 
   // Setting up all the scrolltriggers for the dataset.
@@ -290,7 +296,7 @@ function setScroll() {
   state.dataset.info.forEach((d, i) => {
     ScrollTrigger.create({
       animation: state.tween[d.tween],
-      trigger: `.section-${30 + i}`, // first section +1
+      trigger: `.section-${30 + i}`,
       id: d.tween,
     });
   });
@@ -300,12 +306,8 @@ function setScroll() {
     trigger: '.section-44',
     end: '95% center',
     id: 'globe',
-    onUpdate(self) {
-      // Remove dataset
-      state.ctx.glassBottle.clearRect(0, 0, state.width, state.height);
-      // Save the progress.
-      state.globe.scroll.progress = self.progress;
-    },
+    onEnter: () => clear(state.ctx.glassBottle),
+    onUpdate: self => (state.globe.scroll.progress = self.progress),
   });
 
   ScrollTrigger.create({
@@ -445,8 +447,10 @@ function setScroll() {
     animation: state.tween.importance,
     trigger: '.section-61',
     id: 'importance',
-    // Stop the simulation as it would otherwise continue to draw on the context.
+    // Stop the simulation as it would otherwise
+    // continue to draw on the context.
     onEnter: () => sim.stop(),
+    onEnterBack: () => clear(state.ctx.bottleWave), // 1
   });
 
   ScrollTrigger.create({
@@ -459,12 +463,15 @@ function setScroll() {
     animation: state.tween.modelBottleIn,
     trigger: '.section-63',
     id: 'modelBottleIn',
+    onEnterBack: () => clear(state.ctx.bottleWave), // 1
   });
 
   ScrollTrigger.create({
     trigger: '.section-64',
     id: 'modelWaveInit',
-    onLeaveBack: stopModelWave,
+    onLeaveBack() {
+      stopModelWave();
+    },
     onUpdate: self => updateModelWave(self),
   });
 
@@ -511,3 +518,6 @@ function update(wineScapeImg) {
 }
 
 export default update;
+
+// 1. A bit of a tenacious context that gets easily stuck
+//    when racing back. So better safely removing it twice...
