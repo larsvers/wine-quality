@@ -27,6 +27,7 @@ export default {
   },
   rough: {
     chart: null,
+    globe: null,
   },
   // Tweens.
   tween: {

@@ -14,6 +14,7 @@ let countries;
 let portugal;
 let projection;
 let path;
+let pathSvg;
 let sphere;
 let grid;
 let txScale;
@@ -53,6 +54,7 @@ function getPixelDistance(pStart, pEnd, proj) {
 }
 
 function drawGlobe(ctx) {
+  const rough = state.rough.globe;
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
 
@@ -68,9 +70,10 @@ function drawGlobe(ctx) {
     gradientValues.distance * 6
   );
 
-  grad.addColorStop(0, '#d5e5f5');
-  grad.addColorStop(0.5, '#99aabb');
-  grad.addColorStop(1, '#3e6184');
+  grad.addColorStop(0, '#F2F0EB');
+  grad.addColorStop(0.5, '#5C7691');
+  grad.addColorStop(0.8, '#002054');
+  grad.addColorStop(1, '#00122E');
 
   ctx.fillStyle = grad;
   ctx.beginPath(), path(sphere), ctx.fill();
@@ -83,9 +86,13 @@ function drawGlobe(ctx) {
   ctx.beginPath(), path(countries), ctx.stroke();
 
   ctx.fillStyle = '#ff00ff';
-  ctx.beginPath(), path(portugal), ctx.fill();
+  rough.path(pathSvg(portugal), {
+    fill: '#e83d27',
+    stroke: 'rgba(0,0,0,0.2)',
+    strokeWidth: 1,
+  });
 
-  ctx.lineWidth = 10;
+  ctx.lineWidth = 3;
   ctx.strokeStyle = '#ffffff';
   ctx.globalAlpha = aaScale(state.globe.scroll.progress);
   bezWithArrowheads(ctx, point0, point1, point2, undefined, 15, false, true);
@@ -146,6 +153,8 @@ function prepGeoTools() {
   path = geoPath()
     .projection(projection)
     .context(state.ctx.globe);
+
+  pathSvg = geoPath().projection(projection);
 
   sphere = { type: 'Sphere' };
   grid = geoGraticule()();
