@@ -209,7 +209,6 @@ function setScroll() {
       animation: state.tween[d],
       trigger: `.section-${9 + i}`,
       id: d,
-      markers: true,
     });
   });
 

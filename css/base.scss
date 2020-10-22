@@ -5,9 +5,9 @@ body {
   overflow: hidden;
 }
 
-div {
-  // border: 1px solid tomato;
-}
+// div {
+// border: 1px solid tomato;
+// }
 
 // Buttons
 button {
@@ -24,6 +24,7 @@ button {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  background: url('../static/paper-orange.jpg');
 
   // @media (min-width: $tablet-up) {
   @media #{$tablet-up} {
@@ -32,11 +33,21 @@ button {
 }
 #visual-container {
   flex-grow: 1;
-  background-color: lightskyblue;
 }
+
 #text-container {
   flex-grow: 1;
-  background-color: papayawhip;
+
+  // Border
+  border-top: 6px solid transparent;
+  border-left: none;
+  border-image: url('../static/border-horiz.png') 30 stretch;
+
+  @media #{$tablet-up} {
+    border-top: none;
+    border-left: 6px solid transparent;
+    border-image: url('../static/border-vert.png') 30 stretch;
+  }
 }
 .wrapper {
   overflow: hidden;
@@ -49,4 +60,3 @@ button {
   position: absolute;
   overflow: auto;
 }
-
