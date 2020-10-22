@@ -16,18 +16,12 @@ import 'd3-transition';
 import { linearRegression, linearRegressionLine } from 'simple-statistics';
 
 // Internal modules.
-import { nest } from 'd3-collection/src';
 import gsap from 'gsap/gsap-core';
 import state from '../app/state';
 import frequency from '../layouts/frequency';
 import labels from '../layouts/labels';
 import { txScale, tyScale } from './globe';
-import {
-  prettyLabel,
-  getLinearScale,
-  euclideanDistance,
-  drawPoints,
-} from '../app/utils';
+import { prettyLabel, getLinearScale, euclideanDistance } from '../app/utils';
 
 // Module scope.
 let dotRadius = 1.5;
@@ -541,9 +535,9 @@ function tweenStats() {
   addLayouts();
   setLayout('globeExit');
   setSimulation();
-  dot = drawDot(dotRadius, '#000000');
-  dotGood = drawDot(dotRadius, '#0000ff');
-  dotBad = drawDot(dotRadius, '#ff0000');
+  dot = drawDot(dotRadius, state.bottleColour.base.stop1);
+  dotGood = drawDot(dotRadius, state.bottleColour.good.stop1);
+  dotBad = drawDot(dotRadius, state.bottleColour.bad.stop1);
 }
 
 export default tweenStats;

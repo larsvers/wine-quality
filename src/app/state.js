@@ -80,11 +80,11 @@ export default {
     base: { ...baseStops },
     good: {
       stop0: '#88B8FF',
-      stop1: '#023B64',
+      stop1: '#225E96',
     },
     bad: {
       stop0: '#FFACA1',
-      stop1: '#700D00',
+      stop1: '#BF4131',
     },
   },
   bottleWave: {
