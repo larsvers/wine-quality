@@ -1,5 +1,4 @@
 // External libs.
-import gsap from 'gsap/gsap-core';
 import { forceManyBody, forceX, forceY } from 'd3-force';
 
 // Internal modules.
@@ -9,7 +8,7 @@ import { sim, boundingBox, tweenStatsAlpha } from './stats';
 // Individual simulations:
 
 // Move to Alcohol scatter.
-const chargeScatter = forceManyBody().strength(-0.5);
+const chargeScatter = forceManyBody().strength(-1);
 const xPosQualAlc = forceX(d => d.layout.alcohol__quality.x).strength(0.3);
 const yPosQualAlc = forceY(d => d.layout.alcohol__quality.y).strength(0.3);
 

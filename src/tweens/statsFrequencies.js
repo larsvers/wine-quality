@@ -1,5 +1,4 @@
 // External libs.
-import gsap from 'gsap/gsap-core';
 import { forceLink, forceManyBody, forceX, forceY } from 'd3-force';
 
 // Internal modules.
@@ -39,7 +38,7 @@ function simulateLattice() {
   // This is not a frequency distribution.
   state.stats.current = [];
 
-  // Can't be with its force friends in module scope,
+  // This ↓ can't be in module scope with its force friends,
   // as it needs to be run after the links are produced.
   const linkForce = forceLink(state.stats.links)
     .id(d => d.index)
@@ -76,12 +75,13 @@ function simulateAlcohol() {
     { name: 'alcohol', axis: 'x', straight: false, header: true, label: false },
   ];
 
-  // this sim is triggered on two occasions.
+  // This sim is triggered on two occasions.
   sim
     .nodes(state.stats.data)
     .force('link', null)
     .force('chargeLattice', null)
     .force('chargeFrequencies', chargeFrequencies)
+    .force('chargeScatter', null)
     .force('xCentre', null)
     .force('xCentre', null)
     .force('xQuality', null)
@@ -191,7 +191,7 @@ function simulateVolatile() {
     .alpha(0.8)
     .restart();
 }
-// Move to Volatile Acidity frequency.
+// Move to Quality frequency.
 const xPosQuality = forceX(d => d.layout.quality.x).strength(0.5);
 const yPosQuality = forceY(d => d.layout.quality.y).strength(0.5);
 
