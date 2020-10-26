@@ -61,7 +61,7 @@ gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
 
 // Helpers.
 function setModelWeightMap(array) {
-  let mapResult = map();
+  const mapResult = map();
   array.forEach(d => mapResult.set(d.term, d.estimate));
   return mapResult;
 }
@@ -228,7 +228,7 @@ function prepareVisuals(
     .attr('d', d => d.path);
 
   // Get each animal path's BBox.
-  animalPaths.each(function(d) {
+  animalPaths.each(function (d) {
     state.animals[d.name] = this.getBBox();
   });
 
@@ -266,7 +266,7 @@ function prepareVisuals(
 
   // Get a link grid.
   const n = 40;
-  let links = [];
+  const links = [];
   for (let y = 0; y < n; ++y) {
     for (let x = 0; x < n; ++x) {
       if (y > 0) links.push({ source: (y - 1) * n + x, target: y * n + x });
@@ -310,9 +310,7 @@ function buildStory(data) {
 
   // Add model base.
   // needs to come at the better end to stop at top and become scrollable.
-  const modelApp = select('#text-wrap')
-    .append('div')
-    .attr('id', 'model-app');
+  const modelApp = select('#text-wrap').append('div').attr('id', 'model-app');
 
   modelApp.append('div').attr('id', 'model-app-header');
   modelApp.append('div').attr('id', 'model-app-wrap');
