@@ -1,3 +1,4 @@
+/* eslint-disable import/no-mutable-exports */
 /* eslint-disable no-restricted-properties */
 /* eslint-disable no-sequences */
 /* eslint-disable no-unused-expressions */
@@ -26,6 +27,19 @@ let aaScale;
 let point0;
 let point1;
 let point2;
+
+// Globe gradient colours.
+const colours = [
+  { colour: '#f4eee7', stop: 0.1 },
+  { colour: '#e1dcd6', stop: 0.3 },
+  { colour: '#cfcac5', stop: 0.4 },
+  { colour: '#bcb9b4', stop: 0.5 },
+  { colour: '#aaa7a4', stop: 0.6 },
+  { colour: '#999794', stop: 0.7 },
+  { colour: '#878684', stop: 0.8 },
+  { colour: '#767675', stop: 0.9 },
+  { colour: '#666666', stop: 1 },
+];
 
 // The center of the world (Northern Portugal in our case).
 const rBase = [8, -42, 0];
@@ -70,10 +84,24 @@ function drawGlobe(ctx) {
     gradientValues.distance * 6
   );
 
-  grad.addColorStop(0, '#F2F0EB');
-  grad.addColorStop(0.5, '#5C7691');
-  grad.addColorStop(0.8, '#002054');
-  grad.addColorStop(1, '#00122E');
+  // grad.addColorStop(0, '#F2F0EB');
+  // grad.addColorStop(0.5, '#5C7691');
+  // grad.addColorStop(0.8, '#002054');
+  // grad.addColorStop(1, '#00122E');
+
+  // grad.addColorStop(0, '#FAF9ED');
+  // grad.addColorStop(0.5, '#F6E5DD');
+  // grad.addColorStop(1, '#ccc');
+
+  // grad.addColorStop(0.1, '#F5F3EF');
+  colours.forEach(d => {
+    grad.addColorStop(d.stop, d.colour);
+  });
+  // grad.addColorStop(0.1, '#F4EEE7');
+  // grad.addColorStop(0.5, '#EDE8E6');
+  // grad.addColorStop(0.8, '#AEA5B8');
+  // grad.addColorStop(0.9, '#8f8f8f');
+  // grad.addColorStop(1, '#777');
 
   ctx.fillStyle = grad;
   ctx.beginPath(), path(sphere), ctx.fill();
@@ -150,9 +178,7 @@ function prepGeoTools() {
     countries
   );
 
-  path = geoPath()
-    .projection(projection)
-    .context(state.ctx.globe);
+  path = geoPath().projection(projection).context(state.ctx.globe);
 
   pathSvg = geoPath().projection(projection);
 
@@ -182,14 +208,10 @@ function prepScales() {
     .range([sInit, sInit * 2, sInit * 2, 0]);
 
   // The globe rotation scale.
-  rScale = scaleLinear()
-    .domain([0, 0.3, 0.7, 1])
-    .range([-50, -1, 1, 100]);
+  rScale = scaleLinear().domain([0, 0.3, 0.7, 1]).range([-50, -1, 1, 100]);
 
   // The globe's globalAlpha scale.
-  gaScale = scaleLinear()
-    .domain([0, 0.1, 0.99, 1])
-    .range([0, 1, 1, 0]);
+  gaScale = scaleLinear().domain([0, 0.1, 0.99, 1]).range([0, 1, 1, 0]);
 
   // The arrow's globalAlpha scale.
   aaScale = scaleLinear()
