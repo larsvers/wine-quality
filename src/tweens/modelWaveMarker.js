@@ -45,7 +45,7 @@ function drawWaveMarkers(ctx, t, path) {
   ctx.textBaseline = 'middle';
   ctx.font = '8px Pangolin';
   ctx.fillText(
-    perc(state.model.probability),
+    `${perc(state.model.probability)} likely to be good`,
     position.x + lw + pad,
     position.y + 1
   );
@@ -83,7 +83,7 @@ function makeWaveMarkers() {
 
   // Position will be picked up by the draw function.
   position = {
-    x: wave.wavePoints[wave.n - 1][0],
+    x: wave.wavePoints[wave.wavePoints.length - 1][0],
     y,
   };
 
