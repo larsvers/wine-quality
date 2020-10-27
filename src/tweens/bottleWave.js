@@ -69,6 +69,8 @@ function makeWave(time) {
  * Passes in the time at each tick implicitly.
  */
 function startWave() {
+  // Throttle the ticker if necessary.
+  // gsap.ticker.fps(30);
   gsap.ticker.add(makeWave);
 }
 

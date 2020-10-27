@@ -8,6 +8,7 @@ import { drag } from 'd3-drag';
 import { scaleLinear } from 'd3-scale/src';
 import { select, event } from 'd3-selection';
 import { curveBasis, line } from 'd3-shape/src';
+import rough from 'roughjs/bundled/rough.esm';
 
 import state from '../app/state';
 import getProbability from './probability';
@@ -19,11 +20,11 @@ const margin = { top: 20, right: 20, bottom: 30, left: 20 };
 
 // Function to compute density
 function kernelDensityEstimator(kernel, X) {
-  return function(V) {
-    return X.map(function(x) {
+  return function (V) {
+    return X.map(function (x) {
       return [
         x,
-        mean(V, function(v) {
+        mean(V, function (v) {
           return kernel(x - v);
         }),
       ];
@@ -32,7 +33,7 @@ function kernelDensityEstimator(kernel, X) {
 }
 
 function kernelEpanechnikov(k) {
-  return function(v) {
+  return function (v) {
     return Math.abs((v /= k)) <= 1 ? (0.75 * (1 - v * v)) / k : 0;
   };
 }
@@ -52,15 +53,19 @@ function buildControl(datapoint) {
   const sel = select(this);
   sel.select('svg').remove(); // No join mechanics here - let's be deterministic.
   const svg = sel.append('svg').attr('class', 'control');
+  const rs = rough.svg(svg.node());
+
   // SVG is defined as 100% width/height in CSS.
   const width = parseInt(svg.style('width'), 10) - margin.left - margin.right;
   const height = parseInt(svg.style('height'), 10) - margin.top - margin.bottom;
+
   // Clip path for the marker.
   const clippy = svg
     .append('defs')
     .append('clipPath')
     .attr('id', `clippy-${variable}`)
     .append('path');
+
   // The chart g.
   const g = svg
     .append('g')
@@ -116,14 +121,12 @@ function buildControl(datapoint) {
   const densityPath = lineGen(density);
 
   // Density chart.
-  g.append('path')
-    .attr('class', `density ${variable}`)
-    .style('fill', '#000')
-    .style('fill-opacity', 0.2)
-    .style('stroke-width', 1)
-    .style('stroke', '#000')
-    .style('stroke-linejoin', 'round')
-    .attr('d', densityPath);
+  const fill = rs.path(densityPath, {
+    fill: '#555',
+    stroke: 'rgba(0, 0, 0, 0.7)',
+  });
+  g.node().appendChild(fill);
+  g.select('path').attr('class', `density ${variable}`);
 
   // Clip path data.
   clippy.attr('d', densityPath);

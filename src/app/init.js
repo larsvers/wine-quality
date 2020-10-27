@@ -337,6 +337,9 @@ function ready([
   // Debounced resize.
   const debounced = debounce(() => update(wineScape), 500);
   window.addEventListener('resize', debounced);
+  window.addEventListener('load', e => {
+    console.log('loaded');
+  });
 }
 
 function init() {
