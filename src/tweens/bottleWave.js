@@ -23,9 +23,9 @@ let gradient;
  * @return { Array } wave point coordinates
  */
 function getWavePoints(r, alpha, beta, x0, y0, t) {
-  let arg = alpha * x0 + beta * t;
-  let x = x0 + r * Math.cos(arg);
-  let y = y0 + r * Math.sin(arg);
+  const arg = alpha * x0 + beta * t;
+  const x = x0 + r * Math.cos(arg);
+  const y = y0 + r * Math.sin(arg);
   return [x, y];
 }
 
@@ -40,12 +40,12 @@ function makeWave(time) {
   state.bottleWave.wavePoints = range(state.bottleWave.n).map((d, i) => {
     // For each point (indexed from 0 to n), we add
     // a few parameters. x0 and y0 decide the position.
-    let x0 = state.bottleWave.xWaveScale(d);
-    let y0 = (1 - state.bottleWave.lift) * state.glassBottle.bottleBox.height;
+    const x0 = state.bottleWave.xWaveScale(d);
+    const y0 = (1 - state.bottleWave.lift) * state.glassBottle.bottleBox.height;
 
     // The main point generation function, which sets x and y
     // based on the time passed in.
-    let xy = getWavePoints(
+    const xy = getWavePoints(
       state.bottleWave.r,
       state.bottleWave.waveAlpha,
       1.5,
@@ -88,7 +88,7 @@ function decayWave() {
 }
 
 // Tween and draw.
-function drawBottleWave(ctx, path, t) {
+function drawBottleWave(ctx, path, t, roughPath) {
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
   ctx.translate(t.x, t.y);
@@ -104,7 +104,16 @@ function drawBottleWave(ctx, path, t) {
   ctx.clip();
 
   // Background.
-  ctx.fill(path);
+  if (!roughPath) ctx.fill(path);
+  // debugger;
+  if (roughPath)
+    state.rough.wave.path(roughPath, {
+      fill: 'red',
+      seed: 1,
+      // fillStyle: 'cross-hatch',
+      // fillWeight: 1,
+      // strokeWidth: 1,
+    });
 
   ctx.restore();
 }

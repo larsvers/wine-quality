@@ -24,7 +24,7 @@ import { txScale, tyScale } from './globe';
 import { prettyLabel, getLinearScale, euclideanDistance } from '../app/utils';
 
 // Module scope.
-let dotRadius = 1.5;
+const dotRadius = 1.5;
 let dot;
 let dotGood;
 let dotBad;
@@ -32,7 +32,7 @@ let margin;
 let xScale;
 let yScale;
 let sim;
-let tickPadding = 20;
+const tickPadding = 20;
 
 // Regression line data.
 let lrLine;
@@ -175,9 +175,9 @@ function gatherTickInfo(xTick, array) {
   const yValue = lrLine(xTick.value.x);
 
   // Get the closest y tick.
-  const yTick = array.reduce((a, b) => {
-    return Math.abs(b.value.y - yValue) < Math.abs(a.value.y - yValue) ? b : a;
-  });
+  const yTick = array.reduce((a, b) =>
+    Math.abs(b.value.y - yValue) < Math.abs(a.value.y - yValue) ? b : a
+  );
 
   // A higher x value means we are below the ticl.
   const delta = yValue > yTick.value.y ? 'below' : 'above';
@@ -484,7 +484,7 @@ function drawStats(ctx) {
     if (!state.stats.colourDots) {
       ctx.drawImage(dot, d.x, d.y);
     } else {
-      ctx.drawImage(d.quality_binary ? dotBad : dotGood, d.x, d.y);
+      ctx.drawImage(d.quality_binary ? dotGood : dotBad, d.x, d.y);
     }
   });
 
@@ -536,8 +536,10 @@ function tweenStats() {
   setLayout('globeExit');
   setSimulation();
   dot = drawDot(dotRadius, state.bottleColour.base.stop1);
-  dotGood = drawDot(dotRadius, state.bottleColour.good.stop1);
-  dotBad = drawDot(dotRadius, state.bottleColour.bad.stop1);
+  // dotGood = drawDot(dotRadius, state.bottleColour.good.stop1);
+  // dotBad = drawDot(dotRadius, state.bottleColour.bad.stop1);
+  dotGood = drawDot(dotRadius, '#5EABF2');
+  dotBad = drawDot(dotRadius, '#C63274');
 }
 
 export default tweenStats;

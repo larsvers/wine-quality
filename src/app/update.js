@@ -91,6 +91,7 @@ function updateContexts(names) {
 function setRoughCanvases() {
   state.rough.chart = rough.canvas(state.ctx.chart.canvas);
   state.rough.globe = rough.canvas(state.ctx.globe.canvas);
+  state.rough.wave = rough.canvas(state.ctx.bottleWave.canvas);
 }
 
 // Set off canvas factory.

@@ -28,6 +28,7 @@ export default {
   rough: {
     chart: null,
     globe: null,
+    wave: null,
   },
   // Tweens.
   tween: {
@@ -79,13 +80,21 @@ export default {
   },
   bottleColour: {
     base: { ...baseStops },
+    // good: {
+    //   stop0: '#88B8FF',
+    //   stop1: '#225E96',
+    // },
+    // bad: {
+    //   stop0: '#FFACA1',
+    //   stop1: '#BF4131',
+    // },
     good: {
-      stop0: '#88B8FF',
-      stop1: '#225E96',
+      stop0: '#88BFF2',
+      stop1: '#4D8ECA',
     },
     bad: {
-      stop0: '#FFACA1',
-      stop1: '#BF4131',
+      stop0: '#F0A5C7',
+      stop1: '#C86D96',
     },
   },
   bottleWave: {
