@@ -99,13 +99,12 @@ function drawGlobe(ctx) {
 
   ctx.fillStyle = '#ff00ff';
   rough.path(pathSvg(portugal), {
-    fill: '#e83d27',
-    stroke: 'rgba(0,0,0,0.2)',
-    strokeWidth: 1,
+    fill: state.bottleColour.bad.stop1,
+    stroke: state.bottleColour.bad.stop1,
   });
 
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 5;
+  ctx.strokeStyle = state.bottleColour.bad.stop0;
   ctx.globalAlpha = aaScale(state.globe.scroll.progress);
   bezWithArrowheads(ctx, point0, point1, point2, undefined, 15, false, true);
 

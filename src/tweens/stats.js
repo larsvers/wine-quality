@@ -536,10 +536,8 @@ function tweenStats() {
   setLayout('globeExit');
   setSimulation();
   dot = drawDot(dotRadius, state.bottleColour.base.stop1);
-  // dotGood = drawDot(dotRadius, state.bottleColour.good.stop1);
-  // dotBad = drawDot(dotRadius, state.bottleColour.bad.stop1);
-  dotGood = drawDot(dotRadius, '#5EABF2');
-  dotBad = drawDot(dotRadius, '#C63274');
+  dotGood = drawDot(dotRadius, state.bottleColour.good.stop1);
+  dotBad = drawDot(dotRadius, state.bottleColour.bad.stop0);
 }
 
 export default tweenStats;
