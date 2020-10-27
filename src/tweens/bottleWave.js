@@ -88,7 +88,7 @@ function decayWave() {
 }
 
 // Tween and draw.
-function drawBottleWave(ctx, path, t, roughPath) {
+function drawBottleWave(ctx, path, t) {
   ctx.clearRect(0, 0, state.width, state.height);
   ctx.save();
   ctx.translate(t.x, t.y);
@@ -104,16 +104,7 @@ function drawBottleWave(ctx, path, t, roughPath) {
   ctx.clip();
 
   // Background.
-  if (!roughPath) ctx.fill(path);
-  // debugger;
-  if (roughPath)
-    state.rough.wave.path(roughPath, {
-      fill: 'red',
-      seed: 1,
-      // fillStyle: 'cross-hatch',
-      // fillWeight: 1,
-      // strokeWidth: 1,
-    });
+  ctx.fill(path);
 
   ctx.restore();
 }

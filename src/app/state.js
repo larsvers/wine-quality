@@ -80,21 +80,13 @@ export default {
   },
   bottleColour: {
     base: { ...baseStops },
-    // good: {
-    //   stop0: '#88B8FF',
-    //   stop1: '#225E96',
-    // },
-    // bad: {
-    //   stop0: '#FFACA1',
-    //   stop1: '#BF4131',
-    // },
     good: {
       stop0: '#88BFF2',
       stop1: '#4D8ECA',
     },
     bad: {
-      stop0: '#F0A5C7',
-      stop1: '#C86D96',
+      stop0: '#E07BA8',
+      stop1: '#A13E6A',
     },
   },
   bottleWave: {

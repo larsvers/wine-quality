@@ -23,7 +23,8 @@ import getProbability from '../model/probability';
 
 // Paths general.
 import glass from '../../static/wine-glass-clean';
-import bottle from '../../static/wine-bottle-1';
+// import bottle from '../../static/wine-bottle-1';
+import bottle from '../../static/wine-bottle';
 import textBottle from '../../static/text-bottle'; // an array of paths.
 import textAlcohol from '../../static/text-alcohol';
 import textAcid from '../../static/text-acid';

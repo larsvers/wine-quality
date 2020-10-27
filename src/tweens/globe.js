@@ -84,24 +84,8 @@ function drawGlobe(ctx) {
     gradientValues.distance * 6
   );
 
-  // grad.addColorStop(0, '#F2F0EB');
-  // grad.addColorStop(0.5, '#5C7691');
-  // grad.addColorStop(0.8, '#002054');
-  // grad.addColorStop(1, '#00122E');
-
-  // grad.addColorStop(0, '#FAF9ED');
-  // grad.addColorStop(0.5, '#F6E5DD');
-  // grad.addColorStop(1, '#ccc');
-
-  // grad.addColorStop(0.1, '#F5F3EF');
-  colours.forEach(d => {
-    grad.addColorStop(d.stop, d.colour);
-  });
-  // grad.addColorStop(0.1, '#F4EEE7');
-  // grad.addColorStop(0.5, '#EDE8E6');
-  // grad.addColorStop(0.8, '#AEA5B8');
-  // grad.addColorStop(0.9, '#8f8f8f');
-  // grad.addColorStop(1, '#777');
+  // Add colour steops.
+  colours.forEach(d => grad.addColorStop(d.stop, d.colour));
 
   ctx.fillStyle = grad;
   ctx.beginPath(), path(sphere), ctx.fill();

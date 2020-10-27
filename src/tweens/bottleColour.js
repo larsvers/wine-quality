@@ -4,7 +4,6 @@ import { gsap } from 'gsap/all';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import { getGradient } from '../app/utils';
 
-import bottle from '../../static/wine-bottle-1';
 import state from '../app/state';
 import { drawBottleWave } from './bottleWave';
 import { drawBottle } from './glassBottle';
@@ -70,8 +69,7 @@ function renderBottleColour() {
     drawBottleWave(
       state.ctx.bottleWave,
       state.bottleWave.bottlePath,
-      state.transform.shape,
-      bottle
+      state.transform.shape
     );
     drawBottle(
       state.ctx.glassBottle,
