@@ -63,6 +63,25 @@ import {
   checkModelWave,
 } from '../tweens/modelWaveInit';
 
+function getTriggerPositions() {
+  const visual = document.querySelector('#visual-container');
+  const visualHeight = parseInt(window.getComputedStyle(visual).height, 10);
+  const windowHeight = window.innerHeight;
+  const textHeight = windowHeight - visualHeight;
+
+  if (windowHeight - visualHeight < 10) {
+    return {
+      start: 'top center',
+      end: 'center center',
+    };
+  }
+  const offset = visualHeight + textHeight / 2;
+  return {
+    start: `top top+=${offset}px`,
+    end: `center top+=${offset}px`,
+  };
+}
+
 // Set ScrollTrigger defaults.
 ScrollTrigger.defaults({
   scroller: '#container',
@@ -154,53 +173,71 @@ function updateTransforms() {
   });
 }
 
-function setScroll() {
-  // Create the scroll triggers.
+// Set scroll.
+function setScrollBase() {
+  const { start, end } = getTriggerPositions();
+
   ScrollTrigger.create({
     animation: state.tween.wineScape,
     trigger: '.section-1',
+    start,
+    end,
     id: 'wineScape',
   });
 
   ScrollTrigger.create({
     animation: state.tween.glassBottle,
     trigger: '.section-2',
+    start,
+    end,
     id: 'glassBottle',
   });
 
   ScrollTrigger.create({
     animation: state.tween.bottleText,
     trigger: '.section-3',
+    start,
+    end,
     id: 'bottleText',
   });
 
   ScrollTrigger.create({
     animation: state.tween.bottleWave,
     trigger: '.section-4',
+    start,
+    end,
     id: 'bottleWave',
   });
 
   ScrollTrigger.create({
     animation: state.tween.lolliChart,
     trigger: '.section-5',
+    start,
+    end,
     id: 'lolliChart',
   });
 
   ScrollTrigger.create({
     animation: state.tween.lolliUpdate1,
     trigger: '.section-6',
+    start,
+    end,
     id: 'lolliUpdate1',
   });
 
   ScrollTrigger.create({
     animation: state.tween.lolliUpdate2,
     trigger: '.section-7',
+    start,
+    end,
     id: 'lolliUpdate2',
   });
 
   ScrollTrigger.create({
     animation: state.tween.lolliUpdate3,
     trigger: '.section-8',
+    start,
+    end,
     id: 'lolliUpdate3',
     onEnterBack: () => clear(state.ctx.blackBox),
   });
@@ -210,6 +247,8 @@ function setScroll() {
     ScrollTrigger.create({
       animation: state.tween[d],
       trigger: `.section-${9 + i}`,
+      start,
+      end,
       id: d,
     });
   });
@@ -217,18 +256,24 @@ function setScroll() {
   ScrollTrigger.create({
     animation: state.tween.cleanup,
     trigger: '.section-11',
+    start,
+    end,
     id: 'cleanup',
   });
 
   ScrollTrigger.create({
     animation: state.tween.bottleTextOut,
     trigger: '.section-12',
+    start,
+    end,
     id: 'bottleTextOut',
   });
 
   ScrollTrigger.create({
     animation: state.tween.bottleEmpty,
     trigger: '.section-13',
+    start,
+    end,
     id: 'bottleEmpty',
     onLeave() {
       stopWave();
@@ -244,6 +289,8 @@ function setScroll() {
     ScrollTrigger.create({
       animation: state.tween[animal.name],
       trigger: `.section-${14 + i}`,
+      start,
+      end,
       id: animal.name,
     });
   }
@@ -251,6 +298,8 @@ function setScroll() {
   ScrollTrigger.create({
     animation: state.tween.bottleFill,
     trigger: '.section-22',
+    start,
+    end,
     id: 'bottleFill',
     onLeave: stopWave,
     onEnterBack: startWave,
@@ -261,6 +310,8 @@ function setScroll() {
     ScrollTrigger.create({
       animation: state.tween[d.name],
       trigger: `.section-${23 + i}`,
+      start,
+      end,
       id: d.name,
     });
   });
@@ -268,24 +319,32 @@ function setScroll() {
   ScrollTrigger.create({
     animation: state.tween.bottleGrid,
     trigger: '.section-26',
+    start,
+    end,
     id: 'bottleGrid',
   });
 
   ScrollTrigger.create({
     animation: state.tween.bottleGridColour,
     trigger: '.section-27',
+    start,
+    end,
     id: 'bottleGridColour',
   });
 
   ScrollTrigger.create({
     animation: state.tween.bottleGridSort,
     trigger: '.section-28',
+    start,
+    end,
     id: 'bottleGridSort',
   });
 
   ScrollTrigger.create({
     animation: state.tween.bottleGridOut,
     trigger: '.section-29',
+    start,
+    end,
     id: 'bottleGridOut',
     // glassBottle shows the dataset.
     onEnterBack: () => clear(state.ctx.glassBottle),
@@ -298,6 +357,8 @@ function setScroll() {
     ScrollTrigger.create({
       animation: state.tween[d.tween],
       trigger: `.section-${30 + i}`,
+      start,
+      end,
       id: d.tween,
     });
   });
@@ -305,14 +366,19 @@ function setScroll() {
   ScrollTrigger.create({
     animation: state.tween.globe,
     trigger: '.section-44',
+    start,
+    // TODO: this needs to be sorted for desktop and mobile seperately.
     end: '95% center',
     id: 'globe',
+    // markers: true,
     onEnter: () => clear(state.ctx.glassBottle),
     onUpdate: self => (state.globe.scroll.progress = self.progress),
   });
 
   ScrollTrigger.create({
     trigger: '.section-45',
+    start,
+    end,
     id: 'statsLattice',
     onLeaveBack: simulateGlobePosition,
     onEnter: simulateLattice,
@@ -320,6 +386,8 @@ function setScroll() {
 
   ScrollTrigger.create({
     trigger: '.section-46',
+    start,
+    end,
     id: 'statsAlcohol',
     onLeaveBack: simulateLattice,
     onEnter: simulateAlcohol,
@@ -327,6 +395,8 @@ function setScroll() {
 
   ScrollTrigger.create({
     trigger: '.section-47',
+    start,
+    end,
     id: 'statsDensity',
     onLeaveBack: simulateAlcohol,
     onEnter: simulateDensity,
@@ -334,6 +404,8 @@ function setScroll() {
 
   ScrollTrigger.create({
     trigger: '.section-48',
+    start,
+    end,
     id: 'statsCitric',
     onLeaveBack: simulateDensity,
     onEnter: simulateCitric,
@@ -341,6 +413,8 @@ function setScroll() {
 
   ScrollTrigger.create({
     trigger: '.section-49',
+    start,
+    end,
     id: 'statsPh',
     onLeaveBack: simulateCitric,
     onEnter: simulatePh,
@@ -348,6 +422,8 @@ function setScroll() {
 
   ScrollTrigger.create({
     trigger: '.section-50',
+    start,
+    end,
     id: 'statsVolatile',
     onLeaveBack: simulatePh,
     onEnter: simulateVolatile,
@@ -355,6 +431,8 @@ function setScroll() {
 
   ScrollTrigger.create({
     trigger: '.section-51',
+    start,
+    end,
     id: 'statsQuality',
     onLeaveBack: simulateVolatile,
     onEnter: simulateQuality,
@@ -362,6 +440,8 @@ function setScroll() {
 
   ScrollTrigger.create({
     trigger: '.section-52',
+    start,
+    end,
     id: 'qualityDots',
     onLeaveBack: () => (state.stats.colourDots = false),
     onEnter: () => (state.stats.colourDots = true),
@@ -369,6 +449,8 @@ function setScroll() {
 
   ScrollTrigger.create({
     trigger: '.section-53',
+    start,
+    end,
     id: 'statsAlcoholColoured',
     onLeaveBack: simulateQuality,
     onEnter: simulateAlcohol,
@@ -376,6 +458,8 @@ function setScroll() {
 
   ScrollTrigger.create({
     trigger: '.section-54',
+    start,
+    end,
     id: 'statsAlcoholQuality',
     onLeaveBack: simulateAlcohol,
     onEnter: simulateQualAlc,
@@ -383,6 +467,8 @@ function setScroll() {
 
   ScrollTrigger.create({
     trigger: '.section-55',
+    start,
+    end,
     id: 'statsDrawLR',
     onLeaveBack: () => {
       state.stats.lr = false;
@@ -397,6 +483,8 @@ function setScroll() {
 
   ScrollTrigger.create({
     trigger: '.section-56',
+    start,
+    end,
     id: 'statsDrawLRPoint',
     onUpdate(self) {
       state.stats.progress.point = self.progress;
@@ -406,6 +494,8 @@ function setScroll() {
 
   ScrollTrigger.create({
     trigger: '.section-57',
+    start,
+    end,
     id: 'statsExtendLR',
     onUpdate(self) {
       state.stats.progress.extend = self.progress;
@@ -415,6 +505,8 @@ function setScroll() {
 
   ScrollTrigger.create({
     trigger: '.section-58',
+    start,
+    end,
     id: 'statsQualityBinarayAlcohol',
     onLeaveBack: simulateQualAlc,
     onEnter: simulateQualBinAlc,
@@ -422,6 +514,8 @@ function setScroll() {
 
   ScrollTrigger.create({
     trigger: '.section-59',
+    start,
+    end,
     id: 'statsLogisticLine',
     onLeaveBack: simulateQualBinAlc, // TODO: necessary as we do it in the next one too?
     onUpdate(self) {
@@ -432,6 +526,8 @@ function setScroll() {
 
   ScrollTrigger.create({
     trigger: '.section-60',
+    start,
+    end,
     id: 'statsRemove',
     onLeaveBack() {
       state.stats.lr = true;
@@ -447,6 +543,8 @@ function setScroll() {
   ScrollTrigger.create({
     animation: state.tween.importance,
     trigger: '.section-61',
+    start,
+    end,
     id: 'importance',
     // Stop the simulation as it would otherwise
     // continue to draw on the context.
@@ -457,27 +555,40 @@ function setScroll() {
   ScrollTrigger.create({
     animation: state.tween.importanceRemove,
     trigger: '.section-62',
+    start,
+    end,
     id: 'importanceRemove',
   });
 
   ScrollTrigger.create({
     animation: state.tween.modelBottleIn,
     trigger: '.section-63',
+    start,
+    end,
     id: 'modelBottleIn',
     onEnterBack: () => clear(state.ctx.bottleWave), // 1
   });
 
   ScrollTrigger.create({
     trigger: '.section-64',
+    start,
+    end,
     id: 'modelWaveInit',
     onLeaveBack() {
       stopModelWave();
     },
     onUpdate: self => updateModelWave(self),
   });
+}
 
-  // Recalculate all scroll positions.
-  ScrollTrigger.refresh();
+function setScroll() {
+  // Match media is needed to reset and rebuild the
+  // start and end positions for the triggers on resize.
+  // It also recalculates all scroll positions, I believe.
+  ScrollTrigger.matchMedia({
+    '(min-width: 800px)': setScrollBase,
+    '(max-width: 799px)': setScrollBase,
+  });
 }
 
 // Main function.

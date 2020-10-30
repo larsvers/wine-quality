@@ -5,10 +5,6 @@ body {
   overflow: hidden;
 }
 
-// div {
-// border: 1px solid tomato;
-// }
-
 // Buttons
 button {
   margin: 1em;
@@ -16,36 +12,34 @@ button {
   color: #555;
 }
 
+// TODO: Clean up comments and decide visual/text ratio.
+
 // The wrapping set up.
 #container {
-  // border: 1px solid yellow;
-
-  /* Full width and height */
+  // Full width and height
   width: 100vw;
   height: 100vh;
 
-  /* One position */
+  // One position
   position: absolute;
   top: 0;
   left: 0;
 
-  /* Scroll */
+  // Scroll
   overflow: scroll;
   background: url('../static/paper-orange.jpg');
 }
 
 #container-inner {
-  // border: 1px solid blue;
-
-  /* Full width but as long as content, so height: auto
-  (or just no height) (this is the scrolling div) */
+  // Full width but as long as content, so height: auto
+  // (or just no height) (this is the scrolling div)
   width: 100vw;
 
-  /* ☝️ Flex - col in mobile/row in desktop */
+  // ☝️ Flex - col in mobile/row in desktop
   display: flex;
   flex-direction: column;
 
-  /* for the children width (not strictlye necessary as they are in vw) */
+  // for the children width (not strictlye necessary as they are in vw)
   position: relative;
 
   @media #{$tablet-up} {
@@ -54,18 +48,16 @@ button {
 }
 
 #visual-container {
-  // border: 2px solid coral;
-
-  /* sticky */
+  // sticky
   position: sticky;
   top: 0;
-  /* need align-self for some flex-stretch reason. https://stackoverflow.com/a/44446672/3219033 */
+  // need align-self for some flex-stretch reason. https://stackoverflow.com/a/44446672/3219033
   align-self: flex-start;
 
-  /* ☝️ Need to fill the height in desktop */
-  height: 50vh;
+  // ☝️ Need to fill the height in desktop
+  height: 60vh;
 
-  /* ☝️ Regulate the width (needs pendant in #text-wrap) */
+  // ☝️ Regulate the width (needs pendant in #text-wrap)
   width: 100vw;
 
   // To make the text invisible, this needs to be above the later
@@ -79,11 +71,11 @@ button {
   border-image: url('../static/border-horiz.png') 30 stretch;
 
   @media #{$tablet-up} {
-    /* ☝️ Need to fill the height in desktop */
+    // ☝️ Need to fill the height in desktop
     height: 100vh;
 
-    /* ☝️ Regulate the width (needs pendant in #text-wrap) */
-    width: 50vw;
+    // ☝️ Regulate the width (needs pendant in #text-wrap)
+    width: 60vw;
 
     // Border
     border-bottom: none;
@@ -93,14 +85,12 @@ button {
 }
 
 #text-container {
-  // border: 2px solid skyblue;
-
-  /* ☝️ Regulate the width (needs pendant in #visual-wrap) */
+  // ☝️ Regulate the width (needs pendant in #visual-wrap)
   width: 100vw;
 
   @media #{$tablet-up} {
-    /* ☝️ Regulate the width (needs pendant in #visual-wrap) */
-    width: 50vw;
+    // ☝️ Regulate the width (needs pendant in #visual-wrap)
+    width: 40vw;
   }
 }
 .wrapper {
