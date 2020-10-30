@@ -65,7 +65,7 @@ import {
 
 // Set ScrollTrigger defaults.
 ScrollTrigger.defaults({
-  scroller: '#text-wrap',
+  scroller: '#container',
   start: 'top center',
   end: 'center center',
   scrub: true,
