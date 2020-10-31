@@ -52,10 +52,14 @@ function simulateQualVol() {
 
   sim
     .nodes(state.stats.data)
-    .force('xPosQualAlc', null)
-    .force('yPosQualAlc', null)
+    .force('chargeFrequencies', null)
+    .force('chargeScatter', chargeScatter)
     .force('xPosQualVol', xPosQualVol)
     .force('yPosQualVol', yPosQualVol)
+    .force('xVolatile', null)
+    .force('yVolatile', null)
+    .force('xAlcohol', null)
+    .force('yAlcohol', null)
     .alpha(0.8)
     .restart();
 }

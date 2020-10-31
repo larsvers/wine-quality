@@ -75,21 +75,23 @@ function simulateAlcohol() {
     { name: 'alcohol', axis: 'x', straight: false, header: true, label: false },
   ];
 
-  // This sim is triggered on two occasions.
+  // This sim is triggered on multiple occasions.
   sim
     .nodes(state.stats.data)
     .force('link', null)
     .force('chargeLattice', null)
+    .force('xCentre', null)
+    .force('xCentre', null)
     .force('chargeFrequencies', chargeFrequencies)
     .force('chargeScatter', null)
-    .force('xCentre', null)
-    .force('xCentre', null)
     .force('xQuality', null)
     .force('yQuality', null)
     .force('xPosQualAlc', null)
     .force('yPosQualAlc', null)
     .force('xAlcohol', xPosAlcohol)
     .force('yAlcohol', yPosAlcohol)
+    .force('xPosQualVol', null)
+    .force('yPosQualVol', null)
     .force('xDensity', null)
     .force('yDensity', null)
     .alpha(0.8)
@@ -184,10 +186,14 @@ function simulateVolatile() {
     .nodes(state.stats.data)
     .force('xPh', null)
     .force('yPh', null)
-    .force('xVolatile', xPosVolatile)
-    .force('yVolatile', yPosVolatile)
     .force('xQuality', null)
     .force('yQuality', null)
+    .force('xVolatile', xPosVolatile)
+    .force('yVolatile', yPosVolatile)
+    .force('chargeFrequencies', chargeFrequencies)
+    .force('chargeScatter', null)
+    .force('xPosQualVol', null)
+    .force('yPosQualVol', null)
     .alpha(0.8)
     .restart();
 }

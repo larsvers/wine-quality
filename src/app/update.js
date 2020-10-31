@@ -283,7 +283,7 @@ function setScrollBase() {
   });
 
   // Setting up all the scrolltriggers for the animals.
-  // 9 items.
+  // 8 items.
   for (let i = 0; i < animalPaths.length - 1; i++) {
     const animal = animalPaths[i];
     ScrollTrigger.create({
@@ -365,7 +365,7 @@ function setScrollBase() {
 
   ScrollTrigger.create({
     animation: state.tween.globe,
-    trigger: '.section-44',
+    trigger: '.section-43',
     start,
     // TODO: this needs to be sorted for desktop and mobile seperately.
     end: '95% center',
@@ -376,7 +376,7 @@ function setScrollBase() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-45',
+    trigger: '.section-44',
     start,
     end,
     id: 'statsLattice',
@@ -385,7 +385,7 @@ function setScrollBase() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-46',
+    trigger: '.section-45',
     start,
     end,
     id: 'statsAlcohol',
@@ -394,7 +394,7 @@ function setScrollBase() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-47',
+    trigger: '.section-46',
     start,
     end,
     id: 'statsDensity',
@@ -403,7 +403,7 @@ function setScrollBase() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-48',
+    trigger: '.section-47',
     start,
     end,
     id: 'statsCitric',
@@ -412,7 +412,7 @@ function setScrollBase() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-49',
+    trigger: '.section-48',
     start,
     end,
     id: 'statsPh',
@@ -421,7 +421,7 @@ function setScrollBase() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-50',
+    trigger: '.section-49',
     start,
     end,
     id: 'statsVolatile',
@@ -430,7 +430,7 @@ function setScrollBase() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-51',
+    trigger: '.section-50',
     start,
     end,
     id: 'statsQuality',
@@ -439,7 +439,7 @@ function setScrollBase() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-52',
+    trigger: '.section-51',
     start,
     end,
     id: 'qualityDots',
@@ -448,16 +448,34 @@ function setScrollBase() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-53',
+    trigger: '.section-52',
     start,
     end,
     id: 'statsAlcoholColoured',
     onLeaveBack: simulateQuality,
-    onEnter: simulateAlcohol,
+    onEnter: simulateVolatile,
+  });
+
+  ScrollTrigger.create({
+    trigger: '.section-53',
+    start,
+    end,
+    id: 'statsAlcoholColoured',
+    onLeaveBack: simulateVolatile,
+    onEnter: simulateQualVol,
   });
 
   ScrollTrigger.create({
     trigger: '.section-54',
+    start,
+    end,
+    id: 'statsAlcoholColoured',
+    onLeaveBack: simulateQualVol,
+    onEnter: simulateAlcohol,
+  });
+
+  ScrollTrigger.create({
+    trigger: '.section-55',
     start,
     end,
     id: 'statsAlcoholQuality',
@@ -466,7 +484,7 @@ function setScrollBase() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-55',
+    trigger: '.section-56',
     start,
     end,
     id: 'statsDrawLR',
@@ -482,7 +500,7 @@ function setScrollBase() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-56',
+    trigger: '.section-57',
     start,
     end,
     id: 'statsDrawLRPoint',
@@ -493,7 +511,7 @@ function setScrollBase() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-57',
+    trigger: '.section-58',
     start,
     end,
     id: 'statsExtendLR',
@@ -504,7 +522,7 @@ function setScrollBase() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-58',
+    trigger: '.section-59',
     start,
     end,
     id: 'statsQualityBinarayAlcohol',
@@ -513,7 +531,7 @@ function setScrollBase() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-59',
+    trigger: '.section-60',
     start,
     end,
     id: 'statsLogisticLine',
@@ -525,7 +543,7 @@ function setScrollBase() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-60',
+    trigger: '.section-61',
     start,
     end,
     id: 'statsRemove',
@@ -542,7 +560,7 @@ function setScrollBase() {
 
   ScrollTrigger.create({
     animation: state.tween.importance,
-    trigger: '.section-61',
+    trigger: '.section-62',
     start,
     end,
     id: 'importance',
@@ -554,7 +572,7 @@ function setScrollBase() {
 
   ScrollTrigger.create({
     animation: state.tween.importanceRemove,
-    trigger: '.section-62',
+    trigger: '.section-63',
     start,
     end,
     id: 'importanceRemove',
@@ -562,7 +580,7 @@ function setScrollBase() {
 
   ScrollTrigger.create({
     animation: state.tween.modelBottleIn,
-    trigger: '.section-63',
+    trigger: '.section-64',
     start,
     end,
     id: 'modelBottleIn',
@@ -570,7 +588,7 @@ function setScrollBase() {
   });
 
   ScrollTrigger.create({
-    trigger: '.section-64',
+    trigger: '.section-65',
     start,
     end,
     id: 'modelWaveInit',
