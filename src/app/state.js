@@ -83,10 +83,12 @@ export default {
     good: {
       stop0: '#88BFF2',
       stop1: '#4D8ECA',
+      dot: '#1773C9',
     },
     bad: {
       stop0: '#E07BA8',
       stop1: '#A13E6A',
+      dot: '#E5A0BF',
     },
   },
   bottleWave: {
