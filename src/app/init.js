@@ -306,7 +306,7 @@ function buildStory(data) {
     .data(data)
     .join('div')
     .attr('class', d => `section section-${d.index}`)
-    .html(d => d.text);
+    .html(d => d.html);
 
   // Add model base.
   // needs to come at the better end to stop at top and become scrollable.

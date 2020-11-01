@@ -1,23 +1,15 @@
-﻿index,text
-0,"On a bright June morning two figures--one a tall girl and the other
-a child--could be seen climbing a narrow mountain path that winds up
-from the pretty village of Mayenfeld, to the lofty heights of the Alm
-mountain."
-1,"In spite of the hot June sun the child was clothed as if to
-keep off the bitterest frost."
-2,"She did not look more than five years
-old, but what her natural figure was like would be hard to say, for
-she had on apparently two dresses, one above the other, and over these
-a thick red woolen shawl. Her small feet were shod in thick, nailed
-mountain-shoes."
-3,"When the wayfarers came to the hamlet known as Doerfli, which is situated half-way up the mountain, they met with greetings from all sides, for the elder girl was now in her old home."
-4,"As they were leaving the village, a voice called out: ""Wait a moment, Dete; if you are going on up the mountain, I will come along with you."""
-5,"The girl thus addressed stood still, and the child immediately let go her hand and seated herself on the ground."
-6,"Are you tired, Heidi? asked her companion. ""No, I am hot,"" answered the child. ""We shall soon get to the top now."
-7,"You must walk bravely on a little longer, and take good, long steps, and in another hour we shall be there,"" said Dete."
-8,"They were now joined by a stout, good-natured looking woman, who walked on ahead with her old acquaintance."
-9,And where are you going with the child? asked the one who had just joined the party.
-10,"I suppose it is the child your sister left? ""Yes,"" answered Dete. ""I am taking her up to Uncle, where she must stay."""
+﻿index,html
+0,"<p>It turns out we can pretty well - with the right kind of data and model.</p>"
+1,"<p>But let's maybe have a look at what exactly we mean and why we think this is a good idea at all...</p>"
+2,"<p>Assuming we have a bottle of wine, we can describe this wine in various ways.</p>"
+3,"<p>We can give it a varietal, a vintage, maybe a name, which is how we would identify a wine in a conversation.</p><p>If you know your wines, you might be reasonably or indeed rather good in telling a wine's quality without even having to taste it.</p>"
+4,"<p>However, a possibly more concise way to describe a wine might be to focus on the very liquid itself and decompose the wine into its physiochemical properties.</p><p>The main benefit of such a description is precision. Vintages, varietals and names are an approximate illustration of a wine summarising and representing information like soil, climate as well as production factors.<p></p>Physiochemical properties, in turn, are a concise characterisation of the very wine itself. The focus is on the liquid's composition rather than the wine's production context.</p><p>But how could this help us?</p>"
+5,"<h1>A helping model</h1><p>Given a wine's physiochemical properties we could boldly assume they are associated to wine quality - meaning that a certain composition of these properties result in a good wine,<p>"
+6,"<p>while a different set of properties fails to please distinguished palates entirely.</p>"
+7,"<p>Naturally, we won’t rest before finding the golden formula.</p><p>If this was the case, we could express wine quality as a function entirely of its properties</p>."
+8,""
+9,"<p>We would have a model that would take a wine's properties as input</p>"
+10,"<p>and would return some sort of estimate as to whether this wine is leaning towards being good or bad.</p><p>This model would not be able to tell every good wine from a bad wine. Reality is too complex, taste too subjective and - as a sense - not fully understood to capture such perfection mathematically. However, as we will see, a model can be accurate enough to support the oenologist's evaluations, improving the quality and speed of their decisions.</p><p>How would we go about this? Well, let’s maybe take a step back and consider what a model actually is.</p><p>In technical terms, a model reduces relationships between individual datapoints or variables to an equation. We would possibly want to reduce our wine problem to something like this:</p>"
 11,"This child stay up there with Alm-Uncle! You must be out of your senses, Dete! How can you think of such a thing! The old man, however, will soon send you both packing off home again!"
 12,"He cannot very well do that, seeing that he is her grandfather. He must do something for her.
 I have had the charge of the child till now, and I can tell you, Barbel, I am not going to give up the chance which has just fallen to me of getting a good place, for her sake."
@@ -71,7 +63,7 @@ I have had the charge of the child till now, and I can tell you, Barbel, I am no
 51,"Well, and what of that? said Dete, in a defiant voice, ""he is the grandfather all the same, and must look after the child. He is not likely to do her any harm, and if he does, he will be answerable for it, not I."""
 52,"I should very much like to know, continued Barbel, in an inquiring tone of voice, ""what the old man has on his conscience that he looks as he does, and lives up there on the mountain like a hermit, hardly ever allowing himself to be seen. All kinds of things are said about him. You, Dete, however, must certainly have learnt a good deal concerning him from your sister--am I not right?"""
 53,"You are right, I did, but I am not going to repeat what I heard; if it should come to his ears I should get into trouble about it."
-54,"Oh yes.."
+54,Oh yes..
 55,"You are right, I did, but I am not going to repeat what I heard; if it should come to his ears I should get into trouble about it."
 55,"He is right, I did, but I am not going to repeat what I heard; if it should come to his ears I should get into trouble about it."
 56,"She is right, I did, but I am not going to repeat what I heard; if it should come to his ears I should get into trouble about it."

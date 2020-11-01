@@ -182,6 +182,7 @@ function setScrollBase() {
     trigger: '.section-1',
     start,
     end,
+    markers: true,
     id: 'wineScape',
   });
 
@@ -190,6 +191,7 @@ function setScrollBase() {
     trigger: '.section-2',
     start,
     end,
+    markers: true,
     id: 'glassBottle',
   });
 
