@@ -5,6 +5,25 @@ import { select, selection } from 'd3-selection/src/index';
 import { scaleLinear } from 'd3-scale/src';
 import state from './state';
 
+function slugify(string) {
+  const a =
+    'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;';
+  const b =
+    'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------';
+  const p = new RegExp(a.split('').join('|'), 'g');
+
+  return string
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(p, c => b.charAt(a.indexOf(c))) // Replace special characters
+    .replace(/&/g, '-and-') // Replace & with 'and'
+    .replace(/[^\w\-]+/g, '') // Remove all non-word characters
+    .replace(/\-\-+/g, '-') // Replace multiple - with single -
+    .replace(/^-+/, '') // Trim - from start of text
+    .replace(/-+$/, ''); // Trim - from end of text
+}
+
 function prettyLabel(string) {
   const capitals = string.charAt(0).toUpperCase() + string.slice(1);
   return capitals.replace(/_/g, ' ');
@@ -291,6 +310,7 @@ function clear(ctx) {
 }
 
 export {
+  slugify,
   prettyLabel,
   isSelection,
   getBox,

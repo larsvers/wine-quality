@@ -1,6 +1,23 @@
 // The text
-.section {
+
+.main-section {
   font-family: Pangolin;
   color: #333;
-  padding: 40vh 1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+
+  h1 {
+    position: sticky;
+    top: 0;
+    padding-top: 2vh;
+    padding-bottom: 2vh;
+    text-align: end;
+    background: url('../static/paper-orange.jpg');
+    opacity: 0.95;
+  }
+
+  .section {
+    padding-top: 40vh;
+    padding-bottom: 40vh;
+  }
 }

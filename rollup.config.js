@@ -2,6 +2,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import babel from '@rollup/plugin-babel';
 import scss from 'rollup-plugin-scss';
+import mustache from 'rollup-plugin-mustache';
 
 export default {
   input: 'src/index.js',
@@ -19,6 +20,9 @@ export default {
     scss({
       output: 'dist/bundle.css',
       watch: 'css',
+    }),
+    mustache({
+      include: '**/*.mustache',
     }),
   ],
   onwarn(warning, warn) {

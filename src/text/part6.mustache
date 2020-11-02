@@ -1,0 +1,76 @@
+<h1>The shape of the model</h1>
+
+<div class="section no-trigger">
+  <p>
+    Many models learn by looking at the data and fit a curve that represents the relationship between the predicting properties and the target variable, quality in our case, best. 
+  </p>
+  <p>
+    Let’s for simplicity’s sake say, we want to build a model with a single predicting variable: Alcohol. So, our model will try and predict the quality of each wine, based on its Alcohol content alone. What would we do?
+  </p>
+  <p>
+    One of the simpler options is to build a so-called linear model that predicts wine quality solely on alcohol, which might look something like this:
+  </p>
+</div>
+
+<div class="section section-56">
+  <p>
+    The model in this case very much is the line. Reality &mdash; the actual distirbution of our wines in the scatter plot &mdash; is of course more complex as we can see. Our model is rather a reduced approximation of reality – it captures how the story goes – and it fits into a beautifully simple equation that goes:
+  </p>
+  <p>
+    <i><strong>y = m &times; x + b</strong></i>
+  </p>
+  <p>
+    <i><strong>y</strong></i> represents the quality output value and <i><strong>x</strong></i> the alcohol input value. In geometric terms, <i><strong>b</strong></i> represents the intercept (the point the line crosses the y axis when <i><strong>x = 0</strong></i>) and <i><strong>m</strong></i> represents the slope of the line. In conceptual terms m represents the increase in <i><strong>y</strong></i> when we increase <i><strong>x</strong></i> by one unit. In our case m tells us how much our quality goes up if we add one percent of alcohol.
+  <p>
+  </p>
+    We can use this equation to predict quality solely on Alcohol.
+  </p>
+</div>
+
+<div class="section section-57">
+  <p>
+    Plugging in an alcohol value of 12%, for example, will return a quality just above 6. 
+  </p>
+  <p>
+    We can do this for any value, but soon hit a problem, that might just bend reality a little too much:
+  </p>
+</div>
+
+<div class="section section-58">
+  <p>
+    Because we’re dealing with a line, we could theoretically extend it infinitely into any direction, returning rather non-sensical data – quality values above 10 or even negative quality values. 
+  </p>
+  <sub>
+    <i>
+      some might rightfully interject that assorted wines are better than good, others worse than bad).
+    </i>
+  </sub>
+  <p>
+    Instead, we’d like a model equation that doesn’t produce a straight line.
+  </p>
+</div>
+
+<div class="section section-59">
+  <p>
+    To get there, we first make things worse, by simplifying our continuous data to a binary variable: 0 for bad, 1 to good. This indeed exacerbates our line problems. To win, we need a different model function. One that doesn’t produce a line but something like this:
+  </p>
+</div>
+
+<div class="section section-60">
+  <p>
+    This is a typical curve for a <strong>logistic regression</strong> model.
+  </p>
+  <p>
+    Having swapped the labels to 0 for bad and 1 for good, we can now express the relationship between alcohol and quality in probabilities from 0 to 100%! 
+  <p>
+  </p>
+    If a wine has an alcohol level of, for example, 9, we can read off a probability of 4% of being good. If it has an alcohol level of 12 it has an 86% probability of being good.
+  </p>
+  <p>
+    This way we are not necessarily forced to give a binary answer but can express the likelihood of a wine being good or bad. In addition, the magnitude of the likelihood helps us understand how certain we can be in our classification. 50% good is obviously not quite as certain as 100% good.
+  </p>
+  <p>
+    It’s like with a badly drawn sloth. We aren’t totally sure about it being a sloth, but we can be pretty confident.
+  </p>
+</div>
+

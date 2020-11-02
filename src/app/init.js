@@ -56,6 +56,15 @@ import dataset10Ph from '../../static/dataset-10-ph';
 import dataset11Sulphates from '../../static/dataset-11-sulphates';
 import dataset12Alcohol from '../../static/dataset-12-alcohol';
 
+// Text
+import part1Html from '../text/part1.mustache';
+import part2Html from '../text/part2.mustache';
+import part3Html from '../text/part3.mustache';
+import part4Html from '../text/part4.mustache';
+import part5Html from '../text/part5.mustache';
+import part6Html from '../text/part6.mustache';
+import part7Html from '../text/part7.mustache';
+
 // Gsap register.
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
 
@@ -297,20 +306,33 @@ function prepareVisuals(
   state.modelBottle.maxLength = bottlePathInfo.length;
 }
 
-function buildStory(data) {
-  const container = select('#text-wrap');
+function buildStory() {
+  const container = select('#text-container');
 
-  // Set up the text.
+  // Set up the article sections.
+  const sectionData = [
+    { id: 'part-1', html: part1Html.render() },
+    { id: 'part-2', html: part2Html.render() },
+    { id: 'part-3', html: part3Html.render() },
+    { id: 'part-4', html: part4Html.render() },
+    { id: 'part-5', html: part5Html.render() },
+    { id: 'part-6', html: part6Html.render() },
+    { id: 'part-7', html: part7Html.render() },
+  ];
+
+  // Add the html.
   container
-    .selectAll('section')
-    .data(data)
-    .join('div')
-    .attr('class', d => `section section-${d.index}`)
+    .selectAll('.main-section')
+    .data(sectionData)
+    .join('section')
+    .attr('class', d => `main-section ${d.id}`)
     .html(d => d.html);
 
   // Add model base.
-  // needs to come at the better end to stop at top and become scrollable.
-  const modelApp = select('#text-wrap').append('div').attr('id', 'model-app');
+  // needs to come at the bitter end to stop at top and become scrollable.
+  const modelApp = select('#text-container')
+    .append('div')
+    .attr('id', 'model-app');
 
   modelApp.append('div').attr('id', 'model-app-header');
   modelApp.append('div').attr('id', 'model-app-wrap');
@@ -318,7 +340,6 @@ function buildStory(data) {
 
 // Main func.
 function ready([
-  scrollData,
   wineScape,
   globeData,
   wineData,
@@ -328,7 +349,7 @@ function ready([
 ]) {
   // Make sure all variable names are lower case! This is not checked in the app.
   prepareVisuals(globeData, wineData, varImpData, modelIntercept, modelWeights);
-  buildStory(scrollData);
+  buildStory();
 
   // TODO: add flag to bypass redraw of canvases on resize.
   update(wineScape);
@@ -342,7 +363,6 @@ function ready([
 }
 
 function init() {
-  const scrollData = csv('../../data/scrolldata.csv');
   const wineScape = image('../../static/wine-scape.png');
   const globeData = json('../../data/world-simple.json');
   const wineData = csv('../../data/winedata.csv', autoType);
@@ -351,7 +371,6 @@ function init() {
   const modelWeights = csv('../../data/model-weights.csv', autoType);
 
   Promise.all([
-    scrollData,
     wineScape,
     globeData,
     wineData,

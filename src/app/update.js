@@ -182,7 +182,6 @@ function setScrollBase() {
     trigger: '.section-1',
     start,
     end,
-    markers: true,
     id: 'wineScape',
   });
 
@@ -191,7 +190,6 @@ function setScrollBase() {
     trigger: '.section-2',
     start,
     end,
-    markers: true,
     id: 'glassBottle',
   });
 
@@ -446,7 +444,10 @@ function setScrollBase() {
     end,
     id: 'qualityDots',
     onLeaveBack: () => (state.stats.colourDots = false),
-    onEnter: () => (state.stats.colourDots = true),
+    onEnter: () => {
+      state.stats.colourDots = true;
+      sim.restart(); // ...won't change colours if it's cold.
+    },
   });
 
   ScrollTrigger.create({
