@@ -3,9 +3,19 @@
 }
 
 #model-app-header {
-  margin: 5vh 0;
-  border: 1px solid #333; // DEBUG
-  height: 100px; // DEBUG
+  position: sticky;
+  top: 0;
+  padding-top: 2vh;
+  padding-bottom: 2vh;
+  background: url('../static/paper-orange.jpg');
+  opacity: 0.95;
+  z-index: 10;
+
+  h1,
+  h3 {
+    margin: 0.2rem 0;
+    text-align: center;
+  }
 }
 
 #model-app-wrap {
