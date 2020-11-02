@@ -74,6 +74,7 @@ function drawProperties(ctx, t, inputVars, outputVars) {
     paths.forEach(path => ctx.stroke(path));
 
     // Draw line
+    ctx.lineWidth = 1.25;
     const p0 = { x: 0, y: letterHeight * 0.5 };
     const p1 = { x: input.p1.x, y: letterHeight * 0.5 };
     const p2 = { x: input.p2.x, y: letterHeight * 0.5 + input.yEndAdd[i] };
@@ -108,6 +109,7 @@ function drawProperties(ctx, t, inputVars, outputVars) {
     paths.forEach(path => ctx.stroke(path));
 
     // Draw line
+    ctx.lineWidth = 1.25;
     const p0 = { x: -bottleWidth * 0.33, y: -letterHeight * 0.5 + output.yAdd };
     const p1 = { x: output.p1.x, y: output.y.y };
     const p2 = { x: output.p2.x, y: output.y.y };
