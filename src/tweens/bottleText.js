@@ -27,6 +27,8 @@ function drawTextPath(ctx, paths, t, length, offset) {
 
 function renderBottleText() {
   requestAnimationFrame(() => {
+    state.ctx.bottleText.save();
+    state.ctx.bottleText.lineWidth = 0.4;
     drawTextPath(
       state.ctx.bottleText,
       state.bottleText.paths,
@@ -34,6 +36,7 @@ function renderBottleText() {
       state.bottleText.maxLength,
       state.bottleText.dashOffset
     );
+    state.ctx.bottleText.restore();
   });
 }
 
