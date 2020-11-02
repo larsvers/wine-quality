@@ -12,6 +12,7 @@ import rough from 'roughjs/bundled/rough.esm';
 
 import state from '../app/state';
 import getProbability from './probability';
+import setPropertyInfo from './propertyInfo';
 import { prettyLabel } from '../app/utils';
 import { decayWave } from '../tweens/bottleWave';
 
@@ -201,9 +202,13 @@ function buildControl(datapoint) {
       datum.x = x;
       return datum.x - datum.width / 2;
     });
+
     circle.attr('cx', (datum.x = x));
     marker.attr('x1', (datum.x = x)).attr('x2', (datum.x = x));
     label.attr('x', (datum.x = x)).text(value.toFixed(decimals));
+
+    // Add some wine making tips to the canvas indirectly.
+    setPropertyInfo(variable, value);
   }
 
   // Drag rectangle.

@@ -8,6 +8,7 @@ const lw = 20;
 const lh = 3;
 const pad = 5;
 const perc = format('.0%');
+const fontSize = 8;
 
 // Draw and render.
 function drawWaveMarkers(ctx, t, path) {
@@ -41,14 +42,27 @@ function drawWaveMarkers(ctx, t, path) {
   );
   ctx.stroke();
 
-  // Text.
+  // Main text (probability).
   ctx.textBaseline = 'middle';
-  ctx.font = '8px Pangolin';
+  ctx.font = `${fontSize}px Pangolin`;
   ctx.fillText(
     `${perc(state.model.probability)} likely to be good`,
     position.x + lw + pad,
     position.y + 1
   );
+
+  // Subtitle (tips).
+  ctx.font = `${Math.floor(fontSize * 0.9)}px Pangolin`;
+  ctx.fillStyle = state.modelBottle.infoColour;
+  // This is an array of text with each element getting its own line...
+  state.modelBottle.info.forEach((d, i) => {
+    const sublineOffset = i === 0 ? 2 : 0;
+    ctx.fillText(
+      d,
+      position.x + lw + pad,
+      position.y + (i + 1) * (fontSize + 2) + sublineOffset
+    );
+  });
 
   // Clip.
   ctx.globalCompositeOperation = 'destination-out';

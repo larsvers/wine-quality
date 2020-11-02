@@ -176,6 +176,8 @@ export default {
     dashOffset: null,
     alpha: 0,
     points: false,
+    info: [''],
+    infoColour: '#777',
   },
   modelWave: {
     alpha: 0,
