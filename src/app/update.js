@@ -5,6 +5,7 @@ import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import cloneDeep from 'lodash.clonedeep';
 import rough from 'roughjs/bundled/rough.esm';
 
+import { select } from 'd3-selection/src';
 import state from './state';
 import { resizeCanvas, getTransform, clear } from './utils';
 import tweenBottleWave, { startWave, stopWave } from '../tweens/bottleWave';
@@ -595,10 +596,21 @@ function setScrollBase() {
     start,
     end,
     id: 'modelWaveInit',
-    onLeaveBack() {
-      stopModelWave();
-    },
+    onLeaveBack: () => stopModelWave(),
     onUpdate: self => updateModelWave(self),
+  });
+
+  ScrollTrigger.create({
+    trigger: '#model-app',
+    start: 'top bottom',
+    end: 'top top',
+    id: 'scrollBreak',
+    onLeave() {
+      select('#model-app').style('overflow', 'scroll');
+    },
+    onEnterBack() {
+      select('#model-app').style('overflow', 'hidden');
+    },
   });
 }
 
