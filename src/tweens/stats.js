@@ -160,9 +160,10 @@ function getLineDrawingParams() {
   // Only do all this work, when we want to show the regression line.
   if (!state.stats.lr) return;
 
-  // The points x ranges (not the layout, the actual simulated points)
+  // The points x ranges (not the layout, the actual simulated points in px)
   // help calculate the x, y positions of the linear regression line.
   const xRange = extent(state.stats.data, d => d.x);
+  xRange[1] += 5; // let it nudge over a little.
 
   // Calculate the line positions.
   getLinearLine(xRange);
