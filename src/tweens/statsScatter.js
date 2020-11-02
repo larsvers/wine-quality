@@ -105,7 +105,7 @@ function simulateQualBinAlc() {
     .restart();
 }
 
-const chargeRemove = forceManyBody().strength(-6);
+const chargeRemove = forceManyBody().strength(-4);
 
 function simulateRemove() {
   sim
@@ -119,7 +119,7 @@ function simulateRemove() {
     .restart();
 
   // Switch the global alpha off.
-  tweenStatsAlpha(0);
+  tweenStatsAlpha(0, 1);
 }
 
 export { simulateQualAlc, simulateQualVol, simulateQualBinAlc, simulateRemove };

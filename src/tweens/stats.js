@@ -51,8 +51,8 @@ let pointRadius;
 let pointAlpha;
 
 // Utils
-function tweenStatsAlpha(value) {
-  gsap.to(state.stats.alpha, { value, duration: 0.5 });
+function tweenStatsAlpha(value, dur = 0.5) {
+  gsap.to(state.stats.alpha, { value, duration: dur });
 }
 
 // Scales and Data
