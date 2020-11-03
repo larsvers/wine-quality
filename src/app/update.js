@@ -370,10 +370,8 @@ function setScrollBase() {
     animation: state.tween.globe,
     trigger: '.section-43',
     start,
-    // TODO: this needs to be sorted for desktop and mobile seperately.
-    end: '95% center',
+    end: 'bottom+=10% center', // that globe needs some extra screen time 🥂
     id: 'globe',
-    // markers: true,
     onEnter: () => clear(state.ctx.glassBottle),
     onUpdate: self => (state.globe.scroll.progress = self.progress),
   });
