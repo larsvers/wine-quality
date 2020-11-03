@@ -13,13 +13,87 @@ body {
     top: 0;
     padding-top: 2vh;
     padding-bottom: 2vh;
+    margin-top: 30vh;
     text-align: end;
-    background: url('../static/paper-orange.jpg');
+    color: #777;
+    background: none;
+    box-shadow: none;
     opacity: 0.95;
+    z-index: 10;
+
+    @media #{$tablet-up} {
+      background: url('../static/paper-orange.jpg');
+      box-shadow: 0px 1px 0px #777; // border doesn't show sometimes 🤷‍♂️
+    }
+  }
+
+  h1 + .section {
+    padding-top: 1rem;
   }
 
   .section {
     padding-top: 40vh;
     padding-bottom: 40vh;
+    font-size: 1em;
+    width: 80%;
+    margin: auto;
+
+    @media #{$tablet-up} {
+      font-size: 1.2em;
+    }
   }
+
+  .section.empty {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .section:last-child {
+    padding-bottom: 2rem;
+  }
+
+  .image-wrap {
+    position: relative;
+    width: 100%;
+    text-align: center;
+
+    img {
+      max-width: 90%;
+
+      @media (min-width: 500px) {
+        max-width: 50%;
+      }
+      @media (min-width: 800px) {
+        max-width: 90%;
+      }
+      @media (min-width: 1200px) {
+        max-width: 60%;
+      }
+      @media (min-width: 1600px) {
+        max-width: 40%;
+      }
+      @media (min-width: 2000px) {
+        max-width: 30%;
+      }
+    }
+  }
+}
+
+span.good {
+  color: $colour-good;
+}
+
+span.bad {
+  color: $colour-bad;
+}
+
+.center {
+  text-align: center;
+}
+
+p.tight-top {
+  margin-top: 0.25em;
+}
+p.tight-bottom {
+  margin-bottom: 0.25em;
 }

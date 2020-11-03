@@ -2,7 +2,7 @@
 
 <div class="section section-44">
   <p>
-    Here are 1600 tiny bottles (disguised as dots) unfolding into a well-behaved grid.
+    Here are 1,600 tiny bottles (disguised as dots) unfolding into a well-behaved grid.
   </p>
   <p>
     Let's give them some shape...
@@ -11,91 +11,104 @@
 
 <div class="section section-45">
   <p>
-    Here’s Alcohol. Most wines are between 9 and 12% with quite a few bottles around the 9.5 mark.
+    Here’s <i>alcohol</i>. Most wines are between 9 and 12% with quite a few bottles around the 9.5% mark, which is what you'd expect, I guess.
   </p>
 </div>
 
 <div class="section section-46">
   <p>
-    Density is in a classic, normally distributed shape with a mean of 0.997 for what it’s worth.
+    <i>Density</i> is in a classic, pyramid or normally distributed shape with a mean of 0.997 (you don't need to remember that value).
   </p>
 </div>
 
 <div class="section section-47">
   <p>
-    Citric Acid - which has the powers to add notes of freshness to your wine – seems to be quite equally or uniformly distributed with up to a certain level.
+    <i>Citric Acid</i> &mdash; potentially adding notes of freshness to your wine &mdash; seems to be equally or uniformly distributed up to a certain level.
   </p>
 </div>
 
 <div class="section section-48">
   <p>
-    The average pH value of a wine is 3.3, which is rather acidic, on a par with Orange Juice but still with a safe distance to Battery acid with a pH of 0. 
+    The average pH value of a wine is 3.3, which is rather acidic. It's on a par with orange juice but still secures a safe distance to battery acid with a pH value of 0. 
   </p>
 </div>
 
 <div class="section section-49">
   <p>
-    There are others of course, but one key variable in our data is of course:
+    There are other measures, but one key variable in our data is of course...
   </p>
 </div>
 
 <div class="section section-50">
   <p>
-    Quality!
+    Quality.
   </p>
+</div>
+
+<div class="section no-trigger">
   <p>
     Here’s how our wine experts marked all our wines on a scale from 0 to 10. 
   </p>
   <p>
     Let's note that no wine got worse than 3 or better than 8 and most wines clustered around the 5 or 6 mark with an average of 5.6.
   </p>
+</div>
+
+
+<div class="section no-trigger">
   <p>
-    That’s all good to know, but we’re not after individual variable distributions, we want to know how they relate to each other and specifically how they relate to quality. In order to make that more visible, let’s split all our wines into two groups: 
+    That’s all good to know, but we’re not after individual variable distributions, we want to know how the physiochemical properties relate to each other and specifically how they relate to quality. 
+  </p>
+  <p>
+    In order to make that more visible, let’s split all our wines into two groups: 
   </p>
 </div>
 
 <div class="section section-51">
   <p>
-    Bad wines and good wines.
+    <span class="bad">Bad wines</span> and <span class="good">good wines</span>.
   </p>
   <p>
-    We’re going along with the wine quality literature, which suggests labelling all wines marked 6 or lower bad and all wines marked 7 or higher as good. Looking at for example Volatile Acidity...
+    We’re going along with the wine quality <a href="https://scinapse.io/papers/2103459159">literature</a>, which suggests labelling all wines marked 6 or lower bad and all wines marked 7 or higher as good. Looking at for example <i>Volatile Acidity</i>...
   </p>
 </div>
 
 <div class="section section-52">
   <p>
-    We can see how the blue, better wines (<a href="https://wineeconomist.com/2010/02/21/curse-of-the-blue-nun/">Blue Nun</a> has nothing to do with the colour choice) predominantly sport lower levels and &mdash; reversely the worse wines have the highest levels of Volatile Acidity. 
+    We can see how the blue, better wines (<a href="https://wineeconomist.com/2010/02/21/curse-of-the-blue-nun/">Blue Nun</a> has nothing to do with the colour choice) predominantly sport lower levels and &mdash; reversely the worse wines have the highest levels of volatile acidity. 
   </p>
   <p>
-    This doesn’t surprise as high levels of acetic acid lead to vinegar rather than wine. 
+    This doesn’t surprise too much as we've already established that high levels of acetic acid lead to vinegar rather than wine. 
   </p>
   <p>
-    We can look at the same data in a
+    We can look at the same data in a scatter plot,
   </p>
 </div>
 
 <div class="section section-53">
   <p>
-    scatter plot that maybe more clearly suggests that the lower the volatile acidity, the higher the Quality.
-  </p>
-  <p>
-    Another variable of potential interest is Alcohol...
+    which maybe more clearly suggests that the lower the volatile acidity, the higher the quality.
   </p>
 </div>
 
 <div class="section section-54">
   <p>
+    Another variable of potential interest is <i>Alcohol</i>...
+  </p>
+</div>
+
+<div class="section no-trigger">
+  <p>
     The association is flipped here &mdash; higher quality wines are likely to have more alcohol as a solid proportion of especially wines around the 12-13% mark was voted good. 
   </p>
   <p>
-    It’s particularly interesting how just a handful of wines are deemed good in that most populated 9.5% section…
+    ← Look at the 9.5% bar. Considering this is the most populated section, it’s interesting to see how few wines are deemed good in here.
   </p>
 </div>
 
 <div class="section section-55">
   <p>
-    The scatter plot shows this general trend. The higher the alcohol, the better the wine.
+    The scatter plot also shows the general trend. The higher the alcohol, the better the wine.
   </p>
   <p>
     Great! We know there are some associations between the physiochemical properties and the wine quality. Let's see if we can build a model.

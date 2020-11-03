@@ -624,6 +624,8 @@ function setScroll() {
     '(min-width: 800px)': setScrollBase,
     '(max-width: 799px)': setScrollBase,
   });
+
+  ScrollTrigger.refresh();
 }
 
 // Main function.
