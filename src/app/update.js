@@ -70,12 +70,14 @@ function getTriggerPositions() {
   const windowHeight = window.innerHeight;
   const textHeight = windowHeight - visualHeight;
 
+  // If we're on desktop.
   if (windowHeight - visualHeight < 10) {
     return {
       start: 'top center',
       end: 'center center',
     };
   }
+  // If we're on mobile.
   const offset = visualHeight + textHeight / 2;
   return {
     start: `top top+=${offset}px`,
