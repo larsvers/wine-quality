@@ -71,6 +71,7 @@ export default {
     bottleLeft: null, // % of bottle's top position
     path: null,
     colour: null,
+    alpha: 0,
   },
   bottleText: {
     paths: null,

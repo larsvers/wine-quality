@@ -6,6 +6,7 @@ import cloneDeep from 'lodash.clonedeep';
 import rough from 'roughjs/bundled/rough.esm';
 
 import { select } from 'd3-selection/src';
+import { timeout } from 'd3-timer';
 import state from './state';
 import { resizeCanvas, getTransform, clear } from './utils';
 import tweenBottleWave, { startWave, stopWave } from '../tweens/bottleWave';
@@ -63,6 +64,7 @@ import {
   stopModelWave,
   checkModelWave,
 } from '../tweens/modelWaveInit';
+import { stopWaveMarkers } from '../tweens/modelWaveMarker';
 
 function getTriggerPositions() {
   const visual = document.querySelector('#visual-container');
@@ -176,6 +178,19 @@ function updateTransforms() {
   });
 }
 
+// Scroll helper.
+function clearAllContexts() {
+  // Stop all potentially moving parts.
+  stopWave();
+  stopModelWave();
+  stopWaveMarkers();
+  sim.stop();
+  // Clear all contexts with an additional timeout
+  // to make sure all above things have been stopped.
+  timeout(() => {
+    Object.entries(state.ctx).forEach(d => clear(d[1]));
+  }, 50);
+}
 // Set scroll.
 function setScrollBase() {
   const { start, end } = getTriggerPositions();
@@ -186,6 +201,10 @@ function setScrollBase() {
     start,
     end,
     id: 'wineScape',
+    onLeaveBack() {
+      // Stop all and clear all contexts if users scroll up to top.
+      timeout(clearAllContexts, 50);
+    },
   });
 
   ScrollTrigger.create({
@@ -349,8 +368,11 @@ function setScrollBase() {
     start,
     end,
     id: 'bottleGridOut',
-    // glassBottle shows the dataset.
-    onEnterBack: () => clear(state.ctx.glassBottle),
+    // Shut the glassBottle context up.
+    onEnterBack() {
+      state.glassBottle.alpha = 0;
+      clear(state.ctx.glassBottle);
+    },
   });
 
   // Setting up all the scrolltriggers for the dataset.
@@ -363,6 +385,8 @@ function setScrollBase() {
       start,
       end,
       id: d.tween,
+      onEnter: () => (state.glassBottle.alpha = 1),
+      onEnterBack: () => (state.glassBottle.alpha = 1),
     });
   });
 
@@ -370,9 +394,13 @@ function setScrollBase() {
     animation: state.tween.globe,
     trigger: '.section-43',
     start,
-    end: 'bottom+=10% center', // that globe needs some extra screen time 🥂
+    end: 'bottom+=10% center', // the globe needs some extra screen time 🥂
     id: 'globe',
-    onEnter: () => clear(state.ctx.glassBottle),
+    onEnter() {
+      // Shut the glassBottle context up.
+      state.glassBottle.alpha = 0;
+      clear(state.ctx.glassBottle);
+    },
     onUpdate: self => (state.globe.scroll.progress = self.progress),
   });
 

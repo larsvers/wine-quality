@@ -19,6 +19,7 @@ function renderPath() {
   requestAnimationFrame(() => {
     // Change global styles savely.
     state.ctx.glassBottle.save();
+    state.ctx.glassBottle.globalAlpha = state.glassBottle.alpha; // 1
     state.ctx.glassBottle.strokeStyle = '#000000';
     state.ctx.glassBottle.lineWidth = 0.7;
     // We clear the canvas before we draw each column (and the grid).
@@ -65,3 +66,7 @@ function tweenDataset() {
 }
 
 export default tweenDataset;
+
+// 1. The dataset gets drawn randomly on resize. To counteract this we
+//    set the alpha value to 1 in the scrolltriggers when drawing the
+//    dataset as well as setting it to 0 and clearing it before and after.
