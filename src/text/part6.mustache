@@ -2,49 +2,49 @@
 
 <div class="section no-trigger">
   <p>
-    Many models learn by looking at the data and fit a curve that best represents the relationship between the predicting properties and the target variable &mdash; <i>Quality</i> in our case. 
+    Many models learn by looking at the data and fit a curve that best represents the relationship between the predicting properties and the target variable &mdash; <span class="highlight">Quality</span> in our case. 
   </p>
   <p>
-    Let’s &mdash; for simplicity’s sake &mdash; say, we want to build a model with a single predictor: <i>Alcohol</i>. So, our model will try and predict the quality of each wine, based on its alcohol content alone. What would we do?
+    Let’s &mdash; for simplicity’s sake &mdash; say, we want to build a model with a single predictor: <span class="highlight">Alcohol</span>. So, our model will try and predict the quality of each wine, based on its alcohol content alone. What would we do?
   </p>
   <p>
-    One of the simpler options is to build a so-called <a href="https://setosa.io/ev/ordinary-least-squares-regression/">Ordinary Least Squares Regression</a> model that predicts wine quality solely on <i>Alcohol</i>, which might look something like this:
+    One of the simpler options is to build a so-called <a href="https://setosa.io/ev/ordinary-least-squares-regression/">Ordinary Least Squares Regression</a> model that predicts wine quality solely on Alcohol, which might look something like this:
   </p>
 </div>
 
 <div class="section section-56">
   <p>
-    The model in this case very much <strong>is</strong> the line. Reality &mdash; the actual distirbution of our wines in the scatter plot &mdash; is of course more complex as we can see. Our model is rather a reduced approximation of reality &mdash; it captures how the story goes &mdash; and it fits into a beautifully simple equation that goes:
+    The model in this case very much <span class="highlight">is</span> the line. Reality &mdash; the actual distirbution of our wines in the scatter plot &mdash; is of course more complex as we can see. Our model is rather a reduced approximation of reality &mdash; it captures how the story goes &mdash; and it fits into a beautifully simple equation that goes:
   </p>
   <p class="center">
-    <i><strong>y = m &times; x + b</strong></i>
+    <i><span class="highlight">y = m &middot; x + b</span></i>
   </p>
   <p class="tight-bottom">
-    <strong>y</strong> represents the quality output value 
+    <span class="highlight">y</span> represents the quality output value 
   </p>
   <p class="tight-top tight-bottom">
-    <strong>x</strong> the alcohol input value. 
+    <span class="highlight">x</span> the alcohol input value. 
   </p>
   <p class="tight-top tight-bottom">
-    In geometric terms, <strong>b</strong> represents the intercept (the point the line crosses the y axis when <strong>x = 0</strong>) and
+    In geometric terms, <span class="highlight">b</span> represents the intercept (the point the line crosses the y axis when <span class="highlight">x = 0</span>) and
   </p>
   <p class="tight-top tight-bottom">
-    <strong>m</strong> the slope of the line. 
+    <span class="highlight">m</span> the slope of the line. 
   </p>
   <p class="tight-top">
-    In conceptual terms <strong>m</strong> represents the increase in <strong>y</strong> when we increase <strong>x</strong> by one unit. In our case <strong>m</strong> tells us how much our quality goes up if we add one percent of alcohol.
+    In conceptual terms <span class="highlight">m</span> represents the increase in <span class="highlight">y</span> when we increase <span class="highlight">x</span> by one unit. In our case <span class="highlight">m</span> tells us how much our quality goes up if we add one percent of alcohol.
   <p>
   </p>
-    We can now use this equation to predict <i>Quality</i> solely on <i>Alcohol</i>.
+    We can now use this equation to predict Quality solely on Alcohol.
   </p>
 </div>
 
 <div class="section section-57">
   <p>
-    Plugging in an alcohol value of <i>x = 12%</i>, for example, will return a quality (a <i>y</i> value) just above 6. 
+    Plugging in an alcohol value of <span class="highlight">x = 12%</span>, for example, will return a quality (a <span class="highlight">y</span> value) just above 6. 
   </p>
   <p>
-    Theat's nice! We can do this for any value, will, however, soon hit a problem, that might bend reality just a little too much:
+    That's nice! We can do this for any value &mdash; will, however, soon hit a problem that might bend reality just a little too much:
   </p>
 </div>
 
@@ -71,16 +71,16 @@
     This is a typical curve for a <a href="https://en.wikipedia.org/wiki/Logistic_regression">Logistic Regression</a> model.
   </p>
   <p>
-    Having swapped the labels to 0 for <span class="bad">bad</span> and 1 for <span class="good">good</span>, we can now express the relationship between alcohol and quality in probabilities from 0 to 100%! 
+    Having simplified the quality labels to 0 for <span class="bad">bad</span> and 1 for <span class="good">good</span>, we can now express the relationship between alcohol and quality in probabilities from 0 to 100%! 
   <p>
   </p>
     If a wine has an alcohol level of, for example, 9, we can read off a probability of 4% of being good. If it has an alcohol level of 12 it has an 86% probability of being good.
   </p>
   <p>
-    This way we are not necessarily forced to give a binary answer but can express the likelihood of a wine being good or bad. In addition, the magnitude of the likelihood helps us understand how certain we can be in our classification. 50% good is obviously not quite as certain as 100% good.
+    This way we are not necessarily forced to give a binary answer but can express the <span class="highlight">likelihood</span> of a wine being good or bad. This is great as the magnitude of the likelihood helps us understand how certain we can be in our classification. 20% good is obviously not quite as certain as 100% good.
   </p>
   <p>
-    It’s like with a badly drawn sloth. We aren’t totally sure about it being a sloth, but we can be pretty confident.
+    It’s like with a badly drawn sloth. We might not be totally sure about it being a sloth, but we might consider it likely.
   </p>
 </div>
 

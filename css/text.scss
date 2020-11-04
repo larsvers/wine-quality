@@ -1,9 +1,10 @@
 // The text
 body {
   font-family: Pangolin;
-  color: #333;
+  color: $colour-font;
 }
 
+// Main section.
 .main-section {
   padding-left: 1rem;
   padding-right: 1rem;
@@ -79,6 +80,33 @@ body {
   }
 }
 
+// Links
+a {
+  position: relative;
+  color: $colour-link-font;
+  box-shadow: inset 0 -0.2em 20px 0 $colour-link-bg;
+  transition: all 0.3s;
+}
+
+a:link,
+a:visited,
+a:hover,
+a:active {
+  text-decoration: none;
+}
+
+a:hover {
+  color: $colour-link-hover;
+  box-shadow: inset 0 -0.2em 5px 0 $colour-link-bg;
+}
+
+// Specific.
+span.highlight {
+  font-size: 1.1em;
+  color: #111;
+  font-weight: bold;
+}
+
 span.good {
   color: $colour-good;
 }
@@ -96,4 +124,11 @@ p.tight-top {
 }
 p.tight-bottom {
   margin-bottom: 0.25em;
+}
+
+span.arrow::after {
+  content: '↑';
+  @media #{$tablet-up} {
+    content: '←';
+  }
 }

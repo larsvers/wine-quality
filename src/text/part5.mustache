@@ -11,25 +11,25 @@
 
 <div class="section section-45">
   <p>
-    Here’s <i>alcohol</i>. Most wines are between 9 and 12% with quite a few bottles around the 9.5% mark, which is what you'd expect, I guess.
+    Here’s <span class="highlight">Alcohol</span>. Most wines are between 9 and 12% with quite a few bottles around the 9.5% mark, which is what you'd expect, I guess.
   </p>
 </div>
 
 <div class="section section-46">
   <p>
-    <i>Density</i> is in a classic, pyramid or normally distributed shape with a mean of 0.997 (you don't need to remember that value).
+    <span class="highlight">Density</span> is in a classic, pyramid or normally distributed shape with a mean of 0.997 (you don't need to remember that value).
   </p>
 </div>
 
 <div class="section section-47">
   <p>
-    <i>Citric Acid</i> &mdash; potentially adding notes of freshness to your wine &mdash; seems to be equally or uniformly distributed up to a certain level.
+    <span class="highlight">Citric Acid</span> &mdash; potentially adding notes of freshness to your wine &mdash; seems to be equally or uniformly distributed up to a certain level.
   </p>
 </div>
 
 <div class="section section-48">
   <p>
-    The average pH value of a wine is 3.3, which is rather acidic. It's on a par with orange juice but still secures a safe distance to battery acid with a pH value of 0. 
+    The average <span class="highlight">pH</span> value of a wine is 3.3, which is rather acidic. It's on a par with orange juice but still secures a safe distance to battery acid with a pH value of 0. 
   </p>
 </div>
 
@@ -41,7 +41,7 @@
 
 <div class="section section-50">
   <p>
-    Quality.
+    <span class="highlight">Quality</span>
   </p>
 </div>
 
@@ -69,13 +69,22 @@
     <span class="bad">Bad wines</span> and <span class="good">good wines</span>.
   </p>
   <p>
-    We’re going along with the wine quality <a href="https://scinapse.io/papers/2103459159">literature</a>, which suggests labelling all wines marked 6 or lower bad and all wines marked 7 or higher as good. Looking at for example <i>Volatile Acidity</i>...
+    We’re going along with the wine quality <a href="https://scinapse.io/papers/2103459159">literature</a>, which suggests labelling all wines marked 6 or lower bad and all wines marked 7 or higher as good. 
+  </p>
+  <p>
+    To be clear, <span class="highlight">"good"</span> really does mean good from the judges' perspective. It includes the top 2 marks the wine experts gave. However, <span class="highlight">"bad"</span> rather means "not good" as it also includes wines with a rating of 5 or 6 of which many are surely decent to average in the judges mind's. But, if you allow, we'll continue calling them "bad" here for simplicity's sake.
+  </p>
+</div>
+
+<div class="section no-trigger">
+  <p>
+    We can now see how our variables distribute across these two simple categories. Looking at for example <span class="highlight">Volatile Acidity</span>...
   </p>
 </div>
 
 <div class="section section-52">
   <p>
-    We can see how the blue, better wines (<a href="https://wineeconomist.com/2010/02/21/curse-of-the-blue-nun/">Blue Nun</a> has nothing to do with the colour choice) predominantly sport lower levels and &mdash; reversely the worse wines have the highest levels of volatile acidity. 
+    we can see how the blue, better wines (<a href="https://wineeconomist.com/2010/02/21/curse-of-the-blue-nun/">Blue Nun</a> had nothing to do with the colour choice) predominantly sport lower levels and &mdash; reversely &mdash; the worse wines have the highest levels of volatile acidity. 
   </p>
   <p>
     This doesn’t surprise too much as we've already established that high levels of acetic acid lead to vinegar rather than wine. 
@@ -87,13 +96,13 @@
 
 <div class="section section-53">
   <p>
-    which maybe more clearly suggests that the lower the volatile acidity, the higher the quality.
+    which maybe more clearly suggests that the lower the volatile acidity → the higher the quality.
   </p>
 </div>
 
 <div class="section section-54">
   <p>
-    Another variable of potential interest is <i>Alcohol</i>...
+    Another variable of potential interest is <span class="highlight">Alcohol</span>...
   </p>
 </div>
 
@@ -102,13 +111,13 @@
     The association is flipped here &mdash; higher quality wines are likely to have more alcohol as a solid proportion of especially wines around the 12-13% mark was voted good. 
   </p>
   <p>
-    ← Look at the 9.5% bar. Considering this is the most populated section, it’s interesting to see how few wines are deemed good in here.
+    <span class="arrow"></span>Look at that 9.5% bar. Considering this is the most populated section, it’s interesting to see how few wines are deemed good in here.
   </p>
 </div>
 
 <div class="section section-55">
   <p>
-    The scatter plot also shows the general trend. The higher the alcohol, the better the wine.
+    The scatter plot also shows the general trend. The higher the alcohol → the better the wine.
   </p>
   <p>
     Great! We know there are some associations between the physiochemical properties and the wine quality. Let's see if we can build a model.

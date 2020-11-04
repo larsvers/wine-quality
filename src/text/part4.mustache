@@ -2,22 +2,22 @@
 
 <div class="section section-29">
   <p>
-    If you are a winery (or at least work in one), you probably have such data specifically for all the past wines you produced, tasted and labelled. You have a lot of data-encoded experience or &mdash; put differently &mdash; you are a great teacher. 
+    If you are a winery (or at least work for one), you probably have such data specifically for all the past wines you produced, tasted and labelled. You have a lot of data-encoded experience or &mdash; put differently &mdash; you are a great teacher. 
   </p>
   <p>
-    You can do quite a lot with this information &mdash; more than this article will cover.
+    You can do quite a lot with this information &mdash; more than this article will cover &mdash; but at least you could use this as your base data for classification.
   </p>
 </div>
 
 <div class="section section-30">
   <p>
-    If not, there's a rather <a href="https://archive.ics.uci.edu/ml/datasets/wine+quality">well equipped and tested dataset</a> available for our purposes showing a total of 1,600 wines,
+    If you do not have such data in your drawer, there's a rather <a href="https://archive.ics.uci.edu/ml/datasets/wine+quality">well equipped and tested dataset</a> available for our purposes showing a total of 1,600 wines,
   </p>
 </div>
 
 <div class="section section-31">
   <p>
-    each row represening a different wine, showing the wine's properties
+    each row representing a different wine, showing the wine's properties
   </p>
 </div>
 
@@ -26,73 +26,73 @@
     as well as their <i>Quality</i> rating.
   </p>
   <p>
-    Each rating is based on at least three evaluations from wine experts rating from 0 (bad) to 10 (excellent). We’ll simplify this later to a binary outcome &mdash; just <span class="good">good</span> or <span class="bad">bad</span> &mdash; but for now, this is what we have.
+    Each rating is based on at least three evaluations from wine experts ranging from 0 (🤮) to 10 (🏆). We’ll simplify this later to a binary outcome &mdash; just <span class="good">good</span> or <span class="bad">bad</span> &mdash; but for now, this is what we have.
   </p>
 </div>
 
 <div class="section section-33">
   <p>
-    The other eleven variables in here are the physiochemical properties, our model shall learn to associate to quality:
+    The other eleven variables in here are the physiochemical properties, our model shall learn to associate with quality:
   </p>
 </div>
 
 <div class="section section-34">
   <p>
-    Acidity values can have impacts on the taste. They can impart sourness or tartness &mdash; if levels are too high they can tip things to a more vinegary taste
+    <span class="highlight">Acidity values</span> can have a set of impacts on taste. They can impart sourness or tartness &mdash; if levels are too high they can tip things to a more vinegary taste &mdash;
   </p>
 </div>
 
 <div class="section section-35">
   <p>
-    and they can add freshness to the wine.
+    and they can add freshness to your wine.
   </p>
 </div>
 
 <div class="section section-36">
   <p>
-    The amount of sugar remaining after fermentation,
+    The amount of <span class="highlight">sugar</span> remaining after fermentation,
   </p>
 </div>
 
 <div class="section section-37">
   <p>
-    as well as the amount of salt in the wine.
+    as well as the amount of <span class="highlight">salt</span>.
   </p>
 </div>
 
 <div class="section section-38">
   <p>
-    <i>Sulfur dioxide</i> indirectly affects taste by preventing microbial growth and wine oxidation which can spoil the aroma.
+    <span class="highlight">Sulfur dioxide</span> indirectly affects taste by preventing microbial growth and wine oxidation which can spoil aromas.
   </p>
 </div>
 
 <div class="section section-39">
   <p>
-    <i>Wine density</i> is closely linked to alcohol and sugar content,
+    <span class="highlight">Wine density</span> is closely linked to alcohol and sugar content,
   </p>
 </div>
 
 <div class="section section-40">
   <p>
-    while pH values descibe how acidic or basic a wine is.
+    while <span class="highlight">pH</span> values describe how acidic or basic a wine is.
   </p>
 </div>
 
 <div class="section section-41">
   <p>
-    Added sulphates can promote the degree of sulfur dioxides in the wine, which &mdash; as menioned &mdash; act as an antimicrobial and antioxidant,
+    Added <span class="highlight">sulphates</span> can promote the degree of sulfur dioxides in the wine, which &mdash; as menioned &mdash; act as an antimicrobial and antioxidant.
   </p>
 </div>
 
 <div class="section section-42">
   <p>
-    and lastly there is <i>Alcohol</i>, which probably doesn’t need much of an introduction.
+    And lastly there is <span class="highlight">Alcohol</span>, which probably doesn’t need much of an introduction.
   </p>
 </div>
 
 <div class="section section-43">
   <p>
-    All these wines in our training dataset are red wines from the Vinho Verde region in the north west of Portugal. Each wine was sampled and evaluated between 2004 and 2007 but this data has since been used in many studies and papers to understand the connection between wine properties and quality. There’s also a publicly available training set of <a href="https://archive.ics.uci.edu/ml/datasets/wine+quality">white wines</a>, but this will do just fine for our example…
+    All these wines in our training dataset are red wines from the <a href="https://en.wikipedia.org/wiki/Vinho_Verde">Vinho Verde</a> region in the north west of Portugal. Each wine was sampled and evaluated between 2004 and 2007 but this data has since been used in many studies and papers to understand the connection between wine properties and quality. There’s also a publicly available training set of <a href="https://archive.ics.uci.edu/ml/datasets/wine+quality">white wines</a>, but this red wine dataset will do just fine for our example…
   </p>
 </div>
 
