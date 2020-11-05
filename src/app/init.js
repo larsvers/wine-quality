@@ -2,6 +2,8 @@
 /* eslint-disable no-return-assign */
 // Libs.
 import { select } from 'd3-selection/src/index';
+import { timeout } from 'd3-timer';
+import 'd3-transition';
 import { csv, image, json } from 'd3-fetch/src/index';
 import { max, mean, extent } from 'd3-array/src/index';
 import { map } from 'd3-collection/src/index';
@@ -96,6 +98,18 @@ function getModelValues(data) {
     );
   });
   return { meanMap, rangeMap };
+}
+
+function removeSpinner() {
+  // Remove the loading site just after loading.
+  // (to give it some time to stretch).
+  timeout(() => {
+    select('#loading')
+      .style('opacity', 1)
+      .transition()
+      .duration(1000)
+      .style('opacity', 0);
+  }, 750);
 }
 
 // Build funcs.
@@ -369,12 +383,11 @@ function ready([
   // Debounced resize.
   const debounced = debounce(() => update(wineScape), 500);
   window.addEventListener('resize', debounced);
-  window.addEventListener('load', () => {
-    console.log('loaded');
-  });
 }
 
 function init() {
+  window.addEventListener('load', removeSpinner);
+
   const wineScape = image('../../static/wine-scape.png');
   const globeData = json('../../data/world-simple.json');
   const wineData = csv('../../data/winedata.csv', autoType);

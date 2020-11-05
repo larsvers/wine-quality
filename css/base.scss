@@ -14,7 +14,24 @@ button {
   color: #555;
 }
 
-// TODO: Clean up comments and decide visual/text ratio.
+#loading {
+  width: 100vw;
+  height: 100vh;
+  background: url('../static/paper-orange.jpg');
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  position: relative;
+  z-index: 1000;
+  pointer-events: none;
+
+  img {
+    height: 70px;
+    opacity: 0.75;
+  }
+}
 
 // The wrapping set up.
 #container {
@@ -95,6 +112,7 @@ button {
     width: 40vw;
   }
 }
+
 .wrapper {
   position: relative;
 }

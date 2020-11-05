@@ -41,8 +41,8 @@
   }
 
   .section.empty {
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+    padding-top: 25vh;
+    padding-bottom: 25vh;
   }
 
   .section:last-child {
@@ -57,19 +57,19 @@
     img {
       max-width: 90%;
 
-      @media (min-width: 500px) {
+      @media #{$phone-up} {
         max-width: 50%;
       }
-      @media (min-width: 800px) {
-        max-width: 90%;
+      @media #{$tablet-up} {
+        max-width: 100%;
       }
-      @media (min-width: 1200px) {
+      @media #{$laptop-s-up} {
+        max-width: 80%;
+      }
+      @media #{$laptop-m-up} {
         max-width: 60%;
       }
-      @media (min-width: 1600px) {
-        max-width: 40%;
-      }
-      @media (min-width: 2000px) {
+      @media #{$desktop-up} {
         max-width: 30%;
       }
     }
