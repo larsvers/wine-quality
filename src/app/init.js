@@ -57,6 +57,7 @@ import dataset11Sulphates from '../../static/dataset-11-sulphates';
 import dataset12Alcohol from '../../static/dataset-12-alcohol';
 
 // Text
+import part0Html from '../text/part0-intro.mustache';
 import part1Html from '../text/part1.mustache';
 import part2Html from '../text/part2.mustache';
 import part3Html from '../text/part3.mustache';
@@ -308,6 +309,12 @@ function prepareVisuals(
 }
 
 function buildStory() {
+  // Intro text.
+  const introContainer = select('#container-intro');
+  const introHtml = part0Html.render();
+  introContainer.html(introHtml);
+
+  // Main text.
   const container = select('#text-container');
 
   // Set up the article sections.
@@ -321,7 +328,7 @@ function buildStory() {
     { id: 'part-7', html: part7Html.render() },
   ];
 
-  // Add the html.
+  // Add the main text html.
   container
     .selectAll('.main-section')
     .data(sectionData)
