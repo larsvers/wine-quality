@@ -1,6 +1,7 @@
 /* eslint-disable no-return-assign */
 /* eslint-disable import/no-duplicates */
 /* eslint-disable no-param-reassign */
+import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import cloneDeep from 'lodash.clonedeep';
 import rough from 'roughjs/bundled/rough.esm';
@@ -631,14 +632,14 @@ function setScrollBase() {
   ScrollTrigger.create({
     trigger: '#model-app',
     start: 'top bottom',
-    end: 'top top',
+    end: 'top top+=5px',
     id: 'scrollBreak',
-    onLeave() {
-      select('#model-app').style('overflow', 'scroll');
-    },
-    onEnterBack() {
-      select('#model-app').style('overflow', 'hidden');
-    },
+    // Fade the outro button in and out.
+    onEnter: () => gsap.to('#outro', { left: '2vw' }),
+    onLeaveBack: () => gsap.to('#outro', { left: '-10vw' }),
+    // Lock/unlock the model app scroll during main scroll.
+    onLeave: () => select('#model-app').style('overflow', 'scroll'),
+    onEnterBack: () => select('#model-app').style('overflow', 'hidden'),
   });
 }
 

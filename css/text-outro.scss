@@ -2,9 +2,9 @@
 
 #outro {
   position: absolute;
-  left: 2vw;
+  left: -10vw;
   bottom: 2vh;
-  padding: 0.75rem;
+  padding: 0.25rem 0.75rem;
   z-index: 1000;
 
   font-size: 1.4em;
@@ -75,6 +75,10 @@
   align-items: center;
 
   z-index: 30;
+
+  // default state.
+  opacity: 0;
+  pointer-events: none;
 }
 
 #outro-modal-inner {
@@ -91,12 +95,30 @@
   @media #{$tablet-up} {
     width: 80vw;
   }
+
+  #outro-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 1.25rem;
+    transition: transform 0.5s;
+    cursor: pointer;
+
+    img {
+      max-width: 100%;
+    }
+  }
+
+  #outro-close:hover {
+    transform: scale(1.25);
+  }
 }
 
 #outro-modal-text {
   margin: 5rem auto;
   width: 80%;
   background-color: radial-gradient(rgba(255, 255, 255, 0.3), transparent);
+  font-size: 1.2em;
 
   @media #{$tablet-up} {
     width: 60%;

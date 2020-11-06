@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-return-assign */
 // Libs.
-import { select } from 'd3-selection/src/index';
+import { select, selectAll } from 'd3-selection/src/index';
 import { timeout } from 'd3-timer';
 import 'd3-transition';
 import { csv, image, json } from 'd3-fetch/src/index';
@@ -106,20 +106,39 @@ function removeSpinner() {
   // Remove the loading site just after loading.
   // (to give it some time to stretch).
   timeout(() => {
-    select('#loading')
-      .style('opacity', 1)
-      .transition()
-      .duration(1000)
-      .style('opacity', 0);
+    select('#loading img').transition().duration(500).style('opacity', 0);
+    select('#loading').transition().duration(1000).style('opacity', 0);
   }, 750);
 }
 
-function outroHover() {
-  console.log('hover');
+function modalOpen() {
+  selectAll('#container, #outro').style('pointer-events', 'none');
+
+  select('#outro-modal-outer')
+    .style('pointer-events', 'all')
+    .transition()
+    .style('opacity', 1);
+
+  // So totally unnecessary...
+  // eslint-disable-next-line no-unused-expressions
+  Math.round(Math.random())
+    ? gsap.fromTo('#outro-modal-inner', { left: '-100vw' }, { left: '0vw' })
+    : gsap.fromTo('#outro-modal-inner', { top: '-100vh' }, { top: '0vh' });
 }
 
-function outroClick() {
-  console.log('click');
+function modalClose(e) {
+  if (
+    e.target !== select('#outro-modal-outer').node() &&
+    e.target !== select('#outro-close-image').node()
+  )
+    return;
+
+  select('#outro-modal-outer')
+    .transition()
+    .style('opacity', 0)
+    .style('pointer-events', 'none');
+
+  selectAll('#container, #outro').style('pointer-events', 'all');
 }
 
 // Build funcs.
@@ -374,7 +393,12 @@ function buildStory() {
   modelApp.append('div').attr('id', 'model-app-wrap');
 
   // Outro.
-  select('#outro-modal-text').html(part9Html.render());
+  select('#outro-modal-outer').html(part9Html.render());
+
+  document.querySelector('#outro').addEventListener('click', modalOpen);
+  document
+    .querySelector('#outro-modal-outer')
+    .addEventListener('click', modalClose);
 }
 
 // Main func.
@@ -396,7 +420,6 @@ function ready([
   // Debounced resize.
   const debounced = debounce(() => update(wineScape), 500);
   window.addEventListener('resize', debounced);
-  select('#outro').on('mouseover', outroHover).on('click', outroClick);
 }
 
 function init() {

@@ -1,7 +1,8 @@
 #model-app {
   // Disallow scroll until the user scrolled the div to
   // the very top (ScrollTrigger then chnages to `scroll`)
-  overflow: hidden;
+  // overflow: hidden;
+  overflow: scroll;
 }
 
 #model-app-header {
