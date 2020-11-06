@@ -60,3 +60,50 @@
 #outro:hover > span#o2 {
   transform: translateX(0em);
 }
+
+// Outro modal
+#outro-modal-outer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(27, 17, 31, 0.2);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 30;
+}
+
+#outro-modal-inner {
+  width: 90vw;
+  height: 80vh;
+  position: relative;
+  overflow: scroll;
+
+  background: url('../static/paper-crease.jpg');
+
+  border-radius: 2px;
+  box-shadow: 3px 3px 1px #8a827c;
+
+  @media #{$tablet-up} {
+    width: 80vw;
+  }
+}
+
+#outro-modal-text {
+  margin: 5rem auto;
+  width: 80%;
+  background-color: radial-gradient(rgba(255, 255, 255, 0.3), transparent);
+
+  @media #{$tablet-up} {
+    width: 60%;
+  }
+
+  h3 {
+    text-align: center;
+    margin: 2em;
+  }
+}

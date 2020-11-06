@@ -68,6 +68,7 @@ import part5Html from '../text/part5.mustache';
 import part6Html from '../text/part6.mustache';
 import part7Html from '../text/part7.mustache';
 import part8Html from '../text/part8-model.mustache';
+import part9Html from '../text/part9-outro.mustache';
 
 // Gsap register.
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
@@ -371,6 +372,9 @@ function buildStory() {
     .html(part8Html.render());
 
   modelApp.append('div').attr('id', 'model-app-wrap');
+
+  // Outro.
+  select('#outro-modal-text').html(part9Html.render());
 }
 
 // Main func.
