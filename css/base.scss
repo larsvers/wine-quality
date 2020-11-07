@@ -86,7 +86,7 @@ button {
   background: url('../static/paper-orange.jpg');
 
   // Border
-  border-bottom: 6px solid transparent;
+  border-bottom: 2px solid transparent;
   border-right: none;
   border-image: url('../static/border-horiz.png') 30 stretch;
 
@@ -99,7 +99,7 @@ button {
 
     // Border
     border-bottom: none;
-    border-right: 6px solid transparent;
+    border-right: 2px solid transparent;
     border-image: url('../static/border-vert.png') 30 stretch;
   }
 }

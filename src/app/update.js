@@ -67,17 +67,22 @@ import {
 } from '../tweens/modelWaveInit';
 import { stopWaveMarkers } from '../tweens/modelWaveMarker';
 
+function isMobile() {
+  return window.innerWidth < state.tabletUp;
+}
+
 function getTriggerPositions() {
   const visual = document.querySelector('#visual-container');
   const visualHeight = parseInt(window.getComputedStyle(visual).height, 10);
   const windowHeight = window.innerHeight;
   const textHeight = windowHeight - visualHeight;
 
-  // If we're on desktop.
-  if (windowHeight - visualHeight < 10) {
+  if (!isMobile()) {
     return {
       start: 'top center',
       end: 'center center',
+      endElement: 'center',
+      endContainer: 'center',
     };
   }
   // If we're on mobile.
@@ -85,6 +90,8 @@ function getTriggerPositions() {
   return {
     start: `top top+=${offset}px`,
     end: `center top+=${offset}px`,
+    endElement: 'center',
+    endContainer: `top+=${offset}px`,
   };
 }
 
@@ -194,7 +201,7 @@ function clearAllContexts() {
 }
 // Set scroll.
 function setScrollBase() {
-  const { start, end } = getTriggerPositions();
+  const { start, end, endContainer } = getTriggerPositions();
 
   ScrollTrigger.create({
     animation: state.tween.wineScape,
@@ -343,7 +350,7 @@ function setScrollBase() {
     animation: state.tween.bottleGrid,
     trigger: '.section-26',
     start,
-    end,
+    end: `bottom-=10% ${endContainer}`, // the grids need seom more space..
     id: 'bottleGrid',
   });
 
@@ -359,7 +366,7 @@ function setScrollBase() {
     animation: state.tween.bottleGridSort,
     trigger: '.section-28',
     start,
-    end,
+    end: `bottom-=10% ${endContainer}`,
     id: 'bottleGridSort',
   });
 
@@ -367,7 +374,7 @@ function setScrollBase() {
     animation: state.tween.bottleGridOut,
     trigger: '.section-29',
     start,
-    end,
+    end: `bottom-=10% ${endContainer}`,
     id: 'bottleGridOut',
     // Shut the glassBottle context up.
     onEnterBack() {
@@ -558,7 +565,7 @@ function setScrollBase() {
     trigger: '.section-59',
     start,
     end,
-    id: 'statsQualityBinarayAlcohol',
+    id: 'statsQualityBinaryAlcohol',
     onLeaveBack: simulateQualAlc,
     onEnter: simulateQualBinAlc,
   });
@@ -568,7 +575,7 @@ function setScrollBase() {
     start,
     end,
     id: 'statsLogisticLine',
-    onLeaveBack: simulateQualBinAlc, // TODO: necessary as we do it in the next one too?
+    onLeaveBack: simulateQualBinAlc,
     onUpdate(self) {
       state.stats.progress.logistic = self.progress;
       renderStats();

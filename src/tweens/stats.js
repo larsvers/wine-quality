@@ -120,7 +120,7 @@ function getLogisticLine(xRange) {
   const yAxisValues = state.stats.current.filter(d => d.axis === 'y');
 
   // Run it only if stars align.
-  // TODO: we should probably also condition this on progress.logistic being > 0
+  // We might want to probably also condition this on progress.logistic being > 0
   if (!yAxisValues.length || !yAxisValues[0].labelLayout) return;
 
   // How to debug:
@@ -507,7 +507,7 @@ function renderStats() {
 
 // All the stuff we run per tick.
 function handleTick() {
-  getLabelCoordinates(); // should maybe be in renderStats? TODO
+  getLabelCoordinates();
   renderStats();
 }
 

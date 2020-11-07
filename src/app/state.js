@@ -8,6 +8,7 @@ export default {
   // General.
   width: null,
   height: null,
+  tabletUp: 800,
   transform: {
     shape: null,
     scape: null,
