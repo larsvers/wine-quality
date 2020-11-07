@@ -17,6 +17,8 @@
 // Title
 #title-section {
   margin: 4rem 0;
+  font-family: 'Amatic SC';
+  min-height: 100vh;
 
   #title-image {
     width: 100%;
@@ -28,7 +30,6 @@
 
   // Wave.
   #title-text h2 {
-    font-family: 'Amatic SC';
     font-size: 15vw;
     margin: 0;
 
@@ -63,8 +64,16 @@
     background: linear-gradient(to right, #532c69, #111);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: transparent;
     animation: wave 10s ease-in-out infinite;
+  }
+
+  // color: transparent doesn't work in firefox.
+  // This is how to set it to its default value instead.
+  @-moz-document url-prefix() {
+    #title-text h2:nth-child(2) {
+      color: currentColor;
+    }
   }
 
   #title-text h2:nth-child(3) {
@@ -73,11 +82,23 @@
     visibility: hidden;
     z-index: -1;
   }
+
+  h3 {
+    text-align: center;
+    font-family: 'Amatic SC';
+    font-size: 3vw;
+    margin: 0px;
+    color: #2a1835;
+  }
 }
 
 #intro-text {
-  width: 80%;
+  width: 100%;
   margin: auto;
+
+  @media #{$tablet-up} {
+    width: 80%;
+  }
 
   p {
     width: 80%;
