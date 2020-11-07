@@ -2,7 +2,7 @@
   min-height: 100vh;
   width: 90%;
   margin: auto;
-  margin-bottom: 50vh;
+  margin-bottom: 20vh;
   position: relative;
 
   @media #{$tablet-up} {
@@ -113,9 +113,26 @@
 }
 
 .scroll-arrow {
-  margin: 3rem 0 auto;
+  margin: 3rem auto 0;
   text-align: center;
   animation: scroll 5s ease-in-out infinite;
+}
+
+.lowlight {
+  display: inline-block;
+  animation: blink 5s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
 }
 
 @keyframes wave {
