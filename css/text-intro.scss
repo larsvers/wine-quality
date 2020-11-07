@@ -14,22 +14,27 @@
   }
 }
 
+#title-image {
+  width: 100%;
+  background: url('../static/paper-orange.jpg');
+  padding: 4rem 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  img {
+    max-width: 100%;
+  }
+}
+
 // Title
-#title-section {
-  margin: 4rem 0;
+#title-text {
+  margin: 0 0 2rem;
   font-family: 'Amatic SC';
   min-height: 100vh;
 
-  #title-image {
-    width: 100%;
-
-    img {
-      max-width: 100%;
-    }
-  }
-
   // Wave.
-  #title-text h2 {
+  #title-header h2 {
     font-size: 15vw;
     margin: 0;
 
@@ -50,7 +55,7 @@
     white-space: nowrap; // otherwise text will break.
   }
 
-  #title-text h2:nth-child(1) {
+  #title-header h2:nth-child(1) {
     // First header is just a stroke with a text-shadow.
     color: transparent;
     text-shadow: 4px -4px 10px #ece1e1;
@@ -58,7 +63,7 @@
     text-stroke: 1px rgba(0, 0, 0, 0.1);
   }
 
-  #title-text h2:nth-child(2) {
+  #title-header h2:nth-child(2) {
     // The second header is a clip path animation
     // with the transparent text as the clipping path.
     background: linear-gradient(to right, #532c69, #111);
@@ -71,12 +76,12 @@
   // color: transparent doesn't work in firefox.
   // This is how to set it to its default value instead.
   @-moz-document url-prefix() {
-    #title-text h2:nth-child(2) {
+    #title-header h2:nth-child(2) {
       color: currentColor;
     }
   }
 
-  #title-text h2:nth-child(3) {
+  #title-header h2:nth-child(3) {
     // The third element just ellbows free the space.
     position: relative;
     visibility: hidden;
