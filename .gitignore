@@ -1,5 +1,4 @@
 .DS_Store
 node_modules
-dist
 .worktree
 gsap-bonus.tgz
