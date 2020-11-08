@@ -19179,10 +19179,9 @@
     var ey;
 
     function pointsToNormalisedVec(p, pp) {
-      var len;
       norm.y = pp.x - p.x;
       norm.x = -(pp.y - p.y);
-      len = Math.sqrt(norm.x * norm.x + norm.y * norm.y);
+      var len = Math.sqrt(norm.x * norm.x + norm.y * norm.y);
       norm.x /= len;
       norm.y /= len;
       return norm;
