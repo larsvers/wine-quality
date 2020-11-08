@@ -19270,12 +19270,12 @@
       ctx.translate(state.lolli.x(0), state.lolli.y(d) + 2); // Draw text
 
       ctx.lineWidth = 0.5;
-      ctx.lineWidth = 0.5;
       ctx.setLineDash([input$1.paths.length - input$1.paths.offset, input$1.paths.offset]);
       paths.forEach(function (path) {
         return ctx.stroke(path);
       }); // Draw line
 
+      ctx.lineWidth = 1.25;
       var p0 = {
         x: 0,
         y: letterHeight$1 * 0.5
@@ -19306,6 +19306,7 @@
         return ctx.stroke(path);
       }); // Draw line
 
+      ctx.lineWidth = 1.25;
       var p0 = {
         x: -bottleWidth$1 * 0.33,
         y: -letterHeight$1 * 0.5 + output$1.yAdd
