@@ -414,7 +414,6 @@ function ready([
   prepareVisuals(globeData, wineData, varImpData, modelIntercept, modelWeights);
   buildStory();
 
-  // TODO: add flag to bypass redraw of canvases on resize.
   update(wineScape);
 
   // Debounced resize.
