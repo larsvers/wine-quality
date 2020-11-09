@@ -28548,6 +28548,7 @@
     timeout$1(function () {
       select('#loading img').transition().duration(500).style('opacity', 0);
       select('#loading').transition().duration(1000).style('opacity', 0);
+      ScrollTrigger.refresh();
     }, 750);
   }
 
