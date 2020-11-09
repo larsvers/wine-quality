@@ -27170,7 +27170,6 @@
       trigger: '.section-0',
       start: start,
       id: 'triggerPositionRefresh',
-      markers: true,
       onEnter: function onEnter() {
         // The scroll trigger positions need to be calculated when all content
         // has loaded. Giving the first trigger no other job than refreshing
@@ -27368,7 +27367,6 @@
       end: 'bottom+=10% center',
       // the globe needs some extra screen time 🥂
       id: 'globe',
-      markers: true,
       onEnter: function onEnter() {
         // Shut the glassBottle context up.
         state.glassBottle.alpha = 0;
@@ -27391,7 +27389,6 @@
       start: start,
       end: end,
       id: 'statsAlcohol',
-      markers: true,
       onLeaveBack: simulateLattice,
       onEnter: simulateAlcohol
     });
