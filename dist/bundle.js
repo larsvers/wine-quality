@@ -27169,11 +27169,12 @@
     ScrollTrigger.create({
       trigger: '.section-0',
       start: start,
-      end: end,
-      id: 'wineScape',
+      id: 'triggerPositionRefresh',
       markers: true,
       onEnter: function onEnter() {
-        console.log('yo');
+        // The scroll trigger positions need to be calculated when all content
+        // has loaded. Giving the first trigger no other job than refreshing
+        // the scroll trigger positions seems the best way to guarantee this.
         ScrollTrigger.refresh();
       }
     });
@@ -28903,9 +28904,7 @@
   }
 
   function init$1() {
-    window.addEventListener('load', function () {
-      removeSpinner(); // refreshScrollTriggerAfterLoad();
-    });
+    window.addEventListener('load', removeSpinner);
     var wineScape = image('../../static/wine-scape.png');
     var globeData = json('../../data/world-simple.json');
     var wineData = csv$1('../../data/winedata.csv', autoType);

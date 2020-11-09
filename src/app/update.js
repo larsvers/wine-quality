@@ -206,11 +206,12 @@ function setScrollBase() {
   ScrollTrigger.create({
     trigger: '.section-0',
     start,
-    end,
-    id: 'wineScape',
+    id: 'triggerPositionRefresh',
     markers: true,
     onEnter() {
-      console.log('yo');
+      // The scroll trigger positions need to be calculated when all content
+      // has loaded. Giving the first trigger no other job than refreshing
+      // the scroll trigger positions seems the best way to guarantee this.
       ScrollTrigger.refresh();
     },
   });

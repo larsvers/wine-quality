@@ -111,19 +111,6 @@ function removeSpinner() {
   }, 750);
 }
 
-function refreshScrollTriggerAfterLoad() {
-  timeout(() => {
-    console.log(ScrollTrigger.getAll().length);
-    if (!ScrollTrigger.getAll().length) {
-      console.warn(
-        "ScrollTrigger's are expected to be available, but aren't yet."
-      );
-      return;
-    }
-    ScrollTrigger.refresh();
-  }, 1000);
-}
-
 function modalOpen() {
   selectAll('#container, #outro').style('pointer-events', 'none');
 
@@ -435,10 +422,7 @@ function ready([
 }
 
 function init() {
-  window.addEventListener('load', () => {
-    removeSpinner();
-    // refreshScrollTriggerAfterLoad();
-  });
+  window.addEventListener('load', removeSpinner);
 
   const wineScape = image('../../static/wine-scape.png');
   const globeData = json('../../data/world-simple.json');
