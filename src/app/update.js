@@ -404,6 +404,7 @@ function setScrollBase() {
     start,
     end: 'bottom+=10% center', // the globe needs some extra screen time 🥂
     id: 'globe',
+    markers: true,
     onEnter() {
       // Shut the glassBottle context up.
       state.glassBottle.alpha = 0;
@@ -426,6 +427,7 @@ function setScrollBase() {
     start,
     end,
     id: 'statsAlcohol',
+    markers: true,
     onLeaveBack: simulateLattice,
     onEnter: simulateAlcohol,
   });
