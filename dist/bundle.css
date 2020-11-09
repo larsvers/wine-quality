@@ -98,16 +98,9 @@ svg.absolute {
 
 #container-intro {
   min-height: 100vh;
-  width: 90%;
   margin: auto;
   margin-bottom: 20vh;
   position: relative; }
-  @media (min-width: 800px) {
-    #container-intro {
-      width: 60%; } }
-  @media (min-width: 1600px) {
-    #container-intro {
-      width: 40%; } }
 
 #title-image {
   width: 100%;
@@ -117,7 +110,15 @@ svg.absolute {
   top: 0;
   z-index: 10; }
   #title-image img {
-    max-width: 100%; }
+    max-width: 90%;
+    display: block;
+    margin: auto; }
+    @media (min-width: 800px) {
+      #title-image img {
+        width: 60%; } }
+    @media (min-width: 1600px) {
+      #title-image img {
+        width: 40%; } }
 
 #title-text {
   margin: 0 0 2rem;
@@ -132,9 +133,6 @@ svg.absolute {
     transform: translateX(-50%);
     white-space: nowrap; }
     @media (min-width: 800px) {
-      #title-text #title-header h2 {
-        font-size: 10vw; } }
-    @media (min-width: 1600px) {
       #title-text #title-header h2 {
         font-size: 8vw; } }
   #title-text #title-header h2:nth-child(1) {
@@ -162,11 +160,14 @@ svg.absolute {
     color: #2a1835; }
 
 #intro-text {
-  width: 100%;
+  width: 90%;
   margin: auto; }
   @media (min-width: 800px) {
     #intro-text {
-      width: 80%; } }
+      width: 50%; } }
+  @media (min-width: 1600px) {
+    #intro-text {
+      width: 30%; } }
   #intro-text p {
     width: 80%;
     margin: 1em auto;
