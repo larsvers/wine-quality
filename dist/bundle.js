@@ -27167,6 +27167,16 @@
         endContainer = _getTriggerPositions.endContainer;
 
     ScrollTrigger.create({
+      trigger: '.section-0',
+      start: start,
+      end: end,
+      id: 'wineScape',
+      markers: true,
+      onEnter: function onEnter() {
+        ScrollTrigger.refresh();
+      }
+    });
+    ScrollTrigger.create({
       animation: state.tween.wineScape,
       trigger: '.section-1',
       start: start,
@@ -28551,19 +28561,6 @@
     }, 750);
   }
 
-  function refreshScrollTriggerAfterLoad() {
-    timeout$1(function () {
-      console.log(ScrollTrigger.getAll().length);
-
-      if (!ScrollTrigger.getAll().length) {
-        console.warn("ScrollTrigger's are expected to be available, but aren't yet.");
-        return;
-      }
-
-      ScrollTrigger.refresh();
-    }, 1000);
-  }
-
   function modalOpen() {
     selectAll('#container, #outro').style('pointer-events', 'none');
     select('#outro-modal-outer').style('pointer-events', 'all').transition().style('opacity', 1); // So totally unnecessary...
@@ -28906,8 +28903,7 @@
 
   function init$1() {
     window.addEventListener('load', function () {
-      removeSpinner();
-      refreshScrollTriggerAfterLoad();
+      removeSpinner(); // refreshScrollTriggerAfterLoad();
     });
     var wineScape = image('../../static/wine-scape.png');
     var globeData = json('../../data/world-simple.json');

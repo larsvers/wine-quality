@@ -437,7 +437,7 @@ function ready([
 function init() {
   window.addEventListener('load', () => {
     removeSpinner();
-    refreshScrollTriggerAfterLoad();
+    // refreshScrollTriggerAfterLoad();
   });
 
   const wineScape = image('../../static/wine-scape.png');

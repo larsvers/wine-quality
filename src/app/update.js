@@ -204,6 +204,17 @@ function setScrollBase() {
   const { start, end, endContainer } = getTriggerPositions();
 
   ScrollTrigger.create({
+    trigger: '.section-0',
+    start,
+    end,
+    id: 'wineScape',
+    markers: true,
+    onEnter() {
+      ScrollTrigger.refresh();
+    },
+  });
+
+  ScrollTrigger.create({
     animation: state.tween.wineScape,
     trigger: '.section-1',
     start,
