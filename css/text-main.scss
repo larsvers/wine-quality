@@ -63,10 +63,10 @@
     text-align: center;
 
     img {
-      max-width: 90%;
+      max-width: 100%;
 
       @media #{$phone-up} {
-        max-width: 50%;
+        max-width: 80%;
       }
       @media #{$tablet-up} {
         max-width: 100%;
@@ -75,10 +75,10 @@
         max-width: 80%;
       }
       @media #{$laptop-m-up} {
-        max-width: 60%;
+        max-width: 70%;
       }
       @media #{$desktop-up} {
-        max-width: 30%;
+        max-width: 60%;
       }
     }
   }

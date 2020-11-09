@@ -251,10 +251,10 @@ svg.absolute {
     width: 100%;
     text-align: center; }
     .main-section .image-wrap img {
-      max-width: 90%; }
+      max-width: 100%; }
       @media (min-width: 450px) {
         .main-section .image-wrap img {
-          max-width: 50%; } }
+          max-width: 80%; } }
       @media (min-width: 800px) {
         .main-section .image-wrap img {
           max-width: 100%; } }
@@ -263,10 +263,10 @@ svg.absolute {
           max-width: 80%; } }
       @media (min-width: 1600px) {
         .main-section .image-wrap img {
-          max-width: 60%; } }
+          max-width: 70%; } }
       @media (min-width: 2000px) {
         .main-section .image-wrap img {
-          max-width: 30%; } }
+          max-width: 60%; } }
 
 a {
   position: relative;
