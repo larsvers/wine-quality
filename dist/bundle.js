@@ -27173,6 +27173,7 @@
       id: 'wineScape',
       markers: true,
       onEnter: function onEnter() {
+        console.log('yo');
         ScrollTrigger.refresh();
       }
     });

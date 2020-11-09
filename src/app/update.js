@@ -210,6 +210,7 @@ function setScrollBase() {
     id: 'wineScape',
     markers: true,
     onEnter() {
+      console.log('yo');
       ScrollTrigger.refresh();
     },
   });
