@@ -28552,12 +28552,16 @@
   }
 
   function refreshScrollTriggerAfterLoad() {
-    if (!ScrollTrigger.getAll().length) {
-      console.warn("ScrollTrigger's are expected to be available, but aren't yet.");
-      return;
-    }
+    timeout$1(function () {
+      console.log(ScrollTrigger.getAll().length);
 
-    ScrollTrigger.refresh();
+      if (!ScrollTrigger.getAll().length) {
+        console.warn("ScrollTrigger's are expected to be available, but aren't yet.");
+        return;
+      }
+
+      ScrollTrigger.refresh();
+    }, 1000);
   }
 
   function modalOpen() {

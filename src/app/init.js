@@ -112,13 +112,16 @@ function removeSpinner() {
 }
 
 function refreshScrollTriggerAfterLoad() {
-  if (!ScrollTrigger.getAll().length) {
-    console.warn(
-      "ScrollTrigger's are expected to be available, but aren't yet."
-    );
-    return;
-  }
-  ScrollTrigger.refresh();
+  timeout(() => {
+    console.log(ScrollTrigger.getAll().length);
+    if (!ScrollTrigger.getAll().length) {
+      console.warn(
+        "ScrollTrigger's are expected to be available, but aren't yet."
+      );
+      return;
+    }
+    ScrollTrigger.refresh();
+  }, 1000);
 }
 
 function modalOpen() {
