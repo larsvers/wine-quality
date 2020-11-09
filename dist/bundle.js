@@ -28548,8 +28548,16 @@
     timeout$1(function () {
       select('#loading img').transition().duration(500).style('opacity', 0);
       select('#loading').transition().duration(1000).style('opacity', 0);
-      ScrollTrigger.refresh();
     }, 750);
+  }
+
+  function refreshScrollTriggerAfterLoad() {
+    if (!ScrollTrigger.getAll().length) {
+      console.warn("ScrollTrigger's are expected to be available, but aren't yet.");
+      return;
+    }
+
+    ScrollTrigger.refresh();
   }
 
   function modalOpen() {
@@ -28893,7 +28901,10 @@
   }
 
   function init$1() {
-    window.addEventListener('load', removeSpinner);
+    window.addEventListener('load', function () {
+      removeSpinner();
+      refreshScrollTriggerAfterLoad();
+    });
     var wineScape = image('../../static/wine-scape.png');
     var globeData = json('../../data/world-simple.json');
     var wineData = csv$1('../../data/winedata.csv', autoType);
