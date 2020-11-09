@@ -97,7 +97,7 @@ function drawImportanceChart(ctx) {
     ctx.stroke();
 
     // Text.
-    ctx.font = '16px Pangolin';
+    ctx.font = '16px Signika';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
     ctx.fillText(prettyLabel(d.variable), xScale(0), yScale(d.variable) + 5);

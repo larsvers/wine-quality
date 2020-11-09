@@ -402,7 +402,7 @@ function drawStats(ctx) {
         // For scatter plots (they have label == true)...
         if (currentVar.label) {
           if (currentVar.axis === 'x') {
-            ctx.font = '10px Pangolin';
+            ctx.font = '10px Signika';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'top';
             ctx.fillText(label, x, y);
@@ -417,7 +417,7 @@ function drawStats(ctx) {
             ctx.stroke();
           }
           if (currentVar.axis === 'y') {
-            ctx.font = '10px Pangolin';
+            ctx.font = '10px Signika';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
             ctx.fillText(label, x, y);
@@ -445,7 +445,7 @@ function drawStats(ctx) {
           if (zigzagCondition) y2 += 15;
 
           // Draw label.
-          ctx.font = '10px Pangolin';
+          ctx.font = '10px Signika';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'top';
           ctx.fillText(label, x, y2 + 5);

@@ -13,12 +13,16 @@
   margin-bottom: 2rem;
   background: url('../static/paper-orange.jpg');
   opacity: 0.95;
-  // z-index: 10;
+
+  @media #{$tablet-up} {
+    z-index: 10;
+  }
 
   h1,
   h3 {
     margin: 0.2rem 0;
     text-align: center;
+    font-weight: 100;
   }
 }
 
@@ -42,6 +46,3 @@ svg.control {
   width: 100%;
   height: 100%;
 }
-
-// #fffbf5 super light orange
-// #f0f7ff super light blue

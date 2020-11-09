@@ -83,7 +83,7 @@ function buildControl(datapoint) {
     .attr('y', -margin.top / 2)
     .attr('dy', '0.35em')
     .attr('text-anchor', 'end')
-    .style('font-family', 'Pangolin')
+    .style('font-family', 'Signika')
     .style('font-size', 12)
     .text(prettyLabel(variable));
 
@@ -170,7 +170,7 @@ function buildControl(datapoint) {
     .attr('dy', '0.7em')
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'hanging')
-    .style('font-family', 'Pangolin')
+    .style('font-family', 'Signika')
     .style('font-size', 12)
     .text(value.toFixed(decimals));
 

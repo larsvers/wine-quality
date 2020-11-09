@@ -44,7 +44,7 @@ function drawWaveMarkers(ctx, t, path) {
 
   // Main text (probability).
   ctx.textBaseline = 'middle';
-  ctx.font = `${fontSize}px Pangolin`;
+  ctx.font = `${fontSize}px Signika`;
   ctx.fillText(
     `${perc(state.model.probability)} likely to be good`,
     position.x + lw + pad,
@@ -52,7 +52,7 @@ function drawWaveMarkers(ctx, t, path) {
   );
 
   // Subtitle (tips).
-  ctx.font = `${Math.floor(fontSize * 0.9)}px Pangolin`;
+  ctx.font = `${Math.floor(fontSize * 0.9)}px Signika`;
   ctx.fillStyle = state.modelBottle.infoColour;
   // This is an array of text with each element getting its own line...
   state.modelBottle.info.forEach((d, i) => {
