@@ -27167,6 +27167,20 @@
         endContainer = _getTriggerPositions.endContainer;
 
     ScrollTrigger.create({
+      trigger: '#intro-text',
+      start: 'top-=10% bottom',
+      onEnter: function onEnter() {
+        gsapWithCSS$1.to('#brand', {
+          bottom: '-5rem'
+        });
+      },
+      onLeaveBack: function onLeaveBack() {
+        gsapWithCSS$1.to('#brand', {
+          bottom: '1rem'
+        });
+      }
+    });
+    ScrollTrigger.create({
       trigger: '.section-0',
       start: start,
       id: 'triggerPositionRefresh',

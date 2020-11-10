@@ -118,3 +118,27 @@ button {
 .wrapper {
   position: relative;
 }
+
+#brand {
+  position: absolute;
+  bottom: 1rem;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+
+  p {
+    text-align: center;
+    margin: 0 0 0.25em;
+    font-size: 0.8em;
+    color: #290e38;
+  }
+
+  #logo {
+    margin: 0 auto;
+    width: 5vw;
+
+    img {
+      max-width: 100%;
+    }
+  }
+}

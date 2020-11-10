@@ -72,6 +72,23 @@ button {
 .wrapper {
   position: relative; }
 
+#brand {
+  position: absolute;
+  bottom: 1rem;
+  left: 0;
+  right: 0;
+  margin: 0 auto; }
+  #brand p {
+    text-align: center;
+    margin: 0 0 0.25em;
+    font-size: 0.8em;
+    color: #290e38; }
+  #brand #logo {
+    margin: 0 auto;
+    width: 5vw; }
+    #brand #logo img {
+      max-width: 100%; }
+
 #svg-container {
   visibility: hidden;
   position: absolute;

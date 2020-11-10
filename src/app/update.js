@@ -204,6 +204,17 @@ function setScrollBase() {
   const { start, end, endContainer } = getTriggerPositions();
 
   ScrollTrigger.create({
+    trigger: '#intro-text',
+    start: 'top-=10% bottom',
+    onEnter() {
+      gsap.to('#brand', { bottom: '-5rem' });
+    },
+    onLeaveBack() {
+      gsap.to('#brand', { bottom: '1rem' });
+    },
+  });
+
+  ScrollTrigger.create({
     trigger: '.section-0',
     start,
     id: 'triggerPositionRefresh',
