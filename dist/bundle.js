@@ -27657,12 +27657,12 @@
       // Fade the outro button in and out.
       onEnter: function onEnter() {
         return gsapWithCSS$1.to('#outro', {
-          right: '2vw'
+          left: '2vw'
         });
       },
       onLeaveBack: function onLeaveBack() {
         return gsapWithCSS$1.to('#outro', {
-          right: '-10vw'
+          left: '-10vw'
         });
       },
       // Lock/unlock the model app scroll during main scroll.
