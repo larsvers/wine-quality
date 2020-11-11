@@ -83,14 +83,19 @@ export default {
   bottleColour: {
     base: { ...baseStops },
     good: {
-      stop0: '#88BFF2',
-      stop1: '#4D8ECA',
-      dot: '#1773C9',
+      // stop0: '#88BFF2',
+      // stop1: '#4D8ECA',
+      stop0: '#98A5DA',
+      stop1: '#5566aa',
+      // dot: '#5566aa', // ezplan blue
+      dot: '#1773C9', // original
     },
     bad: {
-      stop0: '#E07BA8',
-      stop1: '#A13E6A',
-      dot: '#E5A0BF',
+      stop0: '#CE6A8C',
+      stop1: '#993355', // vinoez bordeaux
+      // dot: '#E5A0BF', // original
+      dot: 'rgba(229, 160, 191, 0.7)', // original light
+      // dot: 'rgba(153, 51, 85, 0.4)', // transparent stop1
     },
   },
   bottleWave: {
