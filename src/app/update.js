@@ -228,7 +228,7 @@ function setScrollBase() {
           duration: 0.3,
         })
         .to('#brand', { left: '50%', xPercent: -50 }, 0)
-        .to('#logo path', { fill: '#290E38' }, 0);
+        .to('#logo path', { fill: 'rgba(41, 14, 56, 0.5)' }, 0);
     },
   });
 

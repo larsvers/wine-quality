@@ -75,7 +75,7 @@
 }
 
 #outro-modal-text {
-  margin: 5rem auto;
+  margin: 5rem auto 3rem;
   width: 80%;
   background-color: radial-gradient(rgba(255, 255, 255, 0.3), transparent);
   font-size: 1.2em;
@@ -89,4 +89,15 @@
     text-align: center;
     margin: 2em;
   }
+}
+
+#credits {
+  width: 60%;
+  margin: 3rem auto 5rem;
+  padding-top: 3rem;
+  font-size: 0.9em;
+
+  // Border
+  border-top: 5px solid transparent;
+  border-image: url('../static/border-horiz.png') 30 stretch;
 }

@@ -82,13 +82,19 @@ button {
     text-align: center;
     margin: 0 0 0.25em;
     font-size: 0.8em;
-    color: #290e38; }
+    color: rgba(41, 14, 56, 0.5); }
+  #brand a {
+    box-shadow: inset 0 -0.2em 20px 0 #ecd8ef; }
+  #brand a:hover {
+    box-shadow: inset 0 -0.2em 5px 0 #f7c5ff; }
   #brand #logo {
     margin: 0 auto;
     width: 70px; }
     #brand #logo svg {
       width: 100%;
       height: 100%; }
+    #brand #logo path {
+      fill: rgba(41, 14, 56, 0.5); }
 
 #svg-container {
   visibility: hidden;
@@ -382,7 +388,7 @@ span.arrow::after {
     transform: scale(1.25); }
 
 #outro-modal-text {
-  margin: 5rem auto;
+  margin: 5rem auto 3rem;
   width: 80%;
   background-color: radial-gradient(rgba(255, 255, 255, 0.3), transparent);
   font-size: 1.2em; }
@@ -393,6 +399,14 @@ span.arrow::after {
     font-weight: 300;
     text-align: center;
     margin: 2em; }
+
+#credits {
+  width: 60%;
+  margin: 3rem auto 5rem;
+  padding-top: 3rem;
+  font-size: 0.9em;
+  border-top: 5px solid transparent;
+  border-image: url("../static/border-horiz.png") 30 stretch; }
 
 #model-app {
   overflow: scroll; }

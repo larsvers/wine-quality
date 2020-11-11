@@ -131,7 +131,15 @@ button {
     text-align: center;
     margin: 0 0 0.25em;
     font-size: 0.8em;
-    color: #290e38;
+    color: rgba(41, 14, 56, 0.5);
+  }
+
+  a {
+    box-shadow: inset 0 -0.2em 20px 0 #ecd8ef;
+  }
+
+  a:hover {
+    box-shadow: inset 0 -0.2em 5px 0 #f7c5ff;
   }
 
   #logo {
@@ -141,6 +149,9 @@ button {
     svg {
       width: 100%;
       height: 100%;
+    }
+    path {
+      fill: rgba(41, 14, 56, 0.5);
     }
   }
 }
