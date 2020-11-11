@@ -207,10 +207,24 @@ function setScrollBase() {
     trigger: '#intro-text',
     start: 'top-=10% bottom',
     onEnter() {
-      gsap.to('#brand', { bottom: '-5rem' });
+      gsap
+        .timeline({ defaults: { duration: 1, ease: 'sine.inOut' } })
+        .to('#brand p', { opacity: 0, fontSize: '0em', duration: 0.3 })
+        .to('#brand', { left: '100%', xPercent: -150 }, '<') // move right
+        // .to('#brand', { left: '0%', xPercent: 50 }, '<') // move left
+        .to('#logo path', { fill: '#ccc' }, '<');
     },
     onLeaveBack() {
-      gsap.to('#brand', { bottom: '1rem' });
+      gsap
+        .timeline({ defaults: { duration: 1, ease: 'sine.inOut' } })
+        .to('#brand p', {
+          opacity: 1,
+          fontSize: '0.8em',
+          delay: 0.7,
+          duration: 0.3,
+        })
+        .to('#brand', { left: '50%', xPercent: -50 }, 0)
+        .to('#logo path', { fill: '#290E38' }, 0);
     },
   });
 

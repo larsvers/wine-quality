@@ -3124,6 +3124,16 @@
     return fetch(input, init).then(responseJson);
   }
 
+  function parser(type) {
+    return function(input, init)  {
+      return text(input, init).then(function(text) {
+        return (new DOMParser).parseFromString(text, type);
+      });
+    };
+  }
+
+  var xml = parser("application/xml");
+
   function ascending$1(a, b) {
     return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
   }
@@ -27170,14 +27180,41 @@
       trigger: '#intro-text',
       start: 'top-=10% bottom',
       onEnter: function onEnter() {
-        gsapWithCSS$1.to('#brand', {
-          bottom: '-5rem'
-        });
+        gsapWithCSS$1.timeline({
+          defaults: {
+            duration: 1,
+            ease: 'sine.inOut'
+          }
+        }).to('#brand p', {
+          opacity: 0,
+          fontSize: '0em',
+          duration: 0.3
+        }).to('#brand', {
+          left: '100%',
+          xPercent: -150
+        }, '<') // move right
+        // .to('#brand', { left: '0%', xPercent: 50 }, '<') // move left
+        .to('#logo path', {
+          fill: '#ccc'
+        }, '<');
       },
       onLeaveBack: function onLeaveBack() {
-        gsapWithCSS$1.to('#brand', {
-          bottom: '1rem'
-        });
+        gsapWithCSS$1.timeline({
+          defaults: {
+            duration: 1,
+            ease: 'sine.inOut'
+          }
+        }).to('#brand p', {
+          opacity: 1,
+          fontSize: '0.8em',
+          delay: 0.7,
+          duration: 0.3
+        }).to('#brand', {
+          left: '50%',
+          xPercent: -50
+        }, 0).to('#logo path', {
+          fill: '#290E38'
+        }, 0);
       }
     });
     ScrollTrigger.create({
@@ -28846,8 +28883,11 @@
     state.modelBottle.maxLength = bottlePathInfo.length;
   }
 
-  function buildStory() {
-    // Intro text.
+  function buildStory(logoSvg) {
+    // Logo.
+    // SVGD dimensions controlled by CSS (overwriting given attributes).
+    select('#logo').node().append(logoSvg.documentElement); // Intro text.
+
     var introContainer = select('#container-intro');
     var introHtml = part0Html.render();
     introContainer.html(introHtml); // Main text.
@@ -28895,17 +28935,18 @@
 
 
   function ready(_ref) {
-    var _ref2 = _slicedToArray(_ref, 6),
+    var _ref2 = _slicedToArray(_ref, 7),
         wineScape = _ref2[0],
-        globeData = _ref2[1],
-        wineData = _ref2[2],
-        varImpData = _ref2[3],
-        modelIntercept = _ref2[4],
-        modelWeights = _ref2[5];
+        logo = _ref2[1],
+        globeData = _ref2[2],
+        wineData = _ref2[3],
+        varImpData = _ref2[4],
+        modelIntercept = _ref2[5],
+        modelWeights = _ref2[6];
 
     // Make sure all variable names are lower case! This is not checked in the app.
     prepareVisuals(globeData, wineData, varImpData, modelIntercept, modelWeights);
-    buildStory();
+    buildStory(logo);
     update(wineScape); // Debounced resize.
 
     var debounced = lodash_debounce(function () {
@@ -28917,12 +28958,13 @@
   function init$1() {
     window.addEventListener('load', removeSpinner);
     var wineScape = image('../../static/wine-scape.png');
+    var logo = xml('../../static/vinoez.svg');
     var globeData = json('../../data/world-simple.json');
     var wineData = csv$1('../../data/winedata.csv', autoType);
     var varImpData = csv$1('../../data/importance.csv', autoType);
     var modelIntercept = csv$1('../../data/model-intercept.csv', autoType);
     var modelWeights = csv$1('../../data/model-weights.csv', autoType);
-    Promise.all([wineScape, globeData, wineData, varImpData, modelIntercept, modelWeights]).then(ready);
+    Promise.all([wineScape, logo, globeData, wineData, varImpData, modelIntercept, modelWeights]).then(ready);
   }
 
   init$1();

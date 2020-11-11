@@ -4,7 +4,7 @@
 import { select, selectAll } from 'd3-selection/src/index';
 import { timeout } from 'd3-timer';
 import 'd3-transition';
-import { csv, image, json } from 'd3-fetch/src/index';
+import { csv, image, json, xml } from 'd3-fetch/src/index';
 import { max, mean, extent } from 'd3-array/src/index';
 import { map } from 'd3-collection/src/index';
 import { autoType } from 'd3-dsv/src/index';
@@ -351,7 +351,11 @@ function prepareVisuals(
   state.modelBottle.maxLength = bottlePathInfo.length;
 }
 
-function buildStory() {
+function buildStory(logoSvg) {
+  // Logo.
+  // SVGD dimensions controlled by CSS (overwriting given attributes).
+  select('#logo').node().append(logoSvg.documentElement);
+
   // Intro text.
   const introContainer = select('#container-intro');
   const introHtml = part0Html.render();
@@ -404,6 +408,7 @@ function buildStory() {
 // Main func.
 function ready([
   wineScape,
+  logo,
   globeData,
   wineData,
   varImpData,
@@ -412,7 +417,7 @@ function ready([
 ]) {
   // Make sure all variable names are lower case! This is not checked in the app.
   prepareVisuals(globeData, wineData, varImpData, modelIntercept, modelWeights);
-  buildStory();
+  buildStory(logo);
 
   update(wineScape);
 
@@ -425,6 +430,7 @@ function init() {
   window.addEventListener('load', removeSpinner);
 
   const wineScape = image('../../static/wine-scape.png');
+  const logo = xml('../../static/vinoez.svg');
   const globeData = json('../../data/world-simple.json');
   const wineData = csv('../../data/winedata.csv', autoType);
   const varImpData = csv('../../data/importance.csv', autoType);
@@ -433,6 +439,7 @@ function init() {
 
   Promise.all([
     wineScape,
+    logo,
     globeData,
     wineData,
     varImpData,
