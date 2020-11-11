@@ -147,7 +147,7 @@ svg.absolute {
 #title-text {
   margin: 0 0 2rem;
   font-family: 'Nanum Myeongjo';
-  min-height: 100vh; }
+  min-height: 120vh; }
   #title-text #title-header h2 {
     font-size: 12vw;
     margin: 0;

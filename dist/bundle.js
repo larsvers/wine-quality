@@ -27189,7 +27189,7 @@
 
     ScrollTrigger.create({
       trigger: '#intro-text',
-      start: 'top-=10% bottom',
+      start: 'top-=30% bottom',
       onEnter: function onEnter() {
         gsapWithCSS$1.timeline({
           defaults: {
@@ -28899,7 +28899,7 @@
 
   function buildStory(logoSvg) {
     // Logo.
-    // SVGD dimensions controlled by CSS (overwriting given attributes).
+    // SVG dimensions controlled by CSS (overwriting given attributes).
     select('#logo').node().append(logoSvg.documentElement); // Intro text.
 
     var introContainer = select('#container-intro');

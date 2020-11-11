@@ -353,7 +353,7 @@ function prepareVisuals(
 
 function buildStory(logoSvg) {
   // Logo.
-  // SVGD dimensions controlled by CSS (overwriting given attributes).
+  // SVG dimensions controlled by CSS (overwriting given attributes).
   select('#logo').node().append(logoSvg.documentElement);
 
   // Intro text.

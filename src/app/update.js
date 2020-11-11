@@ -205,7 +205,7 @@ function setScrollBase() {
 
   ScrollTrigger.create({
     trigger: '#intro-text',
-    start: 'top-=10% bottom',
+    start: 'top-=30% bottom',
     onEnter() {
       gsap
         .timeline({ defaults: { duration: 1, ease: 'sine.inOut' } })
