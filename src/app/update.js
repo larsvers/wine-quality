@@ -209,10 +209,14 @@ function setScrollBase() {
     onEnter() {
       gsap
         .timeline({ defaults: { duration: 1, ease: 'sine.inOut' } })
-        .to('#brand p', { opacity: 0, fontSize: '0em', duration: 0.3 })
-        .to('#brand', { left: '100%', xPercent: -150 }, '<') // move right
-        // .to('#brand', { left: '0%', xPercent: 50 }, '<') // move left
-        .to('#logo path', { fill: '#ccc' }, '<');
+        .fromTo(
+          '#brand p',
+          { opacity: 1, fontSize: '0.8em' },
+          { opacity: 0, fontSize: '0em', duration: 0.3 }
+        )
+        .to('#brand', { left: '100%', xPercent: -150 }, 0) // move right
+        // .to('#brand', { left: '0%', xPercent: 50 }, 0) // move left
+        .to('#logo path', { fill: '#ccc' }, 0);
     },
     onLeaveBack() {
       gsap

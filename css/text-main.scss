@@ -22,7 +22,7 @@
     box-shadow: none;
     opacity: 0.95;
 
-    z-index: 10;
+    z-index: 20;
 
     @media #{$tablet-up} {
       font-size: 1.5em;
@@ -40,7 +40,7 @@
     padding-top: 40vh;
     padding-bottom: 40vh;
     font-size: 1em;
-    width: 80%;
+    width: 70%;
     margin: auto;
 
     @media #{$tablet-up} {

@@ -25,7 +25,7 @@ button {
   align-items: center;
 
   position: absolute;
-  z-index: 20;
+  z-index: 30;
   pointer-events: none;
 
   img {
@@ -83,7 +83,7 @@ button {
 
   // To make the text invisible, this needs to be above the later
   // text div with an opaque background.
-  z-index: 10;
+  z-index: 20;
   background: url('../static/paper-orange.jpg');
 
   // Border
@@ -108,6 +108,7 @@ button {
 #text-container {
   // ☝️ Regulate the width (needs pendant in #visual-wrap)
   width: 100vw;
+  z-index: 10;
 
   @media #{$tablet-up} {
     // ☝️ Regulate the width (needs pendant in #visual-wrap)
@@ -124,7 +125,7 @@ button {
   bottom: 1rem;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 20;
+  // z-index: 30; // If it's to the right, as it needs to be above the visual container.
 
   p {
     text-align: center;
@@ -135,7 +136,7 @@ button {
 
   #logo {
     margin: 0 auto;
-    width: 6vw;
+    width: 70px;
 
     svg {
       width: 100%;
