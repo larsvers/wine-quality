@@ -24015,7 +24015,8 @@
         if (currentVar.header) {
           var xHeader = labelLayout.label.header.x;
           var yHeader = labelLayout.label.header.y;
-          var labelHeader = prettyLabel(currentVar.name).replace('_', ' ');
+          var labelHeader = currentVar.name === 'ph' // edge case.
+          ? 'pH' : prettyLabel(currentVar.name).replace('_', ' ');
           ctx.font = '50px Amatic SC';
           ctx.fillText(labelHeader, xHeader, yHeader - 50);
         } // Draw the axis labels.
@@ -24422,7 +24423,8 @@
       ctx.font = '16px Signika';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
-      ctx.fillText(prettyLabel(d.variable), xScale$2(0), yScale$2(d.variable) + 5);
+      var text = d.variable === 'ph' ? 'pH' : prettyLabel(d.variable);
+      ctx.fillText(text, xScale$2(0), yScale$2(d.variable) + 5);
       ctx.restore();
     });
     ctx.restore();
@@ -26756,7 +26758,8 @@
 
     var xScale = linear$1().domain(state.model.ranges.get(variable)).range([0, width]); // Label.
 
-    g.append('text').attr('x', width).attr('y', -margin$1.top / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('font-family', 'Signika').style('font-size', 12).text(prettyLabel(variable)); // Axis.
+    var labelText = variable === 'ph' ? 'pH' : prettyLabel(variable);
+    g.append('text').attr('x', width).attr('y', -margin$1.top / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('font-family', 'Signika').style('font-size', 12).text(labelText); // Axis.
 
     g.append('line').attr('y1', height).attr('x2', width).attr('y2', height).style('stroke-width', 1).style('stroke', '#000'); // Density data.
 

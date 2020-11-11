@@ -9,7 +9,7 @@ import state from '../app/state';
 import { prettyLabel } from '../app/utils';
 
 // Module scope.
-let area = {
+const area = {
   top: null,
   right: null,
   bottom: null,
@@ -20,9 +20,9 @@ let area = {
 
 let xScale;
 let yScale;
-let r = 5;
-let lw = 2;
-let title = { alpha: 0 };
+const r = 5;
+const lw = 2;
+const title = { alpha: 0 };
 
 // Set up / prep.
 function setDimensions() {
@@ -100,7 +100,8 @@ function drawImportanceChart(ctx) {
     ctx.font = '16px Signika';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillText(prettyLabel(d.variable), xScale(0), yScale(d.variable) + 5);
+    const text = d.variable === 'ph' ? 'pH' : prettyLabel(d.variable);
+    ctx.fillText(text, xScale(0), yScale(d.variable) + 5);
     ctx.restore();
   });
 

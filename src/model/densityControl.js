@@ -78,6 +78,7 @@ function buildControl(datapoint) {
     .range([0, width]);
 
   // Label.
+  const labelText = variable === 'ph' ? 'pH' : prettyLabel(variable);
   g.append('text')
     .attr('x', width)
     .attr('y', -margin.top / 2)
@@ -85,7 +86,7 @@ function buildControl(datapoint) {
     .attr('text-anchor', 'end')
     .style('font-family', 'Signika')
     .style('font-size', 12)
-    .text(prettyLabel(variable));
+    .text(labelText);
 
   // Axis.
   g.append('line')

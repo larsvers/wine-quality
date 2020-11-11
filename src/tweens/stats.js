@@ -462,7 +462,10 @@ function drawStats(ctx) {
       if (currentVar.header) {
         const xHeader = labelLayout.label.header.x;
         const yHeader = labelLayout.label.header.y;
-        const labelHeader = prettyLabel(currentVar.name).replace('_', ' ');
+        const labelHeader =
+          currentVar.name === 'ph' // edge case.
+            ? 'pH'
+            : prettyLabel(currentVar.name).replace('_', ' ');
 
         ctx.font = '50px Amatic SC';
         ctx.fillText(labelHeader, xHeader, yHeader - 50);
