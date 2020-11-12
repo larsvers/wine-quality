@@ -64,11 +64,11 @@ button {
       border-image: url("../static/border-vert.png") 30 stretch; } }
 
 #text-container {
-  width: 100vw;
-  z-index: 10; }
+  width: 100vw; }
   @media (min-width: 800px) {
     #text-container {
-      width: 40vw; } }
+      width: 40vw;
+      z-index: 10; } }
 
 .wrapper {
   position: relative; }
@@ -127,12 +127,13 @@ svg.absolute {
   position: relative; }
 
 #title-image {
-  width: 100%;
   background: url("../static/paper-orange.jpg");
+  width: 100%;
   padding: 4rem 0 2rem;
   position: sticky;
   top: 0;
-  z-index: 10; }
+  z-index: 10;
+  box-shadow: 0px 0px 0px #ccc; }
   #title-image img {
     max-width: 90%;
     display: block;
@@ -147,7 +148,7 @@ svg.absolute {
 #title-text {
   margin: 0 0 2rem;
   font-family: 'Nanum Myeongjo';
-  min-height: 120vh; }
+  min-height: 100vh; }
   #title-text #title-header h2 {
     font-size: 12vw;
     margin: 0;
@@ -247,7 +248,7 @@ svg.absolute {
     background: none;
     box-shadow: none;
     opacity: 0.95;
-    z-index: 20; }
+    z-index: 30; }
     @media (min-width: 800px) {
       .main-section h1 {
         font-size: 1.5em;

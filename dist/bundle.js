@@ -18073,6 +18073,48 @@
     ctx.clearRect(0, 0, state.width, state.height);
   }
 
+  function tweenIntroIn() {
+    gsapWithCSS$1.timeline({
+      defaults: {
+        duration: 1,
+        ease: 'sine.inOut'
+      }
+    }).fromTo('#brand p', {
+      opacity: 1,
+      fontSize: '0.8em'
+    }, {
+      opacity: 0,
+      fontSize: '0em',
+      duration: 0.3
+    }).to('#brand', {
+      left: '100%',
+      xPercent: -150
+    }, 0) // move right
+    // .to('#brand', { left: '0%', xPercent: 50 }, 0) // move left
+    .to('#logo path', {
+      fill: '#ccc'
+    }, 0);
+  }
+
+  function tweenIntroOut() {
+    gsapWithCSS$1.timeline({
+      defaults: {
+        duration: 1,
+        ease: 'sine.inOut'
+      }
+    }).to('#brand p', {
+      opacity: 1,
+      fontSize: '0.8em',
+      delay: 0.7,
+      duration: 0.3
+    }).to('#brand', {
+      left: '50%',
+      xPercent: -50
+    }, 0).to('#logo path', {
+      fill: 'rgba(41, 14, 56, 0.5)'
+    }, 0);
+  }
+
   var pi = Math.PI,
       tau = 2 * pi,
       epsilon = 1e-6,
@@ -27188,47 +27230,20 @@
         endContainer = _getTriggerPositions.endContainer;
 
     ScrollTrigger.create({
-      trigger: '#intro-text',
-      start: 'top-=30% bottom',
+      trigger: '#container-intro',
+      start: '10px top',
+      id: 'intro',
       onEnter: function onEnter() {
-        gsapWithCSS$1.timeline({
-          defaults: {
-            duration: 1,
-            ease: 'sine.inOut'
-          }
-        }).fromTo('#brand p', {
-          opacity: 1,
-          fontSize: '0.8em'
-        }, {
-          opacity: 0,
-          fontSize: '0em',
-          duration: 0.3
-        }).to('#brand', {
-          left: '100%',
-          xPercent: -150
-        }, 0) // move right
-        // .to('#brand', { left: '0%', xPercent: 50 }, 0) // move left
-        .to('#logo path', {
-          fill: '#ccc'
-        }, 0);
+        gsapWithCSS$1.to('#title-image', {
+          boxShadow: '0px 2px 10px #ccc'
+        });
+        tweenIntroIn();
       },
       onLeaveBack: function onLeaveBack() {
-        gsapWithCSS$1.timeline({
-          defaults: {
-            duration: 1,
-            ease: 'sine.inOut'
-          }
-        }).to('#brand p', {
-          opacity: 1,
-          fontSize: '0.8em',
-          delay: 0.7,
-          duration: 0.3
-        }).to('#brand', {
-          left: '50%',
-          xPercent: -50
-        }, 0).to('#logo path', {
-          fill: 'rgba(41, 14, 56, 0.5)'
-        }, 0);
+        gsapWithCSS$1.to('#title-image', {
+          boxShadow: '0px 0px 0px #ccc'
+        });
+        tweenIntroOut();
       }
     });
     ScrollTrigger.create({
@@ -28967,6 +28982,9 @@
       return update(wineScape);
     }, 500);
     window.addEventListener('resize', debounced);
+    window.addEventListener('scroll', function () {
+      console.log('scroll');
+    });
   }
 
   function init$1() {

@@ -1,21 +1,25 @@
 /* eslint-disable no-return-assign */
 /* eslint-disable import/no-duplicates */
 /* eslint-disable no-param-reassign */
+
+// External.
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
+import { select } from 'd3-selection/src';
+import { timeout } from 'd3-timer';
 import cloneDeep from 'lodash.clonedeep';
 import rough from 'roughjs/bundled/rough.esm';
 
-import { select } from 'd3-selection/src';
-import { timeout } from 'd3-timer';
+// Internal.
 import state from './state';
 import { resizeCanvas, getTransform, clear } from './utils';
+
+// Tweens
+import { tweenIntroIn, tweenIntroOut } from '../tweens/intro';
 import tweenBottleWave, { startWave, stopWave } from '../tweens/bottleWave';
 import tweenWineScape from '../tweens/wineScape';
-
 import tweenGlassBottle from '../tweens/glassBottle';
 import tweenBottleText from '../tweens/bottleText';
-
 import tweenLolliChart from '../tweens/lolliChart';
 import {
   tweenLolliUpdate1,
@@ -34,7 +38,6 @@ import tweenBottleGridColour from '../tweens/bottleGridColour';
 import tweenBottleGridSort from '../tweens/bottleGridSort';
 import tweenBottleGridOut from '../tweens/bottleGridOut';
 import tweenDataset from '../tweens/dataset';
-
 import tweenGlobe from '../tweens/globe';
 import tweenStats, { renderStats, tweenStatsAlpha, sim } from '../tweens/stats';
 import {
@@ -47,19 +50,15 @@ import {
   simulateVolatile,
   simulateQuality,
 } from '../tweens/statsFrequencies';
-
 import {
   simulateQualAlc,
   simulateQualVol,
   simulateQualBinAlc,
   simulateRemove,
 } from '../tweens/statsScatter';
-
 import tweenImportance from '../tweens/importance';
-
 import buildModelControls from '../model/buildModel';
 import tweenModelBottle from '../tweens/modelBottle';
-
 import {
   updateModelWave,
   stopModelWave,
@@ -67,6 +66,7 @@ import {
 } from '../tweens/modelWaveInit';
 import { stopWaveMarkers } from '../tweens/modelWaveMarker';
 
+// Helpers.
 function isMobile() {
   return window.innerWidth < state.tabletUp;
 }
@@ -199,36 +199,22 @@ function clearAllContexts() {
     Object.entries(state.ctx).forEach(d => clear(d[1]));
   }, 50);
 }
+
 // Set scroll.
 function setScrollBase() {
   const { start, end, endContainer } = getTriggerPositions();
 
   ScrollTrigger.create({
-    trigger: '#intro-text',
-    start: 'top-=30% bottom',
+    trigger: '#container-intro',
+    start: '10px top',
+    id: 'intro',
     onEnter() {
-      gsap
-        .timeline({ defaults: { duration: 1, ease: 'sine.inOut' } })
-        .fromTo(
-          '#brand p',
-          { opacity: 1, fontSize: '0.8em' },
-          { opacity: 0, fontSize: '0em', duration: 0.3 }
-        )
-        .to('#brand', { left: '100%', xPercent: -150 }, 0) // move right
-        // .to('#brand', { left: '0%', xPercent: 50 }, 0) // move left
-        .to('#logo path', { fill: '#ccc' }, 0);
+      gsap.to('#title-image', { boxShadow: '0px 2px 10px #ccc' });
+      tweenIntroIn();
     },
     onLeaveBack() {
-      gsap
-        .timeline({ defaults: { duration: 1, ease: 'sine.inOut' } })
-        .to('#brand p', {
-          opacity: 1,
-          fontSize: '0.8em',
-          delay: 0.7,
-          duration: 0.3,
-        })
-        .to('#brand', { left: '50%', xPercent: -50 }, 0)
-        .to('#logo path', { fill: 'rgba(41, 14, 56, 0.5)' }, 0);
+      gsap.to('#title-image', { boxShadow: '0px 0px 0px #ccc' });
+      tweenIntroOut();
     },
   });
 

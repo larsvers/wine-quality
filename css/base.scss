@@ -108,11 +108,11 @@ button {
 #text-container {
   // ☝️ Regulate the width (needs pendant in #visual-wrap)
   width: 100vw;
-  z-index: 10;
 
   @media #{$tablet-up} {
     // ☝️ Regulate the width (needs pendant in #visual-wrap)
     width: 40vw;
+    z-index: 10;
   }
 }
 
