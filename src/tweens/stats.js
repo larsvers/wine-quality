@@ -381,8 +381,8 @@ function drawStats(ctx) {
   if (state.stats.current.length) {
     // Base styles.
     ctx.strokeStyle = '#000000';
-    ctx.fillStyle = '#000000';
     ctx.lineWidth = 0.2;
+    const tickFontConfig = '12px Signika';
 
     // Loop through each of the variables we want to show.
     for (let i = 0; i < state.stats.current.length; i++) {
@@ -393,6 +393,7 @@ function drawStats(ctx) {
       const labelLayout = currentVar.labelLayout;
 
       // Draw each tick.
+      ctx.fillStyle = '#555555';
       labelLayout.ticks.forEach((tick, j) => {
         // Base info.
         const x = tick.value.x;
@@ -402,22 +403,29 @@ function drawStats(ctx) {
         // For scatter plots (they have label == true)...
         if (currentVar.label) {
           if (currentVar.axis === 'x') {
-            ctx.font = '10px Signika';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-            ctx.fillText(label, x, y);
-
+            // Get the labels' y value.
             const xTickLine = x;
             const y1TickLine = labelLayout.bbox.yMin;
-            const y2TickLine = y - 10;
+            let y2TickLine = y - 10;
 
+            // Check for overlapping labels.
+            const zigzagCondition = tick.value.zigzag && j % 2 === 0;
+            if (zigzagCondition) y2TickLine += 15;
+
+            // Draw the tick line.
             ctx.beginPath();
             ctx.moveTo(xTickLine, y1TickLine);
             ctx.lineTo(xTickLine, y2TickLine);
             ctx.stroke();
+
+            // Draw the labels.
+            ctx.font = tickFontConfig;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(label, x, y2TickLine);
           }
           if (currentVar.axis === 'y') {
-            ctx.font = '10px Signika';
+            ctx.font = tickFontConfig;
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
             ctx.fillText(label, x, y);
@@ -445,7 +453,7 @@ function drawStats(ctx) {
           if (zigzagCondition) y2 += 15;
 
           // Draw label.
-          ctx.font = '10px Signika';
+          ctx.font = tickFontConfig;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'top';
           ctx.fillText(label, x, y2 + 5);
@@ -459,6 +467,7 @@ function drawStats(ctx) {
       });
 
       // Draw the header.
+      ctx.fillStyle = '#000000';
       if (currentVar.header) {
         const xHeader = labelLayout.label.header.x;
         const yHeader = labelLayout.label.header.y;

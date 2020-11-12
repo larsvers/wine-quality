@@ -23985,99 +23985,111 @@
     ctx.globalAlpha = state.stats.alpha.value; // Draw axes and labels.
 
     if (state.stats.current.length) {
-      // Base styles.
-      ctx.strokeStyle = '#000000';
-      ctx.fillStyle = '#000000';
-      ctx.lineWidth = 0.2; // Loop through each of the variables we want to show.
+      (function () {
+        // Base styles.
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 0.2;
+        var tickFontConfig = '12px Signika'; // Loop through each of the variables we want to show.
 
-      var _loop = function _loop(i) {
-        var currentVar = state.stats.current[i]; // Check if there's data to draw with.
+        var _loop = function _loop(i) {
+          var currentVar = state.stats.current[i]; // Check if there's data to draw with.
 
-        if (!currentVar.hasOwnProperty('labelLayout')) return "break"; // Reference element and layout info.
+          if (!currentVar.hasOwnProperty('labelLayout')) return "break"; // Reference element and layout info.
 
-        var labelLayout = currentVar.labelLayout; // Draw each tick.
+          var labelLayout = currentVar.labelLayout; // Draw each tick.
 
-        labelLayout.ticks.forEach(function (tick, j) {
-          // Base info.
-          var x = tick.value.x;
-          var y = tick.value.y;
-          var label = tick.key; // For scatter plots (they have label == true)...
+          ctx.fillStyle = '#555555';
+          labelLayout.ticks.forEach(function (tick, j) {
+            // Base info.
+            var x = tick.value.x;
+            var y = tick.value.y;
+            var label = tick.key; // For scatter plots (they have label == true)...
 
-          if (currentVar.label) {
-            if (currentVar.axis === 'x') {
-              ctx.font = '10px Signika';
+            if (currentVar.label) {
+              if (currentVar.axis === 'x') {
+                // Get the labels' y value.
+                var xTickLine = x;
+                var y1TickLine = labelLayout.bbox.yMin;
+                var y2TickLine = y - 10; // Check for overlapping labels.
+
+                var zigzagCondition = tick.value.zigzag && j % 2 === 0;
+                if (zigzagCondition) y2TickLine += 15; // Draw the tick line.
+
+                ctx.beginPath();
+                ctx.moveTo(xTickLine, y1TickLine);
+                ctx.lineTo(xTickLine, y2TickLine);
+                ctx.stroke(); // Draw the labels.
+
+                ctx.font = tickFontConfig;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.fillText(label, x, y2TickLine);
+              }
+
+              if (currentVar.axis === 'y') {
+                ctx.font = tickFontConfig;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(label, x, y);
+                var x1TickLine = labelLayout.bbox.xMin;
+                var x2TickLine = x - 10;
+                var yTickLine = y;
+                ctx.beginPath();
+                ctx.moveTo(x1TickLine, yTickLine);
+                ctx.lineTo(x2TickLine, yTickLine);
+                ctx.stroke();
+              }
+            } // For frequency plots (they have label == false)...
+
+
+            if (!currentVar.label) {
+              // Set the lengths of ticks.
+              var y1 = y - tickPadding * 0.5;
+              var y2 = y - tickPadding * 0.1; // Overwrite y2 if we should arrange long labels in zig zag.
+
+              var _zigzagCondition = currentVar.axis === 'x' && tick.value.zigzag && j % 2 === 0;
+
+              if (_zigzagCondition) y2 += 15; // Draw label.
+
+              ctx.font = tickFontConfig;
               ctx.textAlign = 'center';
               ctx.textBaseline = 'top';
-              ctx.fillText(label, x, y);
-              var xTickLine = x;
-              var y1TickLine = labelLayout.bbox.yMin;
-              var y2TickLine = y - 10;
+              ctx.fillText(label, x, y2 + 5); // Draw ticks.
+
               ctx.beginPath();
-              ctx.moveTo(xTickLine, y1TickLine);
-              ctx.lineTo(xTickLine, y2TickLine);
+              ctx.moveTo(x, y1);
+              ctx.lineTo(x, y2);
               ctx.stroke();
             }
+          }); // Draw the header.
 
-            if (currentVar.axis === 'y') {
-              ctx.font = '10px Signika';
-              ctx.textAlign = 'left';
-              ctx.textBaseline = 'middle';
-              ctx.fillText(label, x, y);
-              var x1TickLine = labelLayout.bbox.xMin;
-              var x2TickLine = x - 10;
-              var yTickLine = y;
-              ctx.beginPath();
-              ctx.moveTo(x1TickLine, yTickLine);
-              ctx.lineTo(x2TickLine, yTickLine);
-              ctx.stroke();
-            }
-          } // For frequency plots (they have label == false)...
+          ctx.fillStyle = '#000000';
+
+          if (currentVar.header) {
+            var xHeader = labelLayout.label.header.x;
+            var yHeader = labelLayout.label.header.y;
+            var labelHeader = currentVar.name === 'ph' // edge case.
+            ? 'pH' : prettyLabel(currentVar.name).replace('_', ' ');
+            ctx.font = '50px Amatic SC';
+            ctx.fillText(labelHeader, xHeader, yHeader - 50);
+          } // Draw the axis labels.
 
 
-          if (!currentVar.label) {
-            // Set the lengths of ticks.
-            var y1 = y - tickPadding * 0.5;
-            var y2 = y - tickPadding * 0.1; // Overwrite y2 if we should arrange long labels in zig zag.
-
-            var zigzagCondition = currentVar.axis === 'x' && tick.value.zigzag && j % 2 === 0;
-            if (zigzagCondition) y2 += 15; // Draw label.
-
-            ctx.font = '10px Signika';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-            ctx.fillText(label, x, y2 + 5); // Draw ticks.
-
-            ctx.beginPath();
-            ctx.moveTo(x, y1);
-            ctx.lineTo(x, y2);
-            ctx.stroke();
+          if (currentVar.label) {
+            var xAxisLabel = labelLayout.label.axisLabel.x;
+            var yAxisLabel = labelLayout.label.axisLabel.y;
+            var labelAxis = prettyLabel(currentVar.name).replace('_', ' ');
+            ctx.font = '20px Amatic SC';
+            ctx.fillText(labelAxis, xAxisLabel, yAxisLabel);
           }
-        }); // Draw the header.
+        };
 
-        if (currentVar.header) {
-          var xHeader = labelLayout.label.header.x;
-          var yHeader = labelLayout.label.header.y;
-          var labelHeader = currentVar.name === 'ph' // edge case.
-          ? 'pH' : prettyLabel(currentVar.name).replace('_', ' ');
-          ctx.font = '50px Amatic SC';
-          ctx.fillText(labelHeader, xHeader, yHeader - 50);
-        } // Draw the axis labels.
+        for (var i = 0; i < state.stats.current.length; i++) {
+          var _ret = _loop(i);
 
-
-        if (currentVar.label) {
-          var xAxisLabel = labelLayout.label.axisLabel.x;
-          var yAxisLabel = labelLayout.label.axisLabel.y;
-          var labelAxis = prettyLabel(currentVar.name).replace('_', ' ');
-          ctx.font = '20px Amatic SC';
-          ctx.fillText(labelAxis, xAxisLabel, yAxisLabel);
+          if (_ret === "break") break;
         }
-      };
-
-      for (var i = 0; i < state.stats.current.length; i++) {
-        var _ret = _loop(i);
-
-        if (_ret === "break") break;
-      }
+      })();
     } // Draw dots.
 
 
