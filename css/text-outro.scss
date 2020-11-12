@@ -18,7 +18,8 @@
 }
 
 #outro img:hover {
-  box-shadow: 2px 2px 3px;
+  box-shadow: 2px 2px 4px;
+  background: #ece7d7;
 }
 
 // Outro modal
@@ -57,9 +58,9 @@
   }
 
   #outro-close {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
+    position: sticky;
+    top: 2%;
+    left: 95%; // right doesn't work for some reason.
     width: 1.25rem;
     transition: transform 0.5s;
     cursor: pointer;

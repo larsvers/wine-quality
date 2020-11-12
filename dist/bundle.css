@@ -349,7 +349,8 @@ span.arrow::after {
     transition: all 0.5s; }
 
 #outro img:hover {
-  box-shadow: 2px 2px 3px; }
+  box-shadow: 2px 2px 4px;
+  background: #ece7d7; }
 
 #outro-modal-outer {
   position: absolute;
@@ -377,9 +378,9 @@ span.arrow::after {
     #outro-modal-inner {
       width: 80vw; } }
   #outro-modal-inner #outro-close {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
+    position: sticky;
+    top: 2%;
+    left: 95%;
     width: 1.25rem;
     transition: transform 0.5s;
     cursor: pointer; }
