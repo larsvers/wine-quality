@@ -60,11 +60,14 @@
   #outro-close {
     position: sticky;
     top: 2%;
-    left: 95%; // right doesn't work for some reason.
+    left: 92%; // right doesn't work for some reason.
     width: 1.25rem;
     transition: transform 0.5s;
     cursor: pointer;
 
+    @media #{$tablet-up} {
+      left: 95%;
+    }
     img {
       max-width: 100%;
     }

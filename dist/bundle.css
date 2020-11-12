@@ -380,10 +380,13 @@ span.arrow::after {
   #outro-modal-inner #outro-close {
     position: sticky;
     top: 2%;
-    left: 95%;
+    left: 92%;
     width: 1.25rem;
     transition: transform 0.5s;
     cursor: pointer; }
+    @media (min-width: 800px) {
+      #outro-modal-inner #outro-close {
+        left: 95%; } }
     #outro-modal-inner #outro-close img {
       max-width: 100%; }
   #outro-modal-inner #outro-close:hover {
