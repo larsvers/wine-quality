@@ -173,10 +173,11 @@ function updateTransforms() {
   // Animals.
   // Get a transform for each animal based on its getBBox dimensions.
   state.animals.data.forEach(animal => {
-    state.transform[animal.name] = getTransform(state.animals[animal.name], {
-      width: 0.5,
-      height: 0,
-    });
+    // debugger;
+    state.transform[animal.name] = getTransform(
+      state.animals[animal.name],
+      animal.fit
+    );
   });
 
   // Update the dataset transform.

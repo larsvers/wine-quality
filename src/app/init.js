@@ -263,11 +263,11 @@ function prepareVisuals(
   state.animals.data = [
     { name: 'animalPig', path: animalPig, fit: { width: 0.5, height: 0 } },
     { name: 'animalCroc', path: animalCroc, fit: { width: 0.5, height: 0 } },
-    { name: 'animalGiraffe', path: animalGiraffe, fit: { width: 0.5, height: 0 } },
+    { name: 'animalGiraffe', path: animalGiraffe, fit: { width: 0, height: 0.8 } },
     { name: 'animalSloth1', path: animalSloth1, fit: { width: 0.5, height: 0 } },
     { name: 'animalWhale', path: animalWhale, fit: { width: 0.5, height: 0 } },
     { name: 'animalBird', path: animalBird, fit: { width: 0.5, height: 0 } },
-    { name: 'animalSloth2', path: animalSloth2, fit: { width: 0.5, height: 0 } },
+    { name: 'animalSloth2', path: animalSloth2, fit: { width: 0, height: 0.9 } },
   ];
 
   // Add the paths to the DOM.

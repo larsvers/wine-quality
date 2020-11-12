@@ -27206,10 +27206,8 @@
     // Get a transform for each animal based on its getBBox dimensions.
 
     state.animals.data.forEach(function (animal) {
-      state.transform[animal.name] = getTransform(state.animals[animal.name], {
-        width: 0.5,
-        height: 0
-      });
+      // debugger;
+      state.transform[animal.name] = getTransform(state.animals[animal.name], animal.fit);
     }); // Update the dataset transform.
 
     state.transform.dataset = getTransform(state.dataset.box, {
@@ -28779,8 +28777,8 @@
       name: 'animalGiraffe',
       path: animalGiraffe,
       fit: {
-        width: 0.5,
-        height: 0
+        width: 0,
+        height: 0.8
       }
     }, {
       name: 'animalSloth1',
@@ -28807,8 +28805,8 @@
       name: 'animalSloth2',
       path: animalSloth2,
       fit: {
-        width: 0.5,
-        height: 0
+        width: 0,
+        height: 0.9
       }
     }]; // Add the paths to the DOM.
 
