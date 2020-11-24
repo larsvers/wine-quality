@@ -216,7 +216,7 @@ function getPointDrawingParams() {
   pointRadius = state.stats.progress.point * 5;
   pointAlpha = 1 - state.stats.progress.extend;
 
-  // Get the tick inofo (what is the x and what the y key?) for the articla.
+  // Get the tick info (what is the x and what the y key?) for the articla.
   // We only need this once to begin with (this func runs repeatedly on render).
   if (!state.stats.pointTickInfo) {
     gatherTickInfo(

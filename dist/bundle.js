@@ -23840,7 +23840,7 @@
     pointEnd[0] += state.stats.progress.point * (pointEndFinal[0] - pointEnd[0]);
     pointEnd[1] += state.stats.progress.point * (pointEndFinal[1] - pointEnd[1]);
     pointRadius = state.stats.progress.point * 5;
-    pointAlpha = 1 - state.stats.progress.extend; // Get the tick inofo (what is the x and what the y key?) for the articla.
+    pointAlpha = 1 - state.stats.progress.extend; // Get the tick info (what is the x and what the y key?) for the articla.
     // We only need this once to begin with (this func runs repeatedly on render).
 
     if (!state.stats.pointTickInfo) {
@@ -24161,7 +24161,7 @@
 
   function simulateGlobePosition() {
     // Configure and start simulation.
-    sim.nodes(state.stats.data).force('chargeLattice', null).force('link', null).force('xCentre', null).force('xCentre', null).force('xGlobe', xPosGlobe).force('yGlobe', yPosGlobe).alpha(0.8).restart(); // Switch the global alpha off.
+    sim.nodes(state.stats.data).force('chargeLattice', null).force('link', null).force('xCentre', null).force('yCentre', null).force('xGlobe', xPosGlobe).force('yGlobe', yPosGlobe).alpha(0.8).restart(); // Switch the global alpha off.
 
     tweenStatsAlpha(0);
   } // Move to lattice.
@@ -24186,7 +24186,7 @@
       return d.index;
     }).strength(1).distance(1).iterations(15); // Configure and start simulation.
 
-    sim.nodes(state.stats.data).force('link', linkForce).force('chargeLattice', chargeLattice).force('chargeFrequencies', null).force('xGlobe', null).force('yGlobe', null).force('xCentre', xPosCentre).force('xCentre', yPosCentre).force('xAlcohol', null).force('yAlcohol', null).alpha(0.8).restart(); // Switch the global alpha on.
+    sim.nodes(state.stats.data).force('link', linkForce).force('chargeLattice', chargeLattice).force('chargeFrequencies', null).force('xGlobe', null).force('yGlobe', null).force('xCentre', xPosCentre).force('yCentre', yPosCentre).force('xAlcohol', null).force('yAlcohol', null).alpha(0.8).restart(); // Switch the global alpha on.
 
     state.stats.alpha.value = 1;
   } // Move to Alcohol frequency.
@@ -24209,7 +24209,7 @@
       label: false
     }]; // This sim is triggered on multiple occasions.
 
-    sim.nodes(state.stats.data).force('link', null).force('chargeLattice', null).force('xCentre', null).force('xCentre', null).force('chargeFrequencies', chargeFrequencies).force('chargeScatter', null).force('xQuality', null).force('yQuality', null).force('xPosQualAlc', null).force('yPosQualAlc', null).force('xAlcohol', xPosAlcohol).force('yAlcohol', yPosAlcohol).force('xPosQualVol', null).force('yPosQualVol', null).force('xDensity', null).force('yDensity', null).alpha(0.8).restart();
+    sim.nodes(state.stats.data).force('link', null).force('chargeLattice', null).force('xCentre', null).force('yCentre', null).force('chargeFrequencies', chargeFrequencies).force('chargeScatter', null).force('xQuality', null).force('yQuality', null).force('xPosQualAlc', null).force('yPosQualAlc', null).force('xAlcohol', xPosAlcohol).force('yAlcohol', yPosAlcohol).force('xPosQualVol', null).force('yPosQualVol', null).force('xDensity', null).force('yDensity', null).alpha(0.8).restart();
   } // Move to Density frequency.
 
 
@@ -28992,9 +28992,6 @@
       return update(wineScape);
     }, 500);
     window.addEventListener('resize', debounced);
-    window.addEventListener('scroll', function () {
-      console.log('scroll');
-    });
   }
 
   function init$1() {
