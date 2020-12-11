@@ -2,7 +2,7 @@
 
 <div class="section section-12">
   <p>
-    We want it to learn how to tell a good wine from a bad wine; how to predict &mdash; in this case <span class="highlight">classify</span> &mdash; each wine. But the model doesn't have our senses. It can't see, taste, or feel a wine, and we can’t be there for it in the future, to pre-taste each wine. We need to teach it to recognise a good wine by example, so it can stand on its own data columns.
+    We want it to learn how to tell a good wine from a less good wine; how to predict &mdash; in this case <span class="highlight">classify</span> &mdash; each wine. But the model doesn't have our senses. It can't see, taste, or feel a wine, and we can’t be there for it in the future, to pre-taste each wine. We need to teach it to recognise a good wine by example, so it can stand on its own data columns.
   </p>
   <p>
      This process is called <a href="https://www.analyticsvidhya.com/blog/2020/04/supervised-learning-unsupervised-learning/" target="_blank">supervised learning</a> and we all know its powers from our own childhood. 
@@ -62,7 +62,13 @@
     You scanned the configuration of lines and shapes that made up the animal and gauged how likely it is for this thing to be a sloth.
   </p>
   <p>
-    That's exactly what a mathematical model does, too: you give it <span class="highlight">examples</span> (many at best) → you <span class="highlight">label</span> them with what you want your model to learn → and let it detect <span class="highlight">patterns</span> that help your concluding → <span class="highlight">classification</span>.
+    That's exactly what a mathematical model does, too: 
+    <ol>
+      <li>you give it <span class="highlight">examples</span> (many at best) </li>
+      <li>you <span class="highlight">label</span> them with what you want your model to learn </li>
+      <li>and let it detect <span class="highlight">patterns</span>...</li>
+      <li>that help your concluding  <span class="highlight">classification</span>.</li>
+    </ol>
   </p>
 </div>
 
@@ -108,17 +114,23 @@
 
 <div class="section section-27">
   <p>
-    Each wine in this dataset is labelled as either a high or a low-quality wine. This is the dataset we train the model with, our <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">training set</a> &mdash;. Training sets are omniscient. They have all model input variables as well as the model output variable &mdash; quality in our case. After we trained the model it shouldn't need these labels anymore and we can test it on a dataset without any &mdash; a <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">test set</a> &mdash;. 
+    Each wine in this dataset is labelled as either a high or a low-quality wine. This is the dataset we train the model with, our <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">training set</a>. 
+  </p>
+  <p>
+    Training sets are omniscient. They have all model input variables as well as the model output variable &mdash; Quality in our case. After we trained the model it shouldn't need these labels anymore and we can test it on a dataset without any labels &mdash; a <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">test set</a>.
   </p>
 </div>
 
 <div class="section section-28">
   <p>
-    In a next step of the analysis, the dataset splits into the quality groups and the algorithm would identify how features differ for each group and how they correlate with the output variable. How, for example, higher quality wines tend to have a higher alcohol level than lower quality wines. Or how lower amounts of sulphur dioxides seem to increase the quality.
+    In a next step of the analysis, the dataset splits into the Quality groups and the algorithm would identify how features differ for each group and how they correlate with the output variable. How, for example, higher quality wines tend to have a higher alcohol level than lower quality wines. Or how lower amounts of sulphur dioxides seem to increase the quality.
   </p>
   <p>
     Lastly it would formulate these results in a weighted model equation.
   </p>
+</div>
+
+<div class="section no-trigger">
   <p>
     This is the process in broad, conceptual terms. To build an actual model, we need a real, sizeable dataset with labelled data!
   </p>

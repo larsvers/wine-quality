@@ -44,7 +44,7 @@
     Plugging in an alcohol value of <span class="highlight">x = 12%</span>, for example, will return a quality (a <span class="highlight">y</span> value) just above 6. 
   </p>
   <p>
-    That's nice! We can do this for any value &mdash; will, however, soon hit a problem that might bend reality just a little too much:
+    That's nice! We can do this for any value &mdash; will, however, soon hit a problem that might bend reality just a little too much...
   </p>
 </div>
 
@@ -62,7 +62,7 @@
     To get there, we first make things worse, by simplifying our continuous data to a binary variable: 0 for <span class="bad">low</span>, 1 for <span class="good">high quality</span>. This indeed exacerbates our line problems. 
   </p>
   <p>
-    To win, we need a different model function. One that doesn’t produce a line but something like this:
+    To win, we need a different model function. One that doesn’t produce a line but something like this...
   </p>
 </div>
 
@@ -71,13 +71,13 @@
     This is a typical curve for a <a href="https://en.wikipedia.org/wiki/Logistic_regression" target="_blank">Logistic Regression</a> model.
   </p>
   <p>
-    Having simplified the quality labels to 0 for <span class="bad">bad</span> and 1 for <span class="good">good</span>, we can now express the relationship between alcohol and quality in probabilities from 0 to 100%! 
+    Having simplified the quality labels to 0 for <span class="bad">low</span> and 1 for <span class="good">high-quality</span>, we can now express the relationship between alcohol and quality in probabilities from 0 to 100%! 
   <p>
   </p>
     If a wine has an alcohol level of, for example, 9, we can read off a probability of 4% of being good. If it has an alcohol level of 12 it has an 86% probability of being good.
   </p>
   <p>
-    This way we are not necessarily forced to give a binary answer but can express the <span class="highlight">likelihood</span> of a wine being good or bad. This is great as the magnitude of the likelihood helps us understand how certain we can be in our classification. 20% good is obviously not quite as certain as 100% good.
+    This way we are not necessarily forced to give a binary answer but can express the <span class="highlight">likelihood</span> of a wine being of a certain quality. This is great as the magnitude of the likelihood helps us understand how certain we can be in our classification. 20% good is obviously not quite as certain as 100% good.
   </p>
   <p>
     It’s like with a badly drawn sloth. We might not be totally sure about it being a sloth, but we might consider it likely.

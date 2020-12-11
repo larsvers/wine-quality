@@ -14,13 +14,16 @@
     Lastly, we would always check the accuracy of the model, by testing it on labelled data without giving the labels away &mdash; the <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">testset</a> mentioned earlier. This very logistic regression model, for example, achieved an accuracy of 79%, meaning that 79% of all cases got predicted correctly. 
   </p>
   <p>
-    Spending more time on model selection and engineering <a href="http://cs229.stanford.edu/proj2019aut/data/assignment_308875_raw/25892857.pdf" target="_blank">can in fact get this up to 95%</a>.</p>
+    Spending more time on model selection and engineering <a href="http://cs229.stanford.edu/proj2019aut/data/assignment_308875_raw/25892857.pdf" target="_blank">can in fact get this up to 95%</a>.
   </p>
 </div>
 
 <div class="section section-61">
   <p>
-    One caveat of linear models &mdash; like linear and logistic regression &mdash; is that they model correlation: how things move in the same or in opposite directions. They won't be able to identify non-linear relationships, like, for example, an Alcohol tipping point before which quality goes up and beyond which quality decreases.
+    One caveat of linear models &mdash; like linear and logistic regression &mdash; is that they model correlation: how things move in the same or in opposite directions. 
+  </p>
+  <p>
+    They won't be able to identify non-linear relationships, like, for example, an Alcohol tipping point before which quality goes up and beyond which quality decreases.
   </p>
   <p>
     So, model selection is a big topic for itself and would be very much worth everyone's while in this case. Apart from potentially higher accuracy, other model types provide further tools that can be useful...
@@ -41,7 +44,7 @@
 
 <div class="section no-trigger">
   <p>
-    Used together, a model and variable importance can flag the current state of the wine quality as well as potentially providing informed ideas as to whether, where and what changes might help improve overall quality during the process of wine making.
+    Used together, a model and variable importance can flag the state of the wine quality as well as potentially providing informed ideas as to whether, where and what changes might help improve overall quality, possibly during the process of wine making.
   </p>
   <p>
     As such, you can think of each predictor &mdash; each variable in your data &mdash; as a <span class="highlight">model screw</span> you can adjust to achieve the highest quality wine &mdash; in the model's opinion, that is. 

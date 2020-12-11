@@ -266,6 +266,8 @@ svg.absolute {
     @media (min-width: 800px) {
       .main-section .section {
         font-size: 1.2em; } }
+    .main-section .section ul {
+      list-style-type: decimal; }
   .main-section .section.empty {
     padding-top: 25vh;
     padding-bottom: 25vh; }
