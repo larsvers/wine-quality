@@ -5,19 +5,25 @@
   </div>
 
   <div id="outro-modal-text">
-    <h3>What next, then?</h3>
+    <h3>What next?</h3>
 
     <p>
-      This little exploration was supposed to give you an idea of how machines can learn, enlighten and possibly augment the work of a winemaker &mdash; becoming a co-pilot for fine-tuning the process of winemaking by classifying high quality wine. 
+      This little exploration was supposed to give you an idea of how machines can learn, enlighten and possibly help making and gauging wine. We attempted to predict wine quality of a specific kind on the back of a publicly available dataset of physiochemical properties with a relatively simple linear model. 
     </p>
     <p>
-      For explanation's sake we looked at rather simple models and took a few shortcuts in order to focus on the basics. A logical next step would be to engineer a model that is more accurate as well as more flexible in its predictions. 
+      As a next step it'd be interesting to swap out any or all of these three components:
     </p>
     <p>
-      Considering flexibility, you might have wondered, for example, how easy it is to get a good wine with our model by just cranking up the alcohol to the max and muting Volatile Acidity to the minimum. This behavior is a feature of all linear models, like Logistic Regression. While the model itself is not a line but a curve as we've seen, it still models <span class="highlight">correlation</span> &mdash; how things move up or down together or how they move in opposite directions. As such it won't be able to identify <span class="highlight">non-linear relationships</span> &mdash; an Alcohol tipping point for example, after which quality decreases again.
+      What other <span class="highlight">outputs</span> would be helpful to predict or classify? Maybe a different quality definition or indeed a different outcome variable altogether like specific taste features, sales figures, or other measures of success or failure.
     </p>
     <p>
-      Another improvement would be to build a model not only on general Vinho Verde data but (also) historic <span class="highlight">tasting data</span> from a winery using such model. We would get a helping hand that leverages all the winery's past experience to improve its wine's future qualities...
+      What other <span class="highlight">data sources</span> do we have at hands? What metrics do we have in these datasets? Wineries might have structured data going back several years, logging physiochemical properties as well as information on varietal and growing conditions.
+    </p>
+    <p>
+      And lastly, what <span class="highlight">model</span> might be most instructive to use? Will a simple linear model suffice to capture the associations? Do we need a non-linear model like for example <a href="https://en.wikipedia.org/wiki/Support_vector_machine" target="_blank">Support Vector Machines</a> or <a href="https://en.wikipedia.org/wiki/Artificial_neural_network" target="_blank">Neural Networks</a> &mdash; harder to reason about but possibly providing higher accuracy?
+    </p>
+    <p>
+      Let's see and take this as the beginning of a conversation...
     </p>
     <p>
       Santé 🍷
@@ -26,19 +32,13 @@
 
   <div id="credits">
     <p>
-      This was fun and due some gratitude and credits...
+      The dataset and a discussion around the original model build comes from the paper: <i>P. Cortez, A. Cerdeira, F. Almeida, T. Matos and J. Reis. <a href="https://scinapse.io/papers/2103459159" target="_blank">Modeling wine preferences by data mining from physicochemical properties.</a> In Decision Support Systems, Elsevier, 47(4):547-553, 2009.</i>. The dataset got a life of its own thereafter, being adopted by the data science and machine learning community, so you can find a lot of analyses out there wrangling the data...
     </p>
     <p>
-      First of all, Thanks to <a href="https://vinoez.com/author/shawn/" target="_blank">Shawn</a> from ZAM for letting me go wild with this... Big thanks to <a href="https://www.behance.net/g-gaborieau-bookatme" target="_blank">Geoffroy Gaborieau</a>, <a href="https://twitter.com/martgnz" target="_blank">Martin Gonzales</a> and <a href="https://twitter.com/MollzMP" target="_blank">Mollie Pettit</a> for keeping me honest and providing priceless feedback!
+      Big thanks to <a href="https://vinoez.com/author/shawn/" target="_blank">Shawn</a> from ZAM for kicking this off and Krista Ehrenclou for the most detailed, valuable feedback about all the wine related aspects in particular! Many thanks also to <a href="https://twitter.com/martgnz" target="_blank">Martin Gonzales</a> and <a href="https://www.behance.net/g-gaborieau-bookatme" target="_blank">Geoffroy Gaborieau</a> for keeping me honest on the visual and design side.
     </p>
     <p>
-      Technical thanks to <a href="https://greensock.com/" target="_blank">gsap</a>, <a href="https://roughjs.com/" target="_blank">roughjs</a>, <a href="http://d3js.org/" target="_blank">d3</a> and <a href="https://www.r-project.org/about.html" target="_blank">R</a> for makeing all these brilliant libraries and things one can make fun stuff with.
-    </p>
-    <p>
-      The dataset comes from the seminal paper: <i>P. Cortez, A. Cerdeira, F. Almeida, T. Matos and J. Reis. <a href="https://scinapse.io/papers/2103459159" target="_blank">Modeling wine preferences by data mining from physicochemical properties.</a> In Decision Support Systems, Elsevier, 47(4):547-553, 2009.</i> which is a highly recommended read. There's more out there, but they were first!
-    </p>
-    <p>
-      And as you ask, all the drawings were more or less badly hand drawn, based on a set of images I collected from various sources (<a href="http://sweetclipart.com/cute-colorable-piglet-52" target="_blank">pig</a>, <a href="https://easydrawingguides.com/how-to-draw-an-alligator/" target="_blank">crocodile</a>, <a href="https://www.how-to-draw-funny-cartoons.com/giraffe-cartoon.html" target="_blank">giraffe</a> and <a href="https://pixy.org/4196108/" target="_blank">whale</a>. The sloths were a cross-polination of several fantastic sloths out there and I'm afraid I can't find my inspiration for the chicklet anymore. If you're seeing this, chicklet, please <a href="https://www.datamake.io" target="_blank">call</a>.)
+      Build with a lot of help from <a href="https://greensock.com/" target="_blank">gsap</a>, <a href="https://roughjs.com/" target="_blank">roughjs</a>, <a href="http://d3js.org/" target="_blank">d3</a> and <a href="https://www.r-project.org/about.html" target="_blank">R</a>.
     </p>
   </div>
 </div>  

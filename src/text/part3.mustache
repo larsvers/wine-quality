@@ -2,9 +2,9 @@
 
 <div class="section section-12">
   <p>
-     We want it to learn how to tell a good wine from a bad wine – how to predict, in this case <span class="highlight">classify</span> each wine. But the model doesn't have our senses. It can't see, taste, or feel a wine, and we can’t be there for it in the future, to pre-taste each wine. It needs to stand on its own data columns. 
-    </p>
-    <p>
+    We want it to learn how to tell a good wine from a bad wine; how to predict &mdash; in this case <span class="highlight">classify</span> &mdash; each wine. But the model doesn't have our senses. It can't see, taste, or feel a wine, and we can’t be there for it in the future, to pre-taste each wine. We need to teach it to recognise a good wine by example, so it can stand on its own data columns.
+  </p>
+  <p>
      This process is called <a href="https://www.analyticsvidhya.com/blog/2020/04/supervised-learning-unsupervised-learning/" target="_blank">supervised learning</a> and we all know its powers from our own childhood. 
   </p>
 </div>
@@ -68,31 +68,34 @@
 
 <div class="section section-21">
   <p>
-    So &mdash; turning our sloth back into a bottle of wine
+    So &mdash; moving back to our wine example...
   </p>
 </div>
 
 <div class="section section-22">
   <p>
-    it turns out that if you want your model to differentiate between
+    we're interested in classifying wines into
   </p>
 </div>
 
 <div class="section section-23">
   <p>
-    ...a high quality
+    ...high-quality
   </p>
 </div>
 
 <div class="section section-24">
   <p>
-    ...and a low quality wine &mdash; a single specimen won’t be enough.
+    ...and low-quality wines.
+  </p>
+  <p>
+    But whatever we do, a single bottle won’t be enough.
   </p>
 </div>
 
 <div class="section section-25">
   <p>
-    Just like a single animal drawing won't teach your child what a sloth is, you need as many wines as you can get hold of.
+    Just like a single animal drawing won't teach a child what a sloth is, a model needs as many wines as we can get hold of.
   <p>
   </p>
     Let's get some...
@@ -105,15 +108,18 @@
 
 <div class="section section-27">
   <p>
-    Each wine in this dataset &mdash; let's call it a <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">training set</a> &mdash; is labelled as either <span class="good">good</span> or <span class="bad">bad</span>.
+    Each wine in this dataset is labelled as either a high or a low-quality wine. This is the dataset we train the model with, our <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">training set</a> &mdash;. Training sets are omniscient. They have all model input variables as well as the model output variable &mdash; quality in our case. After we trained the model it shouldn't need these labels anymore and we can test it on a dataset without any &mdash; a <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">test set</a> &mdash;. 
   </p>
 </div>
 
 <div class="section section-28">
   <p>
-    In a next step you can split these wines into their respective quality group and identify how their features differ for each group. How, for example, good wines tend to have a higher alcohol level than bad wines. Or how lower amounts of chlorides seem to increase the quality.
+    In a next step of the analysis, the dataset splits into the quality groups and the algorithm would identify how features differ for each group and how they correlate with the output variable. How, for example, higher quality wines tend to have a higher alcohol level than lower quality wines. Or how lower amounts of sulphur dioxides seem to increase the quality.
   </p>
   <p>
-    So, what we need, in short, is a large dataset with labelled data!
+    Lastly it would formulate these results in a weighted model equation.
+  </p>
+  <p>
+    This is the process in broad, conceptual terms. To build an actual model, we need a real, sizeable dataset with labelled data!
   </p>
 </div>

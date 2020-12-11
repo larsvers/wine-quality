@@ -2,40 +2,49 @@
   {{! empty }}
 </div>
 
+<h1>How to describe a wine?</h1>
+
 <div class="section section-1">
   <p>
-    Let's maybe first have a look at what exactly we mean with predicting wine quality and why we think this is a good idea at all...
+    Before we dive into our conceptual model, let's note that "wine quality" is a highly imprecise term in the model we will build and can mean many things depending on the context it's used in and the criteria with which it was measured.
+  </p>
+  <p>
+    A casual wine drinker defines wine quality different from a wine expert and might even judge the same wine differently when drunk at different occasions. Low-quality expensive wines might be better than cheap wines deemed good. A wine region might be interested to keep a base standard of quality for its wines, it loosely defines on regular tastings of sample wines.
+  </p>
+  <p>
+    Hence, a quality predicting model is unlikely to rank every wine out there on a universally approved quality scale. Reality is too complex, contexts are too different, taste is too subjective and — as a sense — not fully understood to capture such perfection mathematically.
   </p>
 </div>
 
-<h1>What makes a wine a wine</h1>
+<div class="section no-trigger">
+  <p>
+    So, assuming we wanted to predict a wine's quality, we first need to define exactly what we mean by "quality" &mdash; the output of our prediction model. Equally important, we would need model inputs in the form of measurable information about the wine we can use to build a prediction on.
+  </p>
+</div>
 
 <div class="section section-2">
   <p>
-    Assuming we have a bottle of wine, we can describe this wine in various ways.
+    These inputs could be as abstract as the shape of the wine bottle, which, however, might not exactly be linked heavily to any concept of quality (other than the aesthetic quality of the bottle shape maybe).
   </p>
 </div>
 
 <div class="section section-3">
   <p>
-    We can give it a varietal, a vintage, maybe a name, which is how we would identify a wine in a conversation.
+    Information about the brand, the vintage and the varietal might be better predictors of taste-related quality. 
   </p>
   <p>
-    If you know your wines, you might be reasonably or indeed rather good in telling a wine's quality without even having to taste it.
+    In case you know your wines, this label information can be enough for you to get an idea of the wine's quality prior to tasting it, so we might also be able to teach a model about labels.
   </p>
 </div>
 
 <div class="section section-4">
   <p>
-    However, a possibly more concise way to describe a wine might be to focus on the very liquid itself and decompose the wine into its <span class="highlight">physiochemical properties</span>.
+    We could also try to describe the very liquid and decompose it into measurable, <span class="highlight">physiochemical properties</span> like alcohol, sugars, acids, etc.
   </p>
+</div>
+
+<div class="section no-trigger">
   <p>
-    The main benefit of such a description is precision. Vintages, varietals and names are an approximate illustration of a wine summarising and representing information like soil, climate as well as production factors.
-  <p>
-  </p>
-    Physiochemical properties, in turn, are a concise characterisation of the very wine itself. The focus is on the liquid's composition rather than the wine's production context.
-  </p>
-  <p>
-    But how could this help us?
+    Defining and describing our object of study is the first step to a model. What next?
   </p>
 </div>

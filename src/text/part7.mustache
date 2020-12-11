@@ -8,10 +8,10 @@
     For our full model we draw a curve not only for one but for eleven predictors, which is pretty impossible to display in a single visual as you can imagine. 
   </p>
   <p>
-    We’re also skipping the details here on how to find this best curve. We do this with an optimisation process that finds the curve closest to the data. For logistic regression we would typically use an optimisation process called <a href="https://machinelearningmastery.com/what-is-maximum-likelihood-estimation-in-machine-learning/" target="_blank">maximum likelihood</a>. 
+    We’re also skipping the details here on how to find this best curve. We do this with an optimisation process that finds the curve closest to the data. For logistic regression we would typically use an optimisation called <a href="https://machinelearningmastery.com/what-is-maximum-likelihood-estimation-in-machine-learning/" target="_blank">maximum likelihood</a>. 
   </p>
   <p>
-    Lastly, we would always check the accuracy of the model, by testing it on labelled data without giving the labels away &mdash; not a training but a <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">testset</a>. This very logistic regression model, for example, achieved an accuracy of 79%, meaning that 79% of all cases got predicted correctly. 
+    Lastly, we would always check the accuracy of the model, by testing it on labelled data without giving the labels away &mdash; the <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">testset</a> mentioned earlier. This very logistic regression model, for example, achieved an accuracy of 79%, meaning that 79% of all cases got predicted correctly. 
   </p>
   <p>
     Spending more time on model selection and engineering <a href="http://cs229.stanford.edu/proj2019aut/data/assignment_308875_raw/25892857.pdf" target="_blank">can in fact get this up to 95%</a>.</p>
@@ -20,7 +20,10 @@
 
 <div class="section section-61">
   <p>
-    Model selection is a big topic for itself and would be very much worth everyone's while in this case. Apart from potentially higher accuracy, other model types provide further tools that can be useful...
+    One caveat of linear models &mdash; like linear and logistic regression &mdash; is that they model correlation: how things move in the same or in opposite directions. They won't be able to identify non-linear relationships, like, for example, an Alcohol tipping point before which quality goes up and beyond which quality decreases.
+  </p>
+  <p>
+    So, model selection is a big topic for itself and would be very much worth everyone's while in this case. Apart from potentially higher accuracy, other model types provide further tools that can be useful...
   </p>
 </div>
 
@@ -29,16 +32,19 @@
     For example, a model from the <a href="https://en.wikipedia.org/wiki/Random_forest" target="_blank">Random Forest</a> family will enlighten us with a neat ranking of which variables are most important in our predictions.
   </p>
   <p>
-    In this case, Alcohol appears to have the biggest impact on Quality, followed by Volatile Acidity (no vinegar please) and the amount of sulphates in the wine. 
+    In this case, Alcohol appears to have the biggest impact on Quality, followed by Volatile Acidity and the amount of sulphates in the wine. 
+  </p>
+  <p>
+    Such information can also be used to remove variables that don't add much value or reduce readability or even accuraccy. A process called <a href="https://www.analyticsvidhya.com/blog/2018/04/fundamentals-deep-learning-regularization-techniques/" target="_blank">regularisation</a> would do this automatically and is applied frequently as part of the modelling process.
   </p>
 </div>
 
 <div class="section no-trigger">
   <p>
-    Used together, a model and variable importance can flag the current state of the wine quality as well as potentially providing informed ideas as to whether, where and what changes might help improve the overall wine quality during the process of wine making. 
+    Used together, a model and variable importance can flag the current state of the wine quality as well as potentially providing informed ideas as to whether, where and what changes might help improve overall quality during the process of wine making.
   </p>
   <p>
-    As such, you can think of each predictor &mdash; each variable in your data &mdash; as a <span class="highlight">model screw</span> you can adjust to achieve the highest quality wine. 
+    As such, you can think of each predictor &mdash; each variable in your data &mdash; as a <span class="highlight">model screw</span> you can adjust to achieve the highest quality wine &mdash; in the model's opinion, that is. 
   </p>
 </div>
 
@@ -57,13 +63,13 @@
     <span class="arrow"></span> This wine over there isn't that great yet. 
   </p>
   <p>
-    It's only 5% full &mdash; which means its physiochemical properties indicate only a 5% chance of it being good. This is what you get when taking the average value for each wine property. 
+    It's only 5% full &mdash; which means its physiochemical properties indicate only a 5% chance of it being good. This is what you get when taking the average value for each wine property.
   </p>
   <p>
-    You can change that though by scrolling down to our little quality simulator. Each property has a little chart showing its distribution as well as a handle to change this property's level in the wine. Use it to add or decrease that property in the wine and see how it affects the wine's likelihood to be good.
+    You can change this though by scrolling down to our little quality simulator. Each property is represented by a little chart showing its distribution as well as a handle to change this property's level in the wine. Use it to add or decrease any of the properties in the wine and see how it affects the modelled wine quality.
   </p>
   <p>
-    Over to you now to produce a winner! Or a washout.
+    Over to you now to produce a winner &mdash; or a washout...
   </p>
 </div>
 

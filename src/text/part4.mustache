@@ -2,16 +2,13 @@
 
 <div class="section section-29">
   <p>
-    If you are a winery (or at least work for one), you probably have such data specifically for all the past wines you produced, tasted and labelled. As such, you have a lot of data-encoded experience or &mdash; put differently &mdash; you are a great teacher. 
-  </p>
-  <p>
-    You can do quite a lot with this information &mdash; more than this article will cover &mdash; but at least you could use this as your base data for classification.
+    If you are a winery (or at least work for one), you might have datasets for all your past wines you produced, tasted and labelled. As such, you have valuable data-encoded experience you could use as base data for classification.
   </p>
 </div>
 
 <div class="section section-30">
   <p>
-    If you do not have such data in your drawer, there's a rather <a href="https://archive.ics.uci.edu/ml/datasets/wine+quality" target="_blank">well equipped and tested dataset</a> available for our purposes showing a total of 1,600 wines,
+    We don't have that at hands here, but there's a rather <a href="https://archive.ics.uci.edu/ml/datasets/wine+quality" target="_blank">well equipped and tested dataset</a> available for our purposes showing a total of 1,600 wines from Portugal,
   </p>
 </div>
 
@@ -26,7 +23,7 @@
     as well as their <i>Quality</i> rating.
   </p>
   <p>
-    Each rating is based on at least three evaluations from wine experts ranging from 0 (🤮) to 10 (🏆). We’ll simplify this later to a binary outcome &mdash; just <span class="good">good</span> or <span class="bad">bad</span> &mdash; but for now, this is what we have.
+    Each rating is based on at least three evaluations from wine experts ranging from 0 (🥀) to 10 (🏆). We’ll simplify this later to a binary outcome &mdash; just <span class="good">high</span> or <span class="bad">low quality</span> &mdash; but for now, this is what we have.
   </p>
 </div>
 
@@ -36,68 +33,48 @@
   </p>
 </div>
 
-<div class="section section-34">
+{{! Re-organise }}
+<div class="section section-34 section-35 section-36 section-37">
   <p>
-    <span class="highlight">Acidity values</span> can have a set of impacts on taste. They can impart sourness or tartness &mdash; if levels are too high they can tip things to a more vinegary taste &mdash;
-  </p>
-</div>
-
-<div class="section section-35">
-  <p>
-    and they can add freshness to your wine.
-  </p>
-</div>
-
-<div class="section section-36">
-  <p>
-    The dataset also sports the amount of <span class="highlight">sugar</span> remaining after fermentation,
-  </p>
-</div>
-
-<div class="section section-37">
-  <p>
-    as well as the amount of <span class="highlight">salt</span>.
+    A set of components describing the acidity of the wine, Sugar, chlorides (salts),
   </p>
 </div>
 
 <div class="section section-38">
   <p>
-    <span class="highlight">Sulfur dioxide</span> indirectly affects taste by preventing microbial growth and wine oxidation which can spoil aromas.
+    <span class="highlight">Sulfur dioxide</span>, preventing off-odours from oxidation and inhibiting unwanted bacteria.
   </p>
 </div>
 
-<div class="section section-39">
+<div class="section section-39 section section-40">
   <p>
-    <span class="highlight">Wine density</span> is closely linked to alcohol and sugar content,
-  </p>
-</div>
-
-<div class="section section-40">
-  <p>
-    while <span class="highlight">pH</span> values describe how acidic or basic a wine is.
+    <span class="highlight">Density</span> and the wine's <span class="highlight">pH value</span>.
   </p>
 </div>
 
 <div class="section section-41">
   <p>
-    Added <span class="highlight">sulphates</span> can promote the degree of sulfur dioxide in the wine, which &mdash; as mentioned &mdash; act as an antimicrobial and antioxidant.
+    <span class="highlight">Potassim Sulphate</span> which is likely used to detect the levels of Calcium Sulphate for both clarification and to lower the pH value.
   </p>
 </div>
 
 <div class="section section-42">
   <p>
-    And lastly there is <span class="highlight">Alcohol</span>, which probably doesn’t need much of an introduction.
+    And lastly there is <span class="highlight">Alcohol</span>, which probably doesn’t need an introduction.
   </p>
 </div>
 
 <div class="section section-43">
   <p>
-    All these wines in our training dataset are red wines from the <a href="https://en.wikipedia.org/wiki/Vinho_Verde" target="_blank">Vinho Verde</a> region in the north west of Portugal. Each wine was sampled and evaluated between 2004 and 2007 but this data has since been used in many studies and papers to understand the connection between wine properties and quality. There’s also a publicly available training set of <a href="https://archive.ics.uci.edu/ml/datasets/wine+quality" target="_blank">white wines</a>, but this red wine dataset will do just fine for our example…
+    All these wines are red wines from the <a href="https://en.wikipedia.org/wiki/Vinho_Verde" target="_blank">Vinho Verde</a> region in the north west of Portugal. Each wine was sampled, and quality assessed between 2004 and 2007 by the Viticulture Commission of the Vinho Verde Region. The Commission is mainly concerned with improving and safeguarding the quality of regional wines by <a href="https://portal.vinhoverde.pt/pt/estatisticas" target="_blank">certifying</a> the wine's origin and making sure the wine's components lie within <a href="https://portal.vinhoverde.pt/pt/produtos-regras-de-conformidade/GVT" target="_blank">legislated value ranges</a>. 
+  </p>
+  <p>
+    As such, <span class="highlight">"quality"</span> is defined as a measure of taste but strictly limited to Vinho Verde wines of a specific period. Wherever we take this model and whatever other wine's we might test with it, we should be aware of this context. As a result, any model built on this data won't generalise to every wine under the sun.
   </p>
 </div>
 
 <div class="section no-trigger">
   <p>
-    Before we build our model, let's have a look at our data....
+    Ok. We have some data, but we don't know much about it yet. A good start to any type of data analysis is to profile the base data &mdash; getting a sense of the measures' shape and correlations. Let's do this now...
   </p>
 </div>

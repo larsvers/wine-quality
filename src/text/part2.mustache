@@ -2,25 +2,25 @@
 
 <div class="section section-5">
   <p>
-    Given a wine's physiochemical properties we could boldly assume they are associated to wine quality &mdash; meaning that a certain composition of these properties result in a good wine...
+    We could now boldly assume these properties are associated with wine quality — meaning that a certain composition of these properties associates with a high-quality wine &mdash; however we define quality in detail &mdash;
   </p>
 </div>
 
 <div class="section section-6">
   <p>
-    while a different set of properties fails to please distinguished palates entirely.
+    while a different set of properties associate with a lower quality wine.
   </p>
 </div>
 
 <div class="section section-7">
   <p>
-    Naturally, we won’t rest before finding the golden formula.
+    We might hope to find a combination that yields the highest possible quality, but what actually matters for the model is to establish reliable relationships within the data,
   </p>
 </div>
 
 <div class="section section-8">
   <p>
-    If this worked and there was an association between a wine's properties and quality &mdash; we could <span class="highlight">express wine quality as a function of its properties</span> entirely.
+    so it can &mdash; in our case &mdash; <span class="highlight">express wine quality as a function of its properties</span> entirely.
   </p>
 </div>
 
@@ -32,22 +32,13 @@
 
 <div class="section section-10">
   <p>
-    and returns some sort of estimate as to whether this wine is leaning towards being good or bad.
-  </p>
-  <p>
-    This model would not be able to tell every good wine from a bad wine. Reality is too complex, taste too subjective and &mdash; as a sense &mdash; not fully understood to capture such perfection mathematically. 
-  </p>
-  <p>
-    However, as we shall see, a model can be accurate enough to support the winemaker's evaluations &mdash; improving the quality and speed of their decisions.
-  </p>
-  <p>
-    How would we go about this? 
+    and returns some sort of estimate as to whether this wine is leaning towards being good or not so good. It can help us classify wines within our quality context.
   </p>
 </div>
 
 <div class="section no-trigger">
   <p>
-    Let’s maybe take a step back and consider what a model actually is.
+    Let’s take a step back and consider what a model actually is.
   </p>
   <p>
     In technical terms, a model reduces relationships between individual data columns to an equation. We would possibly want to reduce our wine problem to something like this:
@@ -56,16 +47,16 @@
     <img src="../../static/equation@2x.png" alt="wine quality equation">
   </div>
     <p>
-    This is a rather simple envelope’s backside, but in essence it’s an equation that relates the ingredient configuration to wine quality. 
+    This is a rather simple envelope’s backside, but in essence it’s an equation that relates some inputs to an output. In our case it relates the configuration of the wine's components to its quality.
   </p>
   <p>
-    We have the properties weighted by some property specific factor which tells the model how much impact the respective property has on quality. The greater the weights the more impact they have. 
+    We have the inputs weighted by some input-specific factor which tells the model how much impact the respective property has on the output. The greater the weights → the more impact they have. 
   </p>
 </div>
 
 <div class="section section-11">
   <p>
-    Sounds simple and also carries the good news that we can take our equation with us and throw it at any updated combination of ingredients to get an estimate of wine quality without knowing anything about it prior.
+    The benefit of this equation in this case is that we can take it with us and throw any combination of wine properties at it in order to get an estimate about its quality without knowing anything about it prior.
   </p>
   <p>
     But how does the model get these weights? How does it learn which property drives quality to what degree?
