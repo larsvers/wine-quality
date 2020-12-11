@@ -148,9 +148,7 @@ function defineTweenLolliChart() {
 
     // Add the tweens to the timeline.
     // "<" start or ">" end of previous tween.
-    tl.add(valueTween, '>')
-      .add(radiusTween, '<')
-      .add(offsetTween, '>');
+    tl.add(valueTween, '>').add(radiusTween, '<').add(offsetTween, '>');
   });
 
   return tl;

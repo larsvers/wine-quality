@@ -6,7 +6,7 @@ import state from '../app/state';
 import { bezWithArrowheads } from '../app/utils';
 
 // Vars (helper and tweenables).
-const inputProperties = ['alcohol', 'acid', 'chloride'];
+const inputProperties = ['alcohol', 'acids', 'sugars'];
 const outputProperties = ['quality'];
 
 let letterHeight;

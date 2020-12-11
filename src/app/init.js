@@ -28,8 +28,8 @@ import glass from '../../static/wine-glass';
 import bottle from '../../static/wine-bottle';
 import textBottle from '../../static/text-bottle'; // an array of paths.
 import textAlcohol from '../../static/text-alcohol';
-import textAcid from '../../static/text-acid';
-import textChloride from '../../static/text-chloride';
+import textAcids from '../../static/text-acids';
+import textSugars from '../../static/text-sugars';
 import textQuality from '../../static/text-quality';
 import blackBox from '../../static/black-box-fill';
 import textModel from '../../static/text-model';
@@ -189,7 +189,7 @@ function prepareVisuals(
   // Prep lolly chart.
 
   // Get the lolly's path data (the paths and the length).
-  const lolliTextPaths = [textAlcohol, textAcid, textChloride, textQuality].map(
+  const lolliTextPaths = [textAlcohol, textAcids, textSugars, textQuality].map(
     getPathData
   );
 
@@ -207,7 +207,7 @@ function prepareVisuals(
         y: 0,
       },
     },
-    acid: {
+    acids: {
       value: 0,
       values: [0, 0.3, 0.7, 0.2, 0],
       radius: 0,
@@ -217,7 +217,7 @@ function prepareVisuals(
         y: 0,
       },
     },
-    chloride: {
+    sugars: {
       value: 0,
       values: [0, 0.7, 0.6, 0.4, 0],
       radius: 0,

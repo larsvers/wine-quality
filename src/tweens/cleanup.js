@@ -5,7 +5,7 @@ import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import state from '../app/state';
 
 // Vars (helper and tweenables).
-const inputProperties = ['alcohol', 'acid', 'chloride'];
+const inputProperties = ['alcohol', 'acids', 'sugars'];
 const outputProperties = ['quality'];
 
 let letterHeight;
