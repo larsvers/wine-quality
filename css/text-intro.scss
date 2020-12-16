@@ -48,7 +48,7 @@
     // get centered as abs. elements without knowing their width.
     position: absolute;
     left: 50%;
-    -webkit-transform: translateX(-50%);
+    -webkit-transform: -webkit-translateX(-50%);
     transform: translateX(-50%);
     white-space: nowrap; // otherwise text will break.
   }

@@ -45,7 +45,7 @@ import {
   simulateLattice,
   simulateAlcohol,
   simulateDensity,
-  simulateCitric,
+  simulateFixed,
   simulatePh,
   simulateVolatile,
   simulateQuality,
@@ -471,9 +471,9 @@ function setScrollBase() {
     trigger: '.section-47',
     start,
     end,
-    id: 'statsCitric',
+    id: 'statsFixed',
     onLeaveBack: simulateDensity,
-    onEnter: simulateCitric,
+    onEnter: simulateFixed,
   });
 
   ScrollTrigger.create({
@@ -481,7 +481,7 @@ function setScrollBase() {
     start,
     end,
     id: 'statsPh',
-    onLeaveBack: simulateCitric,
+    onLeaveBack: simulateFixed,
     onEnter: simulatePh,
   });
 

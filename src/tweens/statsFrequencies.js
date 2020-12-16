@@ -113,20 +113,20 @@ function simulateDensity() {
     .force('yAlcohol', null)
     .force('xDensity', xPosDensity)
     .force('yDensity', yPosDensity)
-    .force('xCitric', null)
-    .force('yCitric', null)
+    .force('xFixed', null)
+    .force('yFixed', null)
     .alpha(0.8)
     .restart();
 }
 
-// Move to Citric Acid frequency.
-const xPosCitric = forceX(d => d.layout.citric_acid.x).strength(0.5);
-const yPosCitric = forceY(d => d.layout.citric_acid.y).strength(0.5);
+// Move to Fixed Acidity frequency.
+const xPosFixed = forceX(d => d.layout.fixed_acidity.x).strength(0.5);
+const yPosFixed = forceY(d => d.layout.fixed_acidity.y).strength(0.5);
 
-function simulateCitric() {
+function simulateFixed() {
   state.stats.current = [
     {
-      name: 'citric_acid',
+      name: 'fixed_acidity',
       axis: 'x',
       straight: false,
       header: true,
@@ -138,8 +138,8 @@ function simulateCitric() {
     .nodes(state.stats.data)
     .force('xDensity', null)
     .force('yDensity', null)
-    .force('xCitric', xPosCitric)
-    .force('yCitric', yPosCitric)
+    .force('xFixed', xPosFixed)
+    .force('yFixed', yPosFixed)
     .force('xPh', null)
     .force('yPh', null)
     .alpha(0.8)
@@ -157,8 +157,8 @@ function simulatePh() {
 
   sim
     .nodes(state.stats.data)
-    .force('xCitric', null)
-    .force('yCitric', null)
+    .force('xFixed', null)
+    .force('yFixed', null)
     .force('xPh', xPosPh)
     .force('yPh', yPosPh)
     .force('xVolatile', null)
@@ -223,7 +223,7 @@ export {
   simulateLattice,
   simulateAlcohol,
   simulateDensity,
-  simulateCitric,
+  simulateFixed,
   simulatePh,
   simulateVolatile,
   simulateQuality,

@@ -243,8 +243,8 @@ function addLayouts() {
       layout: frequency().variable('density')(state.stats.data),
     },
     {
-      name: 'citric_acid',
-      layout: frequency().variable('citric_acid')(state.stats.data),
+      name: 'fixed_acidity',
+      layout: frequency().variable('fixed_acidity')(state.stats.data),
     },
     {
       name: 'ph',

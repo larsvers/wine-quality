@@ -17,19 +17,19 @@
 
 <div class="section section-46">
   <p>
-    <span class="highlight">Density</span> is in a classic, pyramid or normally distributed shape with a mean of 0.997. Wines lower than that tend to be on the dry side.
+    <span class="highlight">Density</span> is in a classic, pyramid or normally distributed shape with a mean of 0.997. A low density can indicate a wine on the dry side but dryness is complex and can be impacted by a multitude of other factors.
   </p>
 </div>
 
 <div class="section section-47">
   <p>
-    <span class="highlight">Citric Acid</span> &mdash; can be used as a supplement during fermentation to boost the wine's acidity. Vinho Verde wines should all be under 1 g/L &mdash; the <a href="https://www.randoxfood.com/why-is-testing-for-citric-acid-important-in-winemaking/" target="_blank">limit</a> for wines from within the EU.
+    <span class="highlight">Fixed Acidity</span> &mdash; can be used as a supplement during fermentation to control the wine's acidity.
   </p>
 </div>
 
 <div class="section section-48">
   <p>
-    The average <span class="highlight">pH</span> value of a wine is 3.3 &mdash; quite low in comparison to your <a href="https://winefolly.com/deep-dive/understanding-acidity-in-wine/" target="_blank">average reds</a>.
+    The average <span class="highlight">pH</span> value of a wine is 3.3 &mdash; quite low in comparison to your <a href="https://winefolly.com/deep-dive/understanding-acidity-in-wine/" target="_blank">average reds</a> However, although this is low, it could be representative for the region known for higher acidity.
   </p>
 </div>
 
@@ -72,7 +72,7 @@
     The top two marks given are likely to describe the best wines in the data. Judging from the distribution, the few wines with marks 3 and 4 are deemed the lowest quality wines, while the majority of mediocre wines mingle in the centre. 
     </p>
     <p>
-    As such, "high-quality" for this dataset really does mean good from the judges' perspective, while "low-quality" includes average wines as well as truly low-quality wines (a sign of imbalanced classes models don't particularly like and we would typically counter with <a href="https://ieeexplore.ieee.org/document/7475021" target="_blank">helpful techniques</a>; but we'll keep it simple here).
+    As such, "high-quality" for this dataset really does mean good from the judges' perspective, while "low-quality" includes average wines as well as truly low-quality wines resulting in a proportionally larger class. Models don't particularly like this imbalance and we would typically counter this with <a href="https://ieeexplore.ieee.org/document/7475021" target="_blank">helpful techniques</a>; but we'll keep it simple here.
   </p>
   
 </div>
@@ -94,7 +94,7 @@
 
 <div class="section section-53">
   <p>
-    which maybe more clearly suggests that the lower the volatile acidity → the higher the quality.
+    which maybe more clearly suggests that the lower the volatile acidity → the higher the quality in this very dataset.
   </p>
 </div>
 
@@ -106,7 +106,7 @@
 
 <div class="section no-trigger">
   <p>
-    The association is flipped here &mdash; higher quality wines are likely to have more alcohol as a solid proportion of especially wines around the 12-13% mark was voted good. 
+    The association is flipped here &mdash; higher quality wines are likely to have more alcohol in this data, as a solid proportion of especially wines around the 12-13% mark was voted good. 
   </p>
   <p>
     <span class="arrow"></span>Look at that 9.5% bar. Considering this is the most populated section, it’s interesting to see how few wines are deemed high quality in here.

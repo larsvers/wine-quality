@@ -154,7 +154,7 @@ svg.absolute {
     margin: 0;
     position: absolute;
     left: 50%;
-    -webkit-transform: translateX(-50%);
+    -webkit-transform: -webkit-translateX(-50%);
     transform: translateX(-50%);
     white-space: nowrap; }
     @media (min-width: 800px) {
