@@ -124,7 +124,7 @@ button {
   position: absolute;
   bottom: 1rem;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, 0%);
   // z-index: 30; // If it's to the right, as it needs to be above the visual container.
 
   p {

@@ -77,7 +77,7 @@ button {
   position: absolute;
   bottom: 1rem;
   left: 50%;
-  transform: translateX(-50%); }
+  transform: translate(-50%, 0%); }
   #brand p {
     text-align: center;
     margin: 0 0 0.25em;
@@ -154,7 +154,7 @@ svg.absolute {
     margin: 0;
     position: absolute;
     left: 50%;
-    -webkit-transform: -webkit-translateX(-50%);
+    -webkit-transform: translateX(-50%);
     transform: translateX(-50%);
     white-space: nowrap; }
     @media (min-width: 800px) {
@@ -339,7 +339,7 @@ span.arrow::after {
 
 #outro {
   position: absolute;
-  left: -10vw;
+  left: -20vw;
   bottom: 2vh;
   width: 40px;
   cursor: pointer;
