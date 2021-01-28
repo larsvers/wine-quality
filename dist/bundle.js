@@ -3,6 +3,111 @@
   factory();
 }((function () { 'use strict';
 
+  function _defineProperty(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+
+  function ownKeys(object, enumerableOnly) {
+    var keys = Object.keys(object);
+
+    if (Object.getOwnPropertySymbols) {
+      var symbols = Object.getOwnPropertySymbols(object);
+      if (enumerableOnly) symbols = symbols.filter(function (sym) {
+        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+      });
+      keys.push.apply(keys, symbols);
+    }
+
+    return keys;
+  }
+
+  function _objectSpread2(target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i] != null ? arguments[i] : {};
+
+      if (i % 2) {
+        ownKeys(Object(source), true).forEach(function (key) {
+          _defineProperty(target, key, source[key]);
+        });
+      } else if (Object.getOwnPropertyDescriptors) {
+        Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+      } else {
+        ownKeys(Object(source)).forEach(function (key) {
+          Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+        });
+      }
+    }
+
+    return target;
+  }
+
+  function _slicedToArray(arr, i) {
+    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
+  }
+
+  function _arrayWithHoles(arr) {
+    if (Array.isArray(arr)) return arr;
+  }
+
+  function _iterableToArrayLimit(arr, i) {
+    if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"] != null) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+  }
+
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+
+    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+    return arr2;
+  }
+
+  function _nonIterableRest() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
   var xhtml = "http://www.w3.org/1999/xhtml";
 
   var namespaces = {
@@ -16800,7 +16905,7 @@
   _getGSAP$4() && gsap$5.registerPlugin(ScrollTrigger);
 
   // Used in two objects below, hence declared out here.
-  const baseStops = {
+  var baseStops = {
     stop0: '#4D4054',
     stop1: '#040509'
   };
@@ -16883,8 +16988,7 @@
       colour: null
     },
     bottleColour: {
-      base: { ...baseStops
-      },
+      base: _objectSpread2({}, baseStops),
       good: {
         // stop0: '#88BFF2',
         // stop1: '#4D8ECA',
@@ -16941,10 +17045,8 @@
       dataOut: null,
       colour: {
         // initially base colours.
-        good: { ...baseStops
-        },
-        bad: { ...baseStops
-        }
+        good: _objectSpread2({}, baseStops),
+        bad: _objectSpread2({}, baseStops)
       }
     },
     dataset: {
@@ -17715,7 +17817,7 @@
   /* eslint-disable no-param-reassign */
 
   function prettyLabel(string) {
-    const capitals = string.charAt(0).toUpperCase() + string.slice(1);
+    var capitals = string.charAt(0).toUpperCase() + string.slice(1);
     return capitals.replace(/_/g, ' ');
   }
 
@@ -17734,13 +17836,13 @@
 
 
   function getBox(el, path) {
-    let box;
+    var box;
 
     if (el) {
-      const sel = isSelection(el) ? el : select(el);
+      var sel = isSelection(el) ? el : select(el);
       box = sel.node().getBBox();
     } else if (path) {
-      const domPath = select('body').append('svg').attr('class', 'svg-temp').append('path').attr('d', path);
+      var domPath = select('body').append('svg').attr('class', 'svg-temp').append('path').attr('d', path);
       box = domPath.node().getBBox();
       domPath.remove();
     } else {
@@ -17752,14 +17854,14 @@
 
 
   function resizeCanvas(canvas, width, height) {
-    const context = canvas.getContext('2d'); // Give each device pixel an element and drawing surface pixel.
+    var context = canvas.getContext('2d'); // Give each device pixel an element and drawing surface pixel.
     // This should make it bigger for retina displays for example.
 
     canvas.width = width * window.devicePixelRatio;
     canvas.height = height * window.devicePixelRatio; // Scale only the element's size down to the given width on the site.
 
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`; // Scale the drawing surface (up).
+    canvas.style.width = "".concat(width, "px");
+    canvas.style.height = "".concat(height, "px"); // Scale the drawing surface (up).
 
     context.scale(window.devicePixelRatio, window.devicePixelRatio);
   }
@@ -17780,8 +17882,8 @@
   function getTransform(object, fit, nudge) {
     if (fit.width !== 0 && fit.height !== 0) throw Error('One fit value must be 0'); // Get the parent visual.
 
-    const frame = document.querySelector('#canvas-main-container');
-    const visual = {
+    var frame = document.querySelector('#canvas-main-container');
+    var visual = {
       width: frame.clientWidth,
       height: frame.clientHeight
     }; // Establish the object scale. fit.width and fit.height decide the scale
@@ -17789,9 +17891,9 @@
     // becasue we don't skew. These two terms ↓ don't become a sum, but one
     // will be 0 when the other one is not.
 
-    const scale = visual.width / object.width * fit.width + visual.height / object.height * fit.height; // Establish the object's position. The default value is the centre:
+    var scale = visual.width / object.width * fit.width + visual.height / object.height * fit.height; // Establish the object's position. The default value is the centre:
 
-    const position = {
+    var position = {
       x: visual.width / 2 - object.width * scale / 2,
       y: visual.height / 2 - object.height * scale / 2
     }; // If `nudge` is defined, then `nudge.x` and `nudge.y` are both
@@ -17818,15 +17920,19 @@
 
 
   function splitPath(path) {
-    return path.split('M').filter(d => d).map(d => `M${d}`);
+    return path.split('M').filter(function (d) {
+      return d;
+    }).map(function (d) {
+      return "M".concat(d);
+    });
   }
 
   function getPathDims(pathData) {
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', pathData);
-    const domPath = select('#stage-group').append('path').attr('class', 'remove').attr('d', pathData);
-    const dims = domPath.node().getBBox();
-    const pathDims = {
+    var domPath = select('#stage-group').append('path').attr('class', 'remove').attr('d', pathData);
+    var dims = domPath.node().getBBox();
+    var pathDims = {
       x: Math.round(dims.x),
       y: Math.round(dims.y),
       width: Math.round(dims.width),
@@ -17838,16 +17944,20 @@
   }
 
   function getPathData(path) {
-    const splitPaths = splitPath(path);
-    const paths = splitPaths.map(p => new Path2D(p));
-    const dims = splitPaths.map(getPathDims);
-    const length = max(dims, d => d.length);
-    const offset = length;
+    var splitPaths = splitPath(path);
+    var paths = splitPaths.map(function (p) {
+      return new Path2D(p);
+    });
+    var dims = splitPaths.map(getPathDims);
+    var length = max(dims, function (d) {
+      return d.length;
+    });
+    var offset = length;
     return {
-      paths,
-      dims,
-      length,
-      offset
+      paths: paths,
+      dims: dims,
+      length: length,
+      offset: offset
     };
   }
   /**
@@ -17865,14 +17975,14 @@
 
 
   function bezWithArrowheads(ctx, p0, p1, p2, p3, arrowLength, hasStartArrow, hasEndArrow) {
-    let x;
-    let y;
-    let norm;
-    let ex;
-    let ey;
+    var x;
+    var y;
+    var norm;
+    var ex;
+    var ey;
 
     function pointsToNormalisedVec(p, pp) {
-      let len;
+      var len;
       norm.y = pp.x - p.x;
       norm.x = -(pp.y - p.y);
       len = Math.sqrt(norm.x * norm.x + norm.y * norm.y);
@@ -17881,7 +17991,7 @@
       return norm;
     }
 
-    const arrowWidth = arrowLength / 2;
+    var arrowWidth = arrowLength / 2;
     norm = {}; // defaults to true for both arrows if arguments not included
 
     hasStartArrow = hasStartArrow === undefined || hasStartArrow === null ? true : hasStartArrow;
@@ -17928,7 +18038,9 @@
   }
 
   function getLinearScale(variable) {
-    return linear$1().domain(extent(state.stats.data, d => d[variable]));
+    return linear$1().domain(extent(state.stats.data, function (d) {
+      return d[variable];
+    }));
   }
   /**
    * Calculate Euclidean distance between two points.
@@ -17939,10 +18051,10 @@
 
 
   function euclideanDistance(left, right) {
-    let sum = 0;
+    var sum = 0;
 
-    for (let i = 0; i < left.length; i++) {
-      const diff = left[i] - right[i];
+    for (var i = 0; i < left.length; i++) {
+      var diff = left[i] - right[i];
       sum += diff * diff;
     }
 
@@ -17951,7 +18063,7 @@
 
 
   function getGradient(stops) {
-    const gradient = state.ctx.bottleWave.createLinearGradient(0, state.glassBottle.bottleBox.height / 2, state.glassBottle.bottleBox.width, state.glassBottle.bottleBox.height / 2);
+    var gradient = state.ctx.bottleWave.createLinearGradient(0, state.glassBottle.bottleBox.height / 2, state.glassBottle.bottleBox.width, state.glassBottle.bottleBox.height / 2);
     gradient.addColorStop(0, stops.stop0);
     gradient.addColorStop(0.7, stops.stop1);
     return gradient;
@@ -17963,8 +18075,8 @@
 
   function tweenIntroIn() {
     // Hack as moving the #brand's xPercent doesn't work in Safari.
-    const w = window.innerWidth;
-    const left = w < 750 ? '90%' : '95%';
+    var w = window.innerWidth;
+    var left = w < 750 ? '90%' : '95%';
     gsapWithCSS$1.timeline({
       defaults: {
         duration: 1,
@@ -17978,7 +18090,7 @@
       fontSize: '0em',
       duration: 0.3
     }).to('#brand', {
-      left
+      left: left
     }, 0) // move right
     .to('#logo path', {
       fill: '#ccc'
@@ -18282,7 +18394,7 @@
   }
 
   /* eslint-disable no-use-before-define */
-  let gradient; // Utils.
+  var gradient; // Utils.
 
   /**
    * Calculate wave point coordinates.
@@ -18296,9 +18408,9 @@
    */
 
   function getWavePoints(r, alpha, beta, x0, y0, t) {
-    const arg = alpha * x0 + beta * t;
-    const x = x0 + r * Math.cos(arg);
-    const y = y0 + r * Math.sin(arg);
+    var arg = alpha * x0 + beta * t;
+    var x = x0 + r * Math.cos(arg);
+    var y = y0 + r * Math.sin(arg);
     return [x, y];
   }
   /**
@@ -18311,14 +18423,14 @@
   function makeWave(time) {
     // 1) We get an array of n wave points and save it in state
     // for the draw function to feed from.
-    state.bottleWave.wavePoints = range(state.bottleWave.n).map((d, i) => {
+    state.bottleWave.wavePoints = range(state.bottleWave.n).map(function (d, i) {
       // For each point (indexed from 0 to n), we add
       // a few parameters. x0 and y0 decide the position.
-      const x0 = state.bottleWave.xWaveScale(d);
-      const y0 = (1 - state.bottleWave.lift) * state.glassBottle.bottleBox.height; // The main point generation function, which sets x and y
+      var x0 = state.bottleWave.xWaveScale(d);
+      var y0 = (1 - state.bottleWave.lift) * state.glassBottle.bottleBox.height; // The main point generation function, which sets x and y
       // based on the time passed in.
 
-      const xy = getWavePoints(state.bottleWave.r, state.bottleWave.waveAlpha, 1.5, x0, y0, time * 5); // The first and the last point are pinned to the sides.
+      var xy = getWavePoints(state.bottleWave.r, state.bottleWave.waveAlpha, 1.5, x0, y0, time * 5); // The first and the last point are pinned to the sides.
 
       if (i === 0) xy[0] = state.glassBottle.bottleBox.x;
       if (i === state.bottleWave.n - 1) xy[0] = state.glassBottle.bottleBox.width;
@@ -18377,7 +18489,7 @@
   }
 
   function renderBottleWave() {
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function () {
       state.ctx.bottleWave.save();
       state.ctx.bottleWave.fillStyle = gradient;
       drawBottleWave(state.ctx.bottleWave, state.bottleWave.bottlePath, state.transform.shape);
@@ -18388,7 +18500,11 @@
   function defineTweenBottleWave(liftStart, liftTarget) {
     // The wave's x scale and line generator.
     state.bottleWave.xWaveScale = point$1().domain(range(state.bottleWave.n)).range([0, state.width]);
-    state.bottleWave.waveLine = line().x(d => d[0]).y(d => d[1]).curve(curveBasis);
+    state.bottleWave.waveLine = line().x(function (d) {
+      return d[0];
+    }).y(function (d) {
+      return d[1];
+    }).curve(curveBasis);
     state.bottleWave.waveAlpha = state.width / state.height < 0.5 ? 1 : 5; // The bottle's fill.
 
     gradient = getGradient(state.bottleColour.base); // Set up timeline.
@@ -18397,11 +18513,11 @@
     // Note the lift's start and target are arguments as this tween is being
     // built in two situations.
 
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onStart: startWave,
       onUpdate: decayWave
     });
-    const lift = gsapWithCSS.fromTo(state.bottleWave, {
+    var lift = gsapWithCSS.fromTo(state.bottleWave, {
       lift: liftStart
     }, {
       lift: liftTarget
@@ -18411,8 +18527,8 @@
 
   function tweenBottleWave() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('bottleWave');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('bottleWave');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.bottleWave) state.tween.bottleWave.kill();
     state.tween.bottleWave = defineTweenBottleWave(-0.1, 0.6);
@@ -18430,14 +18546,16 @@
   }
 
   function renderScape() {
-    requestAnimationFrame(() => drawScape(state.ctx.scape, state.scape.image, state.transform.scape, state.scape.alpha));
+    requestAnimationFrame(function () {
+      return drawScape(state.ctx.scape, state.scape.image, state.transform.scape, state.scape.alpha);
+    });
   }
 
   function defineTweenWineScape() {
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onUpdate: renderScape
     });
-    const imagealpha = gsapWithCSS.fromTo(state.scape, {
+    var imagealpha = gsapWithCSS.fromTo(state.scape, {
       alpha: 0
     }, {
       alpha: 1
@@ -18447,8 +18565,8 @@
 
   function tweenWineScape() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('wineScape');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('wineScape');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.wineScape) state.tween.wineScape.kill();
     state.tween.wineScape = defineTweenWineScape();
@@ -18462,12 +18580,12 @@
     ctx.scale(t.scale, t.scale);
     ctx.beginPath();
 
-    for (let i = 0; i < path.length; i++) {
-      const segment = path[i];
-      const l = segment.length;
+    for (var i = 0; i < path.length; i++) {
+      var segment = path[i];
+      var l = segment.length;
       ctx.moveTo(segment[0], segment[1]);
 
-      for (let j = 2; j < l; j += 6) {
+      for (var j = 2; j < l; j += 6) {
         ctx.bezierCurveTo(segment[j], segment[j + 1], segment[j + 2], segment[j + 3], segment[j + 4], segment[j + 5]);
       }
 
@@ -18481,7 +18599,7 @@
   }
 
   function renderBottle() {
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function () {
       // We need to draw on both contexts here, as the tween doesn't only cover
       // paramaters for the glassBottle but also the alpha for the scape context.
       drawScape(state.ctx.scape, state.scape.image, state.transform.scape, state.scape.alpha);
@@ -18493,28 +18611,26 @@
   }
 
   function defineTweenGlassBottle() {
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onUpdate: renderBottle
     });
-    const morph = gsapWithCSS.to('#glass-path', {
+    var morph = gsapWithCSS.to('#glass-path', {
       morphSVG: {
         shape: '#bottle-path',
         map: 'complexity',
         updateTarget: false,
-
-        render(path) {
+        render: function render(path) {
           state.glassBottle.path = path;
         }
-
       }
     });
-    const colourvalue = gsapWithCSS.fromTo(state.glassBottle, {
+    var colourvalue = gsapWithCSS.fromTo(state.glassBottle, {
       colour: 'rgba(0, 0, 0, 0)'
     }, {
       colour: 'rgba(0, 0, 0, 1)',
       ease: 'circ.out'
     });
-    const retransform = gsapWithCSS.fromTo(state.transform.shape, {
+    var retransform = gsapWithCSS.fromTo(state.transform.shape, {
       x: state.transform.scape.x,
       y: state.transform.scape.y,
       scale: state.transform.scape.scale
@@ -18524,7 +18640,7 @@
       scale: state.transform.bottle.scale,
       ease: 'none'
     });
-    const imagealpha = gsapWithCSS.fromTo(state.scape, {
+    var imagealpha = gsapWithCSS.fromTo(state.scape, {
       alpha: 1
     }, {
       alpha: state.scape.alphaTarget
@@ -18534,8 +18650,8 @@
 
   function tweenGlassBottle() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('glassBottle');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('glassBottle');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.glassBottle) state.tween.glassBottle.kill();
     state.tween.glassBottle = defineTweenGlassBottle();
@@ -18560,12 +18676,14 @@
     ctx.scale(t.scale, t.scale);
     ctx.setLineDash([length - offset, offset]); // eslint-disable-next-line no-unused-expressions
 
-    Array.isArray(paths) ? paths.forEach(path => ctx.stroke(path)) : ctx.stroke(paths);
+    Array.isArray(paths) ? paths.forEach(function (path) {
+      return ctx.stroke(path);
+    }) : ctx.stroke(paths);
     ctx.restore();
   }
 
   function renderBottleText() {
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function () {
       state.ctx.bottleText.save();
       state.ctx.bottleText.lineWidth = 0.7;
       drawTextPath(state.ctx.bottleText, state.bottleText.paths, state.transform.shape, state.bottleText.maxLength, state.bottleText.dashOffset);
@@ -18574,23 +18692,23 @@
   }
 
   function defineTweenBottleText(offsetDraw, alphaStart, alphaTarget) {
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onUpdate: renderBottleText
     });
-    const offsetIn = gsapWithCSS.fromTo(state.bottleText, {
+    var offsetIn = gsapWithCSS.fromTo(state.bottleText, {
       dashOffset: state.bottleText.maxLength
     }, {
       dashOffset: 0
     });
-    const offsetOut = gsapWithCSS.fromTo(state.bottleText, {
+    var offsetOut = gsapWithCSS.fromTo(state.bottleText, {
       dashOffset: 0
     }, {
       dashOffset: state.bottleText.maxLength
     });
-    const colourvalue = gsapWithCSS.fromTo(state.bottleText, {
-      colour: `rgba(0, 0, 0, ${alphaStart})`
+    var colourvalue = gsapWithCSS.fromTo(state.bottleText, {
+      colour: "rgba(0, 0, 0, ".concat(alphaStart, ")")
     }, {
-      colour: `rgba(0, 0, 0, ${alphaTarget})`,
+      colour: "rgba(0, 0, 0, ".concat(alphaTarget, ")"),
       ease: 'circ.out'
     });
     return tl.add(offsetDraw ? offsetIn : offsetOut).add(colourvalue, 0);
@@ -18598,8 +18716,8 @@
 
   function tweenBottleText() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('bottleText');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('bottleText');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.bottleText) state.tween.bottleText.kill();
     state.tween.bottleText = defineTweenBottleText(true, 0, 1);
@@ -18618,7 +18736,7 @@
 
   function setDimensions() {
     // Set the lolli area.
-    const bottle = state.glassBottle; // Just for shortness.
+    var bottle = state.glassBottle; // Just for shortness.
     // Horizontal dims.
 
     state.lolli.area.left = Math.floor(bottle.bottleBox.width * 1.05);
@@ -18637,23 +18755,17 @@
 
 
   function drawLolliChart(ctx, t) {
-    const rough = state.rough.chart;
+    var rough = state.rough.chart;
     ctx.clearRect(0, 0, state.width, state.height);
     ctx.save();
     ctx.translate(t.x, t.y);
     ctx.scale(t.scale, t.scale);
-    state.lolli.values.forEach((d, i) => {
-      const datapoint = state.lolli.data[d];
-      const xValue = datapoint.value;
-      const {
-        length
-      } = state.lolli.data[d].text;
-      const {
-        offset
-      } = state.lolli.data[d].text;
-      const {
-        paths
-      } = state.lolli.data[d].text; // Line.
+    state.lolli.values.forEach(function (d, i) {
+      var datapoint = state.lolli.data[d];
+      var xValue = datapoint.value;
+      var length = state.lolli.data[d].text.length;
+      var offset = state.lolli.data[d].text.offset;
+      var paths = state.lolli.data[d].text.paths; // Line.
 
       ctx.beginPath();
       rough.line(state.lolli.x(0), state.lolli.y(d), state.lolli.x(xValue), state.lolli.y(d), {
@@ -18672,21 +18784,25 @@
       ctx.translate(state.lolli.x(0), state.lolli.y(d) + 2);
       ctx.lineWidth = 0.5;
       ctx.setLineDash([length - offset, offset]);
-      paths.forEach(path => ctx.stroke(path));
+      paths.forEach(function (path) {
+        return ctx.stroke(path);
+      });
       ctx.restore();
     });
     ctx.restore();
   }
 
   function renderLolliChart() {
-    requestAnimationFrame(() => drawLolliChart(state.ctx.chart, state.transform.bottle));
+    requestAnimationFrame(function () {
+      return drawLolliChart(state.ctx.chart, state.transform.bottle);
+    });
   } // As tweenLolliUpdate and blackbos are set later, it seems to change
   // all initial values (.values[0]) as set by this tweenLolliChart. 🤷‍♂️
 
 
   function forceInitialValues() {
-    Object.keys(state.lolli.data).forEach(d => {
-      const datapoint = state.lolli.data[d];
+    Object.keys(state.lolli.data).forEach(function (d) {
+      var datapoint = state.lolli.data[d];
       datapoint.value = datapoint.values[0];
       datapoint.radius = 0;
       datapoint.text.offset = datapoint.text.length;
@@ -18696,26 +18812,26 @@
   function defineTweenLolliChart() {
     setDimensions(); // Things to tween.
 
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onStart: forceInitialValues,
       onUpdate: renderLolliChart
     }); // Loop through all lolli-data (which is an object).
 
-    Object.keys(state.lolli.data).forEach(d => {
+    Object.keys(state.lolli.data).forEach(function (d) {
       // Datapoint to tween around with.
-      const datapoint = state.lolli.data[d]; // Set up the tweens.
+      var datapoint = state.lolli.data[d]; // Set up the tweens.
 
-      const valueTween = gsapWithCSS.fromTo(datapoint, {
+      var valueTween = gsapWithCSS.fromTo(datapoint, {
         value: datapoint.values[0]
       }, {
         value: datapoint.values[1]
       });
-      const radiusTween = gsapWithCSS.fromTo(datapoint, {
+      var radiusTween = gsapWithCSS.fromTo(datapoint, {
         radius: 0
       }, {
         radius: state.lolli.radiusTarget
       });
-      const offsetTween = gsapWithCSS.fromTo(datapoint.text, {
+      var offsetTween = gsapWithCSS.fromTo(datapoint.text, {
         offset: datapoint.text.length
       }, {
         offset: 0
@@ -18729,8 +18845,8 @@
 
   function tweenLolliChart() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('lolliChart');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('lolliChart');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.lolliChart) state.tween.lolliChart.kill();
     state.tween.lolliChart = defineTweenLolliChart();
@@ -18739,15 +18855,15 @@
 
   function defineTweenLolliUpdate1() {
     // Things to tween.
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onUpdate: renderLolliChart
     }); // Loop through all lolli-data (which is an object).
 
-    Object.keys(state.lolli.data).forEach(d => {
+    Object.keys(state.lolli.data).forEach(function (d) {
       // Datapoint to tween around with.
-      const datapoint = state.lolli.data[d]; // Set up the tweens.
+      var datapoint = state.lolli.data[d]; // Set up the tweens.
 
-      const valueTween = gsapWithCSS.fromTo(datapoint, {
+      var valueTween = gsapWithCSS.fromTo(datapoint, {
         value: datapoint.values[1]
       }, {
         value: datapoint.values[2]
@@ -18761,15 +18877,15 @@
 
   function defineTweenLolliUpdate2() {
     // Things to tween.
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onUpdate: renderLolliChart
     }); // Loop through all lolli-data (which is an object).
 
-    Object.keys(state.lolli.data).forEach(d => {
+    Object.keys(state.lolli.data).forEach(function (d) {
       // Datapoint to tween around with.
-      const datapoint = state.lolli.data[d]; // Set up the tweens.
+      var datapoint = state.lolli.data[d]; // Set up the tweens.
 
-      const valueTween = gsapWithCSS.fromTo(datapoint, {
+      var valueTween = gsapWithCSS.fromTo(datapoint, {
         value: datapoint.values[2]
       }, {
         value: datapoint.values[3]
@@ -18783,20 +18899,20 @@
 
   function defineTweenLolliUpdate3() {
     // Things to tween.
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onUpdate: renderLolliChart
     }); // Loop through all lolli-data (which is an object).
 
-    Object.keys(state.lolli.data).forEach(d => {
+    Object.keys(state.lolli.data).forEach(function (d) {
       // Datapoint to tween around with.
-      const datapoint = state.lolli.data[d]; // Set up the tweens.
+      var datapoint = state.lolli.data[d]; // Set up the tweens.
 
-      const valueTween = gsapWithCSS.fromTo(datapoint, {
+      var valueTween = gsapWithCSS.fromTo(datapoint, {
         value: datapoint.values[3]
       }, {
         value: datapoint.values[4]
       });
-      const radiusTween = gsapWithCSS.fromTo(datapoint, {
+      var radiusTween = gsapWithCSS.fromTo(datapoint, {
         radius: state.lolli.radiusTarget
       }, {
         radius: 0
@@ -18804,7 +18920,7 @@
       tl.add(valueTween, '>').add(radiusTween, '<');
 
       if (d === 'quality') {
-        const offsetTween = gsapWithCSS.fromTo(datapoint.text, {
+        var offsetTween = gsapWithCSS.fromTo(datapoint.text, {
           offset: 0
         }, {
           offset: datapoint.text.length
@@ -18817,8 +18933,8 @@
 
   function tweenLolliUpdate1() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('lolliUpdate1');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('lolliUpdate1');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.lolliUpdate1) state.tween.lolliUpdate1.kill();
     state.tween.lolliUpdate1 = defineTweenLolliUpdate1();
@@ -18827,8 +18943,8 @@
 
   function tweenLolliUpdate2() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('lolliUpdate2');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('lolliUpdate2');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.lolliUpdate2) state.tween.lolliUpdate2.kill();
     state.tween.lolliUpdate2 = defineTweenLolliUpdate2();
@@ -18837,8 +18953,8 @@
 
   function tweenLolliUpdate3() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('lolliUpdate3');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('lolliUpdate3');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.lolliUpdate3) state.tween.lolliUpdate3.kill();
     state.tween.lolliUpdate3 = defineTweenLolliUpdate3();
@@ -18847,11 +18963,11 @@
 
   /* eslint-disable no-param-reassign */
 
-  const inputProperties = ['alcohol', 'acids', 'sugars'];
-  const outputProperties = ['quality'];
-  let letterHeight;
-  let bottleWidth;
-  const input = {
+  var inputProperties = ['alcohol', 'acids', 'sugars'];
+  var outputProperties = ['quality'];
+  var letterHeight;
+  var bottleWidth;
+  var input = {
     p1: {
       x: 0
     },
@@ -18863,7 +18979,7 @@
       size: 0
     }
   };
-  const output = {
+  var output = {
     p1: {
       x: 0
     },
@@ -18889,14 +19005,16 @@
 
     ctx.strokeStyle = 'white';
     ctx.lineWidth = 0.1;
-    state.blackBox.box.paths.forEach(path => {
+    state.blackBox.box.paths.forEach(function (path) {
       ctx.setLineDash([state.blackBox.box.length - state.blackBox.box.offset, state.blackBox.box.offset]);
       ctx.stroke(path);
     }); // Draw text (don't animate).
 
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 0.5;
-    state.blackBox.model.paths.forEach(path => ctx.stroke(path));
+    state.blackBox.model.paths.forEach(function (path) {
+      return ctx.stroke(path);
+    });
     ctx.restore();
   }
 
@@ -18906,26 +19024,26 @@
     ctx.translate(t.x, t.y);
     ctx.scale(t.scale, t.scale); // Draw input properties.
 
-    inputVars.forEach((d, i) => {
-      const {
-        paths
-      } = state.lolli.data[d].text;
+    inputVars.forEach(function (d, i) {
+      var paths = state.lolli.data[d].text.paths;
       ctx.save();
       ctx.translate(state.lolli.x(0), state.lolli.y(d) + 2); // Draw text
 
       ctx.lineWidth = 0.5;
-      paths.forEach(path => ctx.stroke(path)); // Draw line
+      paths.forEach(function (path) {
+        return ctx.stroke(path);
+      }); // Draw line
 
       ctx.lineWidth = 1.25;
-      const p0 = {
+      var p0 = {
         x: 0,
         y: letterHeight * 0.5
       };
-      const p1 = {
+      var p1 = {
         x: input.p1.x,
         y: letterHeight * 0.5
       };
-      const p2 = {
+      var p2 = {
         x: input.p2.x,
         y: letterHeight * 0.5 + input.yEndAdd[i]
       };
@@ -18934,33 +19052,29 @@
       ctx.restore();
     }); // Draw output property (or properties).
 
-    outputVars.forEach(d => {
-      const {
-        length
-      } = state.lolli.data[d].text;
-      const {
-        offset
-      } = state.lolli.data[d].text;
-      const {
-        paths
-      } = state.lolli.data[d].text;
+    outputVars.forEach(function (d) {
+      var length = state.lolli.data[d].text.length;
+      var offset = state.lolli.data[d].text.offset;
+      var paths = state.lolli.data[d].text.paths;
       ctx.save();
       ctx.translate(state.lolli.x(0), state.lolli.y(d) + 2); // Draw text
 
       ctx.lineWidth = 0.5;
       ctx.setLineDash([length - offset, offset]);
-      paths.forEach(path => ctx.stroke(path)); // Draw line
+      paths.forEach(function (path) {
+        return ctx.stroke(path);
+      }); // Draw line
 
       ctx.lineWidth = 1.25;
-      const p0 = {
+      var p0 = {
         x: -bottleWidth * 0.33,
         y: -letterHeight * 0.5 + output.yAdd
       };
-      const p1 = {
+      var p1 = {
         x: output.p1.x,
         y: output.y.y
       };
-      const p2 = {
+      var p2 = {
         x: output.p2.x,
         y: output.y.y
       };
@@ -18972,7 +19086,7 @@
   }
 
   function renderBlackBox() {
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function () {
       drawBlackBox(state.ctx.blackBox, state.transform.bottle);
       drawProperties(state.ctx.chart, state.transform.bottle, inputProperties, outputProperties);
     });
@@ -18981,17 +19095,19 @@
 
   function defineTweenBlackBox(type) {
     // Things to tween.
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onUpdate: renderBlackBox
     }); // Arrow data.
 
     bottleWidth = state.glassBottle.bottleBox.width;
-    letterHeight = max(state.lolli.data[outputProperties[0]].text.dims, d => d.height);
+    letterHeight = max(state.lolli.data[outputProperties[0]].text.dims, function (d) {
+      return d.height;
+    });
     output.yAdd = -state.lolli.y.step() * 0.1;
 
     if (type === 'arrowIn') {
       // Box path.
-      const boxoffset = gsapWithCSS.fromTo(state.blackBox.box, {
+      var boxoffset = gsapWithCSS.fromTo(state.blackBox.box, {
         offset: state.blackBox.box.length
       }, {
         offset: 0
@@ -18999,18 +19115,18 @@
 
       tl.add(boxoffset); // Input arrow tweens.
 
-      const p1tween = gsapWithCSS.fromTo(input.p1, {
+      var p1tween = gsapWithCSS.fromTo(input.p1, {
         x: 0
       }, {
         x: -bottleWidth * 0.125
       });
-      const p2tween = gsapWithCSS.fromTo(input.p2, {
+      var p2tween = gsapWithCSS.fromTo(input.p2, {
         x: 0
       }, {
         x: -bottleWidth * 0.33
       });
-      const yEndTween = gsapWithCSS.fromTo(input.yEndAdd, [0, 0, 0], [+state.lolli.y.step() * 0.6, +state.lolli.y.step() * 0.1, -state.lolli.y.step() * 0.33]);
-      const arrowtween = gsapWithCSS.fromTo(input.arrow, {
+      var yEndTween = gsapWithCSS.fromTo(input.yEndAdd, [0, 0, 0], [+state.lolli.y.step() * 0.6, +state.lolli.y.step() * 0.1, -state.lolli.y.step() * 0.33]);
+      var arrowtween = gsapWithCSS.fromTo(input.arrow, {
         size: 0
       }, {
         size: 5
@@ -19024,22 +19140,22 @@
 
     if (type === 'arrowOut') {
       // Output arrow tweens.
-      const p1outtween = gsapWithCSS.fromTo(output.p1, {
+      var p1outtween = gsapWithCSS.fromTo(output.p1, {
         x: -bottleWidth * 0.33
       }, {
         x: -bottleWidth * 0.2
       });
-      const p2outtween = gsapWithCSS.fromTo(output.p2, {
+      var p2outtween = gsapWithCSS.fromTo(output.p2, {
         x: -bottleWidth * 0.33
       }, {
         x: -5
       });
-      const ytween = gsapWithCSS.fromTo(output.y, {
+      var ytween = gsapWithCSS.fromTo(output.y, {
         y: -letterHeight * 0.5 + output.yAdd
       }, {
         y: letterHeight * 0.5
       });
-      const arrowOutTween = gsapWithCSS.fromTo(output.arrow, {
+      var arrowOutTween = gsapWithCSS.fromTo(output.arrow, {
         size: 0
       }, {
         size: 5
@@ -19050,8 +19166,8 @@
       tl.add(ytween, '<');
       tl.add(arrowOutTween, '<'); // Path dash offset.
 
-      const datapoint = state.lolli.data.quality;
-      const offsettween = gsapWithCSS.fromTo(datapoint.text, {
+      var datapoint = state.lolli.data.quality;
+      var offsettween = gsapWithCSS.fromTo(datapoint.text, {
         offset: datapoint.text.length
       }, {
         offset: 0
@@ -19063,13 +19179,13 @@
     return tl;
   }
 
-  const arrows = ['arrowIn', 'arrowOut'];
+  var arrows = ['arrowIn', 'arrowOut'];
 
   function tweenBlackBox() {
-    arrows.forEach(d => {
+    arrows.forEach(function (d) {
       // Capture current progress.
-      const scroll = ScrollTrigger.getById(d);
-      const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+      var scroll = ScrollTrigger.getById(d);
+      var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
       if (state.tween[d]) state.tween[d].kill();
       state.tween[d] = defineTweenBlackBox(d);
@@ -19079,11 +19195,11 @@
 
   /* eslint-disable no-param-reassign */
 
-  const inputProperties$1 = ['alcohol', 'acids', 'sugars'];
-  const outputProperties$1 = ['quality'];
-  let letterHeight$1;
-  let bottleWidth$1;
-  const input$1 = {
+  var inputProperties$1 = ['alcohol', 'acids', 'sugars'];
+  var outputProperties$1 = ['quality'];
+  var letterHeight$1;
+  var bottleWidth$1;
+  var input$1 = {
     p1: {
       x: 0
     },
@@ -19099,7 +19215,7 @@
       offset: 0
     }
   };
-  const output$1 = {
+  var output$1 = {
     p1: {
       x: 0
     },
@@ -19116,22 +19232,22 @@
   }; // Utils.
 
   function bezWithArrowheads$1(ctx, p0, p1, p2, p3, arrowLength, hasStartArrow, hasEndArrow) {
-    let x;
-    let y;
-    let norm;
-    let ex;
-    let ey;
+    var x;
+    var y;
+    var norm;
+    var ex;
+    var ey;
 
     function pointsToNormalisedVec(p, pp) {
       norm.y = pp.x - p.x;
       norm.x = -(pp.y - p.y);
-      const len = Math.sqrt(norm.x * norm.x + norm.y * norm.y);
+      var len = Math.sqrt(norm.x * norm.x + norm.y * norm.y);
       norm.x /= len;
       norm.y /= len;
       return norm;
     }
 
-    const arrowWidth = arrowLength / 2;
+    var arrowWidth = arrowLength / 2;
     norm = {}; // defaults to true for both arrows if arguments not included
 
     hasStartArrow = hasStartArrow === undefined || hasStartArrow === null ? true : hasStartArrow;
@@ -19188,14 +19304,16 @@
 
     ctx.strokeStyle = 'white';
     ctx.lineWidth = 0.1;
-    state.blackBox.box.paths.forEach(path => {
+    state.blackBox.box.paths.forEach(function (path) {
       ctx.setLineDash([state.blackBox.box.length - state.blackBox.box.offset, state.blackBox.box.offset]);
       ctx.stroke(path);
     }); // Draw text (don't animate).
 
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 0.5;
-    state.blackBox.model.paths.forEach(path => ctx.stroke(path));
+    state.blackBox.model.paths.forEach(function (path) {
+      return ctx.stroke(path);
+    });
     ctx.restore();
   }
 
@@ -19205,27 +19323,27 @@
     ctx.translate(t.x, t.y);
     ctx.scale(t.scale, t.scale); // Draw input properties.
 
-    inputVars.forEach((d, i) => {
-      const {
-        paths
-      } = state.lolli.data[d].text;
+    inputVars.forEach(function (d, i) {
+      var paths = state.lolli.data[d].text.paths;
       ctx.save();
       ctx.translate(state.lolli.x(0), state.lolli.y(d) + 2); // Draw text
 
       ctx.lineWidth = 0.5;
       ctx.setLineDash([input$1.paths.length - input$1.paths.offset, input$1.paths.offset]);
-      paths.forEach(path => ctx.stroke(path)); // Draw line
+      paths.forEach(function (path) {
+        return ctx.stroke(path);
+      }); // Draw line
 
       ctx.lineWidth = 1.25;
-      const p0 = {
+      var p0 = {
         x: 0,
         y: letterHeight$1 * 0.5
       };
-      const p1 = {
+      var p1 = {
         x: input$1.p1.x,
         y: letterHeight$1 * 0.5
       };
-      const p2 = {
+      var p2 = {
         x: input$1.p2.x,
         y: letterHeight$1 * 0.5 + input$1.yEndAdd[i]
       };
@@ -19234,33 +19352,29 @@
       ctx.restore();
     }); // Draw output property (or properties).
 
-    outputVars.forEach(d => {
-      const {
-        length
-      } = state.lolli.data[d].text;
-      const {
-        offset
-      } = state.lolli.data[d].text;
-      const {
-        paths
-      } = state.lolli.data[d].text;
+    outputVars.forEach(function (d) {
+      var length = state.lolli.data[d].text.length;
+      var offset = state.lolli.data[d].text.offset;
+      var paths = state.lolli.data[d].text.paths;
       ctx.save();
       ctx.translate(state.lolli.x(0), state.lolli.y(d) + 2); // Draw text
 
       ctx.lineWidth = 0.5;
       ctx.setLineDash([length - offset, offset]);
-      paths.forEach(path => ctx.stroke(path)); // Draw line
+      paths.forEach(function (path) {
+        return ctx.stroke(path);
+      }); // Draw line
 
       ctx.lineWidth = 1.25;
-      const p0 = {
+      var p0 = {
         x: -bottleWidth$1 * 0.33,
         y: -letterHeight$1 * 0.5 + output$1.yAdd
       };
-      const p1 = {
+      var p1 = {
         x: output$1.p1.x,
         y: output$1.y.y
       };
-      const p2 = {
+      var p2 = {
         x: output$1.p2.x,
         y: output$1.y.y
       };
@@ -19272,7 +19386,7 @@
   }
 
   function renderCleanup() {
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function () {
       drawBlackBox$1(state.ctx.blackBox, state.transform.bottle);
       drawProperties$1(state.ctx.chart, state.transform.bottle, inputProperties$1, outputProperties$1);
     });
@@ -19281,33 +19395,37 @@
 
   function defineTweenCleanup() {
     // Things to tween.
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onUpdate: renderCleanup
     }); // Arrown tweens.
 
     bottleWidth$1 = state.glassBottle.bottleBox.width;
-    letterHeight$1 = max(state.lolli.data[outputProperties$1[0]].text.dims, d => d.height);
+    letterHeight$1 = max(state.lolli.data[outputProperties$1[0]].text.dims, function (d) {
+      return d.height;
+    });
     output$1.yAdd = -state.lolli.y.step() * 0.1; // Input arrow tweens.
 
-    const p1tween = gsapWithCSS.fromTo(input$1.p1, {
+    var p1tween = gsapWithCSS.fromTo(input$1.p1, {
       x: -bottleWidth$1 * 0.125
     }, {
       x: 0
     });
-    const p2tween = gsapWithCSS.fromTo(input$1.p2, {
+    var p2tween = gsapWithCSS.fromTo(input$1.p2, {
       x: -bottleWidth$1 * 0.33
     }, {
       x: 0
     });
-    const yEndTween = gsapWithCSS.fromTo(input$1.yEndAdd, [+state.lolli.y.step() * 0.6, +state.lolli.y.step() * 0.1, -state.lolli.y.step() * 0.33], [0, 0, 0]);
-    const arrowtween = gsapWithCSS.fromTo(input$1.arrow, {
+    var yEndTween = gsapWithCSS.fromTo(input$1.yEndAdd, [+state.lolli.y.step() * 0.6, +state.lolli.y.step() * 0.1, -state.lolli.y.step() * 0.33], [0, 0, 0]);
+    var arrowtween = gsapWithCSS.fromTo(input$1.arrow, {
       size: 5
     }, {
       size: 0
     }); // Path dash offset.
 
-    input$1.paths.length = max(inputProperties$1.map(d => state.lolli.data[d].text.length));
-    const offsettween1 = gsapWithCSS.fromTo(input$1.paths, {
+    input$1.paths.length = max(inputProperties$1.map(function (d) {
+      return state.lolli.data[d].text.length;
+    }));
+    var offsettween1 = gsapWithCSS.fromTo(input$1.paths, {
       offset: 0
     }, {
       offset: input$1.paths.length
@@ -19319,22 +19437,22 @@
     tl.add(yEndTween, '<');
     tl.add(arrowtween, '<'); // Output arrow tweens.
 
-    const p1outtween = gsapWithCSS.fromTo(output$1.p1, {
+    var p1outtween = gsapWithCSS.fromTo(output$1.p1, {
       x: -bottleWidth$1 * 0.2
     }, {
       x: -bottleWidth$1 * 0.33
     });
-    const p2outtween = gsapWithCSS.fromTo(output$1.p2, {
+    var p2outtween = gsapWithCSS.fromTo(output$1.p2, {
       x: -5
     }, {
       x: -bottleWidth$1 * 0.33
     });
-    const ytween = gsapWithCSS.fromTo(output$1.y, {
+    var ytween = gsapWithCSS.fromTo(output$1.y, {
       y: letterHeight$1 * 0.5
     }, {
       y: -letterHeight$1 * 0.5 + output$1.yAdd
     });
-    const arrowOutTween = gsapWithCSS.fromTo(output$1.arrow, {
+    var arrowOutTween = gsapWithCSS.fromTo(output$1.arrow, {
       size: 5
     }, {
       size: 0
@@ -19345,8 +19463,8 @@
     tl.add(ytween, '<');
     tl.add(arrowOutTween, '<'); // Path dash offset.
 
-    const datapoint = state.lolli.data.quality;
-    const offsettween = gsapWithCSS.fromTo(datapoint.text, {
+    var datapoint = state.lolli.data.quality;
+    var offsettween = gsapWithCSS.fromTo(datapoint.text, {
       offset: 0
     }, {
       offset: datapoint.text.length
@@ -19354,7 +19472,7 @@
 
     tl.add(offsettween, '<'); // Box path.
 
-    const boxoffset = gsapWithCSS.fromTo(state.blackBox.box, {
+    var boxoffset = gsapWithCSS.fromTo(state.blackBox.box, {
       offset: 0
     }, {
       offset: state.blackBox.box.length
@@ -19366,8 +19484,8 @@
 
   function tweenCleanup() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('cleanup');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('cleanup');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.cleanup) state.tween.cleanup.kill();
     state.tween.cleanup = defineTweenCleanup();
@@ -19378,8 +19496,8 @@
 
   function tweenBottleEmpty() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('bottleEmpty');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('bottleEmpty');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.bottleEmpty) state.tween.bottleEmpty.kill();
     state.tween.bottleEmpty = defineTweenBottleWave(0.6, -0.1);
@@ -19390,8 +19508,8 @@
 
   function tweenBottleTextOut() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('bottleTextOut');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('bottleTextOut');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.bottleTextOut) state.tween.bottleTextOut.kill();
     state.tween.bottleTextOut = defineTweenBottleText(false, 1, 0);
@@ -19400,7 +19518,7 @@
 
   // in the update function to set up the scroll triggers).
 
-  const animalPaths = [{
+  var animalPaths = [{
     id: '#bottle-path',
     name: 'bottle'
   }, {
@@ -19437,12 +19555,12 @@
     ctx.scale(t.scale, t.scale);
     ctx.beginPath();
 
-    for (let i = 0; i < path.length; i++) {
-      const segment = path[i];
-      const l = segment.length;
+    for (var i = 0; i < path.length; i++) {
+      var segment = path[i];
+      var l = segment.length;
       ctx.moveTo(segment[0], segment[1]);
 
-      for (let j = 2; j < l; j += 6) {
+      for (var j = 2; j < l; j += 6) {
         ctx.bezierCurveTo(segment[j], segment[j + 1], segment[j + 2], segment[j + 3], segment[j + 4], segment[j + 5]);
       }
 
@@ -19456,31 +19574,29 @@
   }
 
   function renderAnimals() {
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function () {
       drawAnimals(state.ctx.glassBottle, state.glassBottle.path, state.transform.shape);
     });
   }
 
   function defineTweenAnimals(from, to) {
     // The timeline.
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onUpdate: renderAnimals
     }); // The path morph.
 
-    const morph = gsapWithCSS.to(from.id, {
+    var morph = gsapWithCSS.to(from.id, {
       morphSVG: {
         shape: to.id,
         map: 'complexity',
         updateTarget: false,
-
-        render(path) {
+        render: function render(path) {
           state.glassBottle.path = path;
         }
-
       }
     }); // The path's transforms.
 
-    const trans = gsapWithCSS.fromTo(state.transform.shape, {
+    var trans = gsapWithCSS.fromTo(state.transform.shape, {
       x: state.transform[from.name].x,
       y: state.transform[from.name].y,
       scale: state.transform[from.name].scale
@@ -19497,13 +19613,13 @@
   function tweenAnimals() {
     // Build a tween for each path transition (1 less than
     // the array as each tween has a from and a to path).
-    for (let i = 0; i < animalPaths.length - 1; i++) {
+    for (var i = 0; i < animalPaths.length - 1; i++) {
       // Get the from and the to element.
-      const from = animalPaths[i];
-      const to = animalPaths[i + 1]; // Capture current progress.
+      var from = animalPaths[i];
+      var to = animalPaths[i + 1]; // Capture current progress.
 
-      const scroll = ScrollTrigger.getById(from.name);
-      const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+      var scroll = ScrollTrigger.getById(from.name);
+      var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
       if (state.tween[from.name]) state.tween[from.name].kill();
       state.tween[from.name] = defineTweenAnimals(from, to);
@@ -19515,8 +19631,8 @@
 
   function tweenBottleFill() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('bottleFill');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('bottleFill');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.bottleFill) state.tween.bottleFill.kill();
     state.tween.bottleFill = defineTweenBottleWave(-0.1, 1.05);
@@ -19525,8 +19641,8 @@
 
   /* eslint-disable camelcase */
 
-  const colours = state.bottleColour;
-  const bottleColours = [{
+  var colours = state.bottleColour;
+  var bottleColours = [{
     name: 'colourGood',
     fromStop0: colours.base.stop0,
     toStop0: colours.good.stop0,
@@ -19546,7 +19662,7 @@
     toStop1: colours.base.stop1
   }]; // The object to tween to and from.
 
-  const colourStops = {
+  var colourStops = {
     stop0: null,
     stop1: null
   }; // When scrolling back to start from the end of the story,
@@ -19559,12 +19675,12 @@
 
 
   function renderBottleColour() {
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function () {
       // Save contexts.
       state.ctx.bottleWave.save();
       state.ctx.glassBottle.save(); // Set context styles.
 
-      const gradient = getGradient(colourStops);
+      var gradient = getGradient(colourStops);
       state.ctx.bottleWave.fillStyle = gradient;
       state.ctx.glassBottle.strokeStyle = gradient; // Set the bottle wave line to be above bottle.
 
@@ -19580,15 +19696,15 @@
 
 
   function defineTweenBottleColour(col) {
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onUpdate: renderBottleColour
     });
-    const stop0Tween = gsapWithCSS.fromTo(colourStops, {
+    var stop0Tween = gsapWithCSS.fromTo(colourStops, {
       stop0: col.fromStop0
     }, {
       stop0: col.toStop0
     });
-    const stop1Tween = gsapWithCSS.fromTo(colourStops, {
+    var stop1Tween = gsapWithCSS.fromTo(colourStops, {
       stop1: col.fromStop1
     }, {
       stop1: col.toStop1
@@ -19597,10 +19713,10 @@
   }
 
   function tweenBottleColour() {
-    bottleColours.forEach(d => {
+    bottleColours.forEach(function (d) {
       // Capture current progress.
-      const scroll = ScrollTrigger.getById(d.name);
-      const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+      var scroll = ScrollTrigger.getById(d.name);
+      var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
       if (state.tween[d.name]) state.tween[d.name].kill();
       state.tween[d.name] = defineTweenBottleColour(d);
@@ -19611,13 +19727,13 @@
   /* eslint-disable no-return-assign */
 
   function gridLayout() {
-    let rows = 15;
-    let cols = 15;
-    let scale = 0.15;
-    let points = []; // Add layout to original data.
+    var rows = 15;
+    var cols = 15;
+    var scale = 0.15;
+    var points = []; // Add layout to original data.
 
     function augmentData(baseData, grid) {
-      baseData.forEach((d, i) => {
+      baseData.forEach(function (d, i) {
         d.layout = {
           x: grid[i].x,
           y: grid[i].y,
@@ -19631,64 +19747,76 @@
       // Test.
       if (rows * cols !== data.length) throw Error('data needs to have rows * col length'); // Build layout.
 
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const point = {
+      for (var r = 0; r < rows; r++) {
+        for (var c = 0; c < cols; c++) {
+          var point = {
             x: Math.round(c / (cols - 1) * 1e5) / 1e5,
             y: Math.round(r / (rows - 1) * 1e5) / 1e5,
-            scale
+            scale: scale
           };
           points.push(point);
         }
       } // Clone and augment original data.
 
 
-      const dataCloned = data.map(d => lodash_clonedeep(d));
+      var dataCloned = data.map(function (d) {
+        return lodash_clonedeep(d);
+      });
       augmentData(dataCloned, points);
       return dataCloned;
     } // Getters|Setters.
 
 
-    layout.rows = _ => _ ? (rows = _, layout) : rows;
+    layout.rows = function (_) {
+      return _ ? (rows = _, layout) : rows;
+    };
 
-    layout.cols = _ => _ ? (cols = _, layout) : cols;
+    layout.cols = function (_) {
+      return _ ? (cols = _, layout) : cols;
+    };
 
-    layout.scale = _ => _ ? (scale = _, layout) : scale;
+    layout.scale = function (_) {
+      return _ ? (scale = _, layout) : scale;
+    };
 
     return layout;
   }
 
   /* eslint-disable no-param-reassign */
-  const smallBottleScale = 0.15;
-  let xScale;
-  let yScale;
-  let gradientGood;
-  let gradientBad; // Helper functions.
+  var smallBottleScale = 0.15;
+  var xScale;
+  var yScale;
+  var gradientGood;
+  var gradientBad; // Helper functions.
 
   function getBaseData(rows, cols) {
-    return range(rows * cols).map((d, i) => ({
-      quality: Math.random() < 0.3,
-      index: i
-    }));
+    return range(rows * cols).map(function (d, i) {
+      return {
+        quality: Math.random() < 0.3,
+        index: i
+      };
+    });
   }
 
   function setScales() {
     // Get scales (also determining the space for our visual)
-    const xBottleCorrection = state.glassBottle.bottleBox.width / 2 * smallBottleScale;
-    const yBottleCorrection = state.glassBottle.bottleBox.height / 2 * smallBottleScale;
+    var xBottleCorrection = state.glassBottle.bottleBox.width / 2 * smallBottleScale;
+    var yBottleCorrection = state.glassBottle.bottleBox.height / 2 * smallBottleScale;
     xScale = linear$1().range([state.width * 0.1 - xBottleCorrection, state.width * 0.9 - xBottleCorrection]);
     yScale = linear$1().range([state.height * 0.1 - yBottleCorrection, state.height * 0.9 - yBottleCorrection]);
   }
 
   function prepData() {
     // Base Data.
-    const num = 10;
+    var num = 10;
     state.bottleGrid.baseData = getBaseData(num, num); // Target data with layout.
 
     state.bottleGrid.dataTarget = gridLayout().rows(num).cols(num).scale(smallBottleScale)(state.bottleGrid.baseData); // Origin data with layout.
 
-    state.bottleGrid.dataOrigin = state.bottleGrid.dataTarget.map(d => lodash_clonedeep(d));
-    state.bottleGrid.dataOrigin.forEach(d => {
+    state.bottleGrid.dataOrigin = state.bottleGrid.dataTarget.map(function (d) {
+      return lodash_clonedeep(d);
+    });
+    state.bottleGrid.dataOrigin.forEach(function (d) {
       d.layout.y = -0.2;
       d.layout.scale = 0;
     }); // Add the initial position of the main bottle.
@@ -19698,16 +19826,24 @@
     state.bottleGrid.dataOrigin[0].layout.scale = state.transform.bottle.scale; // Sorted data (prep for sorted tween - this is complex!).
     // 1. Clone the base data and sort it by high - low quality.
 
-    const sortedBaseData = state.bottleGrid.baseData.map(d => lodash_clonedeep(d)).sort((a, b) => b.quality - a.quality); // 2. Augment it with an updated layout.
+    var sortedBaseData = state.bottleGrid.baseData.map(function (d) {
+      return lodash_clonedeep(d);
+    }).sort(function (a, b) {
+      return b.quality - a.quality;
+    }); // 2. Augment it with an updated layout.
 
     state.bottleGrid.dataSorted = gridLayout().rows(num).cols(num).scale(smallBottleScale)(sortedBaseData); // 3. Sort it into their original position.
     // Now we have the elements in orginal order
     // but the layout objects are sorted by quality.
 
-    state.bottleGrid.dataSorted.sort((a, b) => a.index - b.index); // Exit positions (out data).
+    state.bottleGrid.dataSorted.sort(function (a, b) {
+      return a.index - b.index;
+    }); // Exit positions (out data).
 
-    state.bottleGrid.dataOut = state.bottleGrid.dataTarget.map(d => lodash_clonedeep(d));
-    state.bottleGrid.dataOut.forEach(d => {
+    state.bottleGrid.dataOut = state.bottleGrid.dataTarget.map(function (d) {
+      return lodash_clonedeep(d);
+    });
+    state.bottleGrid.dataOut.forEach(function (d) {
       d.layout.y = -0.2;
       d.layout.scale = 0;
     });
@@ -19716,21 +19852,19 @@
 
   function drawBottles(ctx, path, points) {
     ctx.clearRect(0, 0, state.width, state.height);
-    points.forEach(point => {
-      const {
-        layout
-      } = point;
+    points.forEach(function (point) {
+      var layout = point.layout;
       ctx.save();
       ctx.translate(xScale(layout.x), yScale(layout.y));
       ctx.scale(layout.scale, layout.scale);
       ctx.beginPath();
 
-      for (let i = 0; i < path.length; i++) {
-        const segment = path[i];
-        const l = segment.length;
+      for (var i = 0; i < path.length; i++) {
+        var segment = path[i];
+        var l = segment.length;
         ctx.moveTo(segment[0], segment[1]);
 
-        for (let j = 2; j < l; j += 6) {
+        for (var j = 2; j < l; j += 6) {
           ctx.bezierCurveTo(segment[j], segment[j + 1], segment[j + 2], segment[j + 3], segment[j + 4], segment[j + 5]);
         }
 
@@ -19746,10 +19880,8 @@
 
   function drawBottleWaves(ctx, path, points) {
     ctx.clearRect(0, 0, state.width, state.height);
-    points.forEach(point => {
-      const {
-        layout
-      } = point;
+    points.forEach(function (point) {
+      var layout = point.layout;
       ctx.save();
       ctx.fillStyle = point.quality ? gradientGood : gradientBad;
       ctx.translate(xScale(layout.x), yScale(layout.y));
@@ -19769,7 +19901,7 @@
   }
 
   function renderBottleGrid() {
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function () {
       gradientGood = getGradient(state.bottleGrid.colour.good);
       gradientBad = getGradient(state.bottleGrid.colour.bad);
       drawBottleWaves(state.ctx.bottleWave, state.bottleWave.bottlePath, state.bottleGrid.dataOrigin);
@@ -19783,13 +19915,21 @@
     setScales();
     prepData(); // Tween
 
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onUpdate: renderBottleGrid
     });
-    const pointtween = gsapWithCSS.to(state.bottleGrid.dataOrigin.map(d => d.layout), {
-      x: i => state.bottleGrid.dataTarget[i].layout.x,
-      y: i => state.bottleGrid.dataTarget[i].layout.y,
-      scale: i => state.bottleGrid.dataTarget[i].layout.scale,
+    var pointtween = gsapWithCSS.to(state.bottleGrid.dataOrigin.map(function (d) {
+      return d.layout;
+    }), {
+      x: function x(i) {
+        return state.bottleGrid.dataTarget[i].layout.x;
+      },
+      y: function y(i) {
+        return state.bottleGrid.dataTarget[i].layout.y;
+      },
+      scale: function scale(i) {
+        return state.bottleGrid.dataTarget[i].layout.scale;
+      },
       stagger: 0.01
     });
     return tl.add(pointtween);
@@ -19797,8 +19937,8 @@
 
   function tweenBottleGrid() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('bottleGrid');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('bottleGrid');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.bottleGrid) state.tween.bottleGrid.kill();
     state.tween.bottleGrid = defineTweenBottleGrid();
@@ -19809,29 +19949,29 @@
 
   function defineTweenBottleGridColour() {
     // Tween
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onUpdate: renderBottleGrid
     }); // For shortness.
 
-    const colours = state.bottleColour; // Tween from the base to a good gradient.
+    var colours = state.bottleColour; // Tween from the base to a good gradient.
 
-    const colourGood0 = gsapWithCSS.fromTo(state.bottleGrid.colour.good, {
+    var colourGood0 = gsapWithCSS.fromTo(state.bottleGrid.colour.good, {
       stop0: colours.base.stop0
     }, {
       stop0: colours.good.stop0
     });
-    const colourGood1 = gsapWithCSS.fromTo(state.bottleGrid.colour.good, {
+    var colourGood1 = gsapWithCSS.fromTo(state.bottleGrid.colour.good, {
       stop1: colours.base.stop1
     }, {
       stop1: colours.good.stop1
     }); // Tween from the base to a bad gradient.
 
-    const colourBad0 = gsapWithCSS.fromTo(state.bottleGrid.colour.bad, {
+    var colourBad0 = gsapWithCSS.fromTo(state.bottleGrid.colour.bad, {
       stop0: colours.base.stop0
     }, {
       stop0: colours.bad.stop0
     });
-    const colourBad1 = gsapWithCSS.fromTo(state.bottleGrid.colour.bad, {
+    var colourBad1 = gsapWithCSS.fromTo(state.bottleGrid.colour.bad, {
       stop1: colours.base.stop1
     }, {
       stop1: colours.bad.stop1
@@ -19841,8 +19981,8 @@
 
   function tweenBottleGridColour() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('bottleGridColour');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('bottleGridColour');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.bottleGridColour) state.tween.bottleGridColour.kill();
     state.tween.bottleGridColour = defineTweenBottleGridColour();
@@ -19852,20 +19992,28 @@
   /* eslint-disable no-use-before-define */
 
   function renderBottleGridSorted() {
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function () {
       drawBottleWaves(state.ctx.bottleWave, state.bottleWave.bottlePath, state.bottleGrid.dataTarget);
       drawBottles(state.ctx.glassBottle, state.glassBottle.path, state.bottleGrid.dataTarget);
     });
   }
 
   function defineTweenBottleGridSort() {
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onUpdate: renderBottleGridSorted
     });
-    const pointtween = gsapWithCSS.to(state.bottleGrid.dataTarget.map(d => d.layout), {
-      x: i => state.bottleGrid.dataSorted[i].layout.x,
-      y: i => state.bottleGrid.dataSorted[i].layout.y,
-      scale: i => state.bottleGrid.dataSorted[i].layout.scale,
+    var pointtween = gsapWithCSS.to(state.bottleGrid.dataTarget.map(function (d) {
+      return d.layout;
+    }), {
+      x: function x(i) {
+        return state.bottleGrid.dataSorted[i].layout.x;
+      },
+      y: function y(i) {
+        return state.bottleGrid.dataSorted[i].layout.y;
+      },
+      scale: function scale(i) {
+        return state.bottleGrid.dataSorted[i].layout.scale;
+      },
       stagger: 0.01
     });
     return tl.add(pointtween);
@@ -19873,8 +20021,8 @@
 
   function tweenBottleGridSort() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('bottleGridSort');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('bottleGridSort');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.bottleGridSort) state.tween.bottleGridSort.kill();
     state.tween.bottleGridSort = defineTweenBottleGridSort();
@@ -19884,20 +20032,28 @@
   /* eslint-disable no-use-before-define */
 
   function renderBottleGridSorted$1() {
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function () {
       drawBottleWaves(state.ctx.bottleWave, state.bottleWave.bottlePath, state.bottleGrid.dataSorted);
       drawBottles(state.ctx.glassBottle, state.glassBottle.path, state.bottleGrid.dataSorted);
     });
   }
 
   function defineTweenBottleGridOut() {
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onUpdate: renderBottleGridSorted$1
     });
-    const pointtween = gsapWithCSS.to(state.bottleGrid.dataSorted.map(d => d.layout), {
-      x: i => state.bottleGrid.dataOut[i].layout.x,
-      y: i => state.bottleGrid.dataOut[i].layout.y,
-      scale: i => state.bottleGrid.dataOut[i].layout.scale,
+    var pointtween = gsapWithCSS.to(state.bottleGrid.dataSorted.map(function (d) {
+      return d.layout;
+    }), {
+      x: function x(i) {
+        return state.bottleGrid.dataOut[i].layout.x;
+      },
+      y: function y(i) {
+        return state.bottleGrid.dataOut[i].layout.y;
+      },
+      scale: function scale(i) {
+        return state.bottleGrid.dataOut[i].layout.scale;
+      },
       stagger: 0.01
     });
     return tl.add(pointtween);
@@ -19905,8 +20061,8 @@
 
   function tweenBottleGridOut() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('bottleGridOut');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('bottleGridOut');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.bottleGridOut) state.tween.bottleGridOut.kill();
     state.tween.bottleGridOut = defineTweenBottleGridOut();
@@ -19919,12 +20075,14 @@
     ctx.scale(t.scale, t.scale);
     ctx.setLineDash([length - offset, offset]); // eslint-disable-next-line no-unused-expressions
 
-    Array.isArray(paths) ? paths.forEach(path => ctx.stroke(path)) : ctx.stroke(paths);
+    Array.isArray(paths) ? paths.forEach(function (path) {
+      return ctx.stroke(path);
+    }) : ctx.stroke(paths);
     ctx.restore();
   }
 
   function renderPath() {
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function () {
       // Change global styles savely.
       state.ctx.glassBottle.save();
       state.ctx.glassBottle.globalAlpha = state.glassBottle.alpha; // 1
@@ -19935,7 +20093,7 @@
       state.ctx.glassBottle.clearRect(0, 0, state.width, state.height); // We draw the grid and each dataset column with their very own
       // path offsets, that are tweened one by one by the scrolltriggers.
 
-      state.dataset.info.forEach(d => {
+      state.dataset.info.forEach(function (d) {
         drawPath(state.ctx.glassBottle, state.dataset[d.name].paths, state.transform.dataset, state.dataset[d.name].length, state.dataset[d.name].offset);
       });
       state.ctx.glassBottle.restore();
@@ -19943,10 +20101,10 @@
   }
 
   function defineTweenDataset(pathInfo) {
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onUpdate: renderPath
     });
-    const offset = gsapWithCSS.fromTo(pathInfo, {
+    var offset = gsapWithCSS.fromTo(pathInfo, {
       offset: pathInfo.length
     }, {
       offset: 0
@@ -19956,10 +20114,10 @@
 
   function tweenDataset() {
     // We buld a tween for each dataset element (the grid and each column).
-    state.dataset.info.forEach(d => {
+    state.dataset.info.forEach(function (d) {
       // Capture current progress.
-      const scroll = ScrollTrigger.getById(d.tween);
-      const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+      var scroll = ScrollTrigger.getById(d.tween);
+      var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
       if (state.tween[d.tween]) state.tween[d.tween].kill();
       state.tween[d.tween] = defineTweenDataset(state.dataset[d.name]);
@@ -21971,25 +22129,24 @@
         .clipAngle(90 + epsilon$1);
   }
 
-  /* eslint-disable import/no-mutable-exports */
-  let countries;
-  let portugal;
-  let projection$1;
-  let path$1;
-  let pathSvg;
-  let sphere;
-  let grid;
-  let txScale;
-  let tyScale;
-  let sScale;
-  let rScale;
-  let gaScale;
-  let aaScale;
-  let point0;
-  let point1;
-  let point2; // Globe gradient colours.
+  var countries;
+  var portugal;
+  var projection$1;
+  var path$1;
+  var pathSvg;
+  var sphere;
+  var grid;
+  var txScale;
+  var tyScale;
+  var sScale;
+  var rScale;
+  var gaScale;
+  var aaScale;
+  var point0;
+  var point1;
+  var point2; // Globe gradient colours.
 
-  const colours$1 = [{
+  var colours$1 = [{
     colour: '#f4eee7',
     stop: 0.1
   }, {
@@ -22018,11 +22175,11 @@
     stop: 1
   }]; // The center of the world (Northern Portugal in our case).
 
-  const rBase = [8, -42, 0]; // Values for the gradient. // 1
+  var rBase = [8, -42, 0]; // Values for the gradient. // 1
 
-  const gradientCentrePoint = [-30, 40];
-  const gradientEdgePoint = [-60, 40];
-  let gradientValues;
+  var gradientCentrePoint = [-30, 40];
+  var gradientEdgePoint = [-60, 40];
+  var gradientValues;
   /**
    * Calculates the distance between two [lon, lat] points
    * in pixel, given a projection.
@@ -22033,26 +22190,28 @@
    */
 
   function getPixelDistance(pStart, pEnd, proj) {
-    const pStartPx = proj(pStart);
-    const pEndPx = proj(pEnd);
-    const distVector = [pEndPx[0] - pStartPx[0], pEndPx[1] - pStartPx[1]];
-    const distance = Math.sqrt(Math.pow(distVector[0], 2) + Math.pow(distVector[1], 2));
+    var pStartPx = proj(pStart);
+    var pEndPx = proj(pEnd);
+    var distVector = [pEndPx[0] - pStartPx[0], pEndPx[1] - pStartPx[1]];
+    var distance = Math.sqrt(Math.pow(distVector[0], 2) + Math.pow(distVector[1], 2));
     return {
       start: pStartPx,
       end: pEndPx,
-      distance
+      distance: distance
     };
   }
 
   function drawGlobe(ctx) {
-    const rough = state.rough.globe;
+    var rough = state.rough.globe;
     ctx.clearRect(0, 0, state.width, state.height);
     ctx.save();
     ctx.globalAlpha = gaScale(state.globe.scroll.progress); // Set the globe's radial gradient.
 
-    const grad = ctx.createRadialGradient(0, 0, gradientValues.distance, 0, 0, gradientValues.distance * 6); // Add colour steops.
+    var grad = ctx.createRadialGradient(0, 0, gradientValues.distance, 0, 0, gradientValues.distance * 6); // Add colour steops.
 
-    colours$1.forEach(d => grad.addColorStop(d.stop, d.colour));
+    colours$1.forEach(function (d) {
+      return grad.addColorStop(d.stop, d.colour);
+    });
     ctx.fillStyle = grad;
     ctx.beginPath(), path$1(sphere), ctx.fill();
     ctx.lineWidth = 0.05;
@@ -22076,7 +22235,7 @@
     // Set the projection tranform.
     projection$1.translate([txScale(state.globe.scroll.progress), tyScale(state.globe.scroll.progress)]);
     projection$1.scale(sScale(state.globe.scroll.progress));
-    const r = rScale(state.globe.scroll.progress);
+    var r = rScale(state.globe.scroll.progress);
     projection$1.rotate([rBase[0] + r, rBase[1] + r, rBase[2]]); // Radial gradient parameters.
 
     gradientValues = getPixelDistance(gradientCentrePoint, gradientEdgePoint, projection$1); // Arrow control point.
@@ -22093,14 +22252,23 @@
       y: point2[1]
     }; // Start the render.
 
-    requestAnimationFrame(() => drawGlobe(state.ctx.globe));
+    requestAnimationFrame(function () {
+      return drawGlobe(state.ctx.globe);
+    });
   }
 
   function prepData$1() {
     // Convert from topo to geoJSON.
     countries = feature(state.globe.data, state.globe.data.objects.ne_110m_admin_0_countries);
-    [portugal] = countries.features.filter(d => d.properties.admin === 'Portugal'); // Arrow control point 0.
 
+    var _countries$features$f = countries.features.filter(function (d) {
+      return d.properties.admin === 'Portugal';
+    });
+
+    var _countries$features$f2 = _slicedToArray(_countries$features$f, 1);
+
+    portugal = _countries$features$f2[0];
+    // Arrow control point 0.
     point0 = {
       x: state.width * 0.35,
       y: state.height * 0.45
@@ -22122,7 +22290,7 @@
     txScale = linear$1().domain([0, 0.5]).range([state.width * 0.3, state.width * 0.5]);
     tyScale = linear$1().domain([0, 0.3, 0.7, 1]).range([state.height * 0.2, state.height * 0.5, state.height * 0.475, state.height * 0.2]); // The scale scale.
 
-    const sInit = projection$1.scale();
+    var sInit = projection$1.scale();
     sScale = linear$1().domain([0, 0.3, 0.7, 1]).range([sInit, sInit * 2, sInit * 2, 0]); // The globe rotation scale.
 
     rScale = linear$1().domain([0, 0.3, 0.7, 1]).range([-50, -1, 1, 100]); // The globe's globalAlpha scale.
@@ -22136,12 +22304,12 @@
     prepData$1();
     prepGeoTools();
     prepScales();
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onUpdate: renderGlobe
     }); // Bonkers tween to make timeline work. We could work straight
     // off ScrollTrigger, but this is more in tune with the rest.
 
-    const blub = gsapWithCSS.to({
+    var blub = gsapWithCSS.to({
       bar: 0
     }, {
       bar: 1
@@ -22151,8 +22319,8 @@
 
   function tweenGlobe() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('globe');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('globe');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.globe) state.tween.globe.kill();
     state.tween.globe = defineTweenGlobe();
@@ -23247,19 +23415,21 @@
    */
 
   function getXScaleTools(data, variable) {
-    const domain = extent(data, d => d[variable]);
-    const tickArray = ticks(domain[0], domain[1], 12);
-    const scale = point$1().domain(tickArray);
+    var domain = extent(data, function (d) {
+      return d[variable];
+    });
+    var tickArray = ticks(domain[0], domain[1], 12);
+    var scale = point$1().domain(tickArray);
 
     function snap(number) {
-      return tickArray.reduce((a, b) => {
+      return tickArray.reduce(function (a, b) {
         return Math.abs(b - number) < Math.abs(a - number) ? b : a;
       });
     }
 
     return {
-      scale,
-      snap
+      scale: scale,
+      snap: snap
     };
   }
   /**
@@ -23272,49 +23442,73 @@
 
   function getYValueMap(data, variable, snap) {
     // Split and Apply... (Combine happens in the main func).
-    const nested = nest().key(d => snap(d[variable])).rollup(v => v.map((d, i) => ({
-      id: d.id,
-      y: i
-    }))).entries(data); // Unnest the results...
+    var nested = nest().key(function (d) {
+      return snap(d[variable]);
+    }).rollup(function (v) {
+      return v.map(function (d, i) {
+        return {
+          id: d.id,
+          y: i
+        };
+      });
+    }).entries(data); // Unnest the results...
 
-    const unnested = nested.map(d => d.value);
-    const flattened = [].concat.apply([], unnested); // Scale y values to [0, 1].
+    var unnested = nested.map(function (d) {
+      return d.value;
+    });
+    var flattened = [].concat.apply([], unnested); // Scale y values to [0, 1].
 
-    const yScale = linear$1().domain(extent(flattened, d => d.y)); // Get a map of values by the data's id variable.
+    var yScale = linear$1().domain(extent(flattened, function (d) {
+      return d.y;
+    })); // Get a map of values by the data's id variable.
 
-    const flatMap = nest().key(d => d.id).rollup(v => yScale(v[0].y)).map(flattened);
+    var flatMap = nest().key(function (d) {
+      return d.id;
+    }).rollup(function (v) {
+      return yScale(v[0].y);
+    }).map(flattened);
     return flatMap;
   }
 
   function frequency() {
-    let variable; // The data variable.
+    var variable; // The data variable.
 
-    let id = 'id'; // The unique numerical row identifier variable.
+    var id = 'id'; // The unique numerical row identifier variable.
 
     function layout(data) {
       // xValues.
-      const xTools = getXScaleTools(data, variable);
-      const yMap = getYValueMap(data, variable, xTools.snap); // Get the layout in an array.
+      var xTools = getXScaleTools(data, variable);
+      var yMap = getYValueMap(data, variable, xTools.snap); // Get the layout in an array.
 
-      const result = data.map(d => ({
-        id: d[id],
-        x: xTools.scale(xTools.snap(d[variable])),
-        y: yMap.get(d[id]),
-        value: xTools.snap(d[variable])
-      })); // Get the layout in a map by `id` which needs to be in
+      var result = data.map(function (d) {
+        return {
+          id: d[id],
+          x: xTools.scale(xTools.snap(d[variable])),
+          y: yMap.get(d[id]),
+          value: xTools.snap(d[variable])
+        };
+      }); // Get the layout in a map by `id` which needs to be in
       // the dataset this layout gets joined by.
 
-      const resultMap = nest().key(d => d[id]).rollup(v => ({
-        x: v[0].x,
-        y: v[0].y,
-        value: v[0].value
-      })).map(result);
+      var resultMap = nest().key(function (d) {
+        return d[id];
+      }).rollup(function (v) {
+        return {
+          x: v[0].x,
+          y: v[0].y,
+          value: v[0].value
+        };
+      }).map(result);
       return resultMap;
     }
 
-    layout.variable = _ => _ ? (variable = _, layout) : variable;
+    layout.variable = function (_) {
+      return _ ? (variable = _, layout) : variable;
+    };
 
-    layout.id = _ => _ ? (id = _, layout) : id;
+    layout.id = function (_) {
+      return _ ? (id = _, layout) : id;
+    };
 
     return layout;
   }
@@ -23325,16 +23519,32 @@
   function focus(leaves, axis) {
     // Sort the node leaves descendingly by their y position for
     // the x axis and by their x position for the y axis labels.
-    return axis === 'x' ? leaves.sort((a, b) => b.y - a.y).filter((_, i) => i < 10) : leaves.sort((a, b) => b.x - a.x).filter((_, i) => i < 10);
+    return axis === 'x' ? leaves.sort(function (a, b) {
+      return b.y - a.y;
+    }).filter(function (_, i) {
+      return i < 10;
+    }) : leaves.sort(function (a, b) {
+      return b.x - a.x;
+    }).filter(function (_, i) {
+      return i < 10;
+    });
   } // Values for an x axis.
 
 
   function xAxisValues(values, key, ax, p) {
     return {
-      x: median(focus(values, ax), d => d.x),
-      y: max(values, d => d.y) + p,
-      xRange: extent(values, d => d.x),
-      yRange: extent(values, d => d.y),
+      x: median(focus(values, ax), function (d) {
+        return d.x;
+      }),
+      y: max(values, function (d) {
+        return d.y;
+      }) + p,
+      xRange: extent(values, function (d) {
+        return d.x;
+      }),
+      yRange: extent(values, function (d) {
+        return d.y;
+      }),
       zigzag: String(median(values, key)).length > 3 // 1
 
     };
@@ -23343,46 +23553,70 @@
 
   function yAxisValues(values, key, ax, p) {
     return {
-      x: max(values, d => d.x) + p,
-      y: median(focus(values, ax), d => d.y),
-      xRange: extent(values, d => d.x),
-      yRange: extent(values, d => d.y),
+      x: max(values, function (d) {
+        return d.x;
+      }) + p,
+      y: median(focus(values, ax), function (d) {
+        return d.y;
+      }),
+      xRange: extent(values, function (d) {
+        return d.x;
+      }),
+      yRange: extent(values, function (d) {
+        return d.y;
+      }),
       zigzag: String(median(values, key)).length > 3
     };
   }
 
   function labels() {
-    let nestKey;
-    let axis = 'x';
-    let align = false;
-    let padding = 10;
+    var nestKey;
+    var axis = 'x';
+    var align = false;
+    var padding = 10;
 
     function layout(data) {
       // Label positions for each variable category.
-      const ticks = nest().key(nestKey).rollup(v => {
+      var ticks = nest().key(nestKey).rollup(function (v) {
         if (axis === 'x') return xAxisValues(v, nestKey, axis, padding);
         if (axis === 'y') return yAxisValues(v, nestKey, axis, padding);
         throw Error('Label axis parameter needs to be x or y');
-      }).entries(data).sort((a, b) => +a.key - +b.key); // Bounding box of the variable's point cloud.
+      }).entries(data).sort(function (a, b) {
+        return +a.key - +b.key;
+      }); // Bounding box of the variable's point cloud.
 
-      const bbox = {
-        xMin: min(ticks, d => d.value.xRange[0]),
-        xMax: max(ticks, d => d.value.xRange[1]),
-        yMin: min(ticks, d => d.value.yRange[0]),
-        yMax: max(ticks, d => d.value.yRange[1])
+      var bbox = {
+        xMin: min(ticks, function (d) {
+          return d.value.xRange[0];
+        }),
+        xMax: max(ticks, function (d) {
+          return d.value.xRange[1];
+        }),
+        yMin: min(ticks, function (d) {
+          return d.value.yRange[0];
+        }),
+        yMax: max(ticks, function (d) {
+          return d.value.yRange[1];
+        })
       }; // If align is true, we correct/align the labels' cross axis position.
 
       if (align && axis === 'x') {
-        ticks.forEach(tick => tick.value.y = bbox.yMax + padding);
+        ticks.forEach(function (tick) {
+          return tick.value.y = bbox.yMax + padding;
+        });
       }
 
       if (align && axis === 'y') {
-        ticks.forEach(tick => tick.value.x = bbox.xMax + padding);
+        ticks.forEach(function (tick) {
+          return tick.value.x = bbox.xMax + padding;
+        });
       } // Get heading or axis label positions.
 
 
-      const yMinTick = ticks.filter(d => d.value.yRange[0] === bbox.yMin)[0];
-      const label = {};
+      var yMinTick = ticks.filter(function (d) {
+        return d.value.yRange[0] === bbox.yMin;
+      })[0];
+      var label = {};
       label.header = {
         x: yMinTick.value.x,
         y: bbox.yMin
@@ -23396,21 +23630,29 @@
       }; // Return the info.
 
       return {
-        ticks,
-        bbox,
-        label
+        ticks: ticks,
+        bbox: bbox,
+        label: label
       };
     } // Getters/setters.
 
 
-    layout.nestKey = _ => _ ? (nestKey = _, layout) : nestKey;
+    layout.nestKey = function (_) {
+      return _ ? (nestKey = _, layout) : nestKey;
+    };
 
-    layout.axis = _ => _ ? (axis = _, layout) : axis;
+    layout.axis = function (_) {
+      return _ ? (axis = _, layout) : axis;
+    };
 
-    layout.padding = _ => _ ? (padding = _, layout) : padding; // Special treatment for boolean getter/setter:
+    layout.padding = function (_) {
+      return _ ? (padding = _, layout) : padding;
+    }; // Special treatment for boolean getter/setter:
 
 
-    layout.align = _ => _ !== undefined || _ !== null ? (align = _, layout) : align;
+    layout.align = function (_) {
+      return _ !== undefined || _ !== null ? (align = _, layout) : align;
+    };
 
     return layout;
   }
@@ -23418,33 +23660,34 @@
 
   /* eslint-disable no-prototype-builtins */
 
-  const dotRadius = 1.5;
-  let dot;
-  let dotGood;
-  let dotBad;
-  let margin;
-  let xScale$1;
-  let yScale$1;
-  let sim;
-  const tickPadding = 20; // Regression line data.
+  var dotRadius = 1.5;
+  var dot;
+  var dotGood;
+  var dotBad;
+  var margin;
+  var xScale$1;
+  var yScale$1;
+  var sim;
+  var tickPadding = 20; // Regression line data.
 
-  let lrLine;
-  let start$1 = [];
-  let end = [];
-  let cp1 = [];
-  let cp2 = [];
-  let length;
-  let offset; // Point on regression line data.
+  var lrLine;
+  var start$1 = [];
+  var end = [];
+  var cp1 = [];
+  var cp2 = [];
+  var length;
+  var offset; // Point on regression line data.
 
-  let pointStart = [];
-  let point$3 = [];
-  let pointEnd = [];
-  let pointRadius;
-  let pointAlpha; // Utils
+  var pointStart = [];
+  var point$3 = [];
+  var pointEnd = [];
+  var pointRadius;
+  var pointAlpha; // Utils
 
-  function tweenStatsAlpha(value, dur = 0.5) {
+  function tweenStatsAlpha(value) {
+    var dur = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0.5;
     gsap.to(state.stats.alpha, {
-      value,
+      value: value,
       duration: dur
     });
   } // Scales and Data
@@ -23467,13 +23710,13 @@
   function getLabelCoordinates() {
     if (!state.stats.current.length) return; // Get the tick values, the cloud's bounding box and the label positions.
 
-    state.stats.current.forEach(el => {
-      const {
-        name,
-        axis,
-        straight
-      } = el;
-      const labelLayout = labels().nestKey(d => d.layout[name].value).axis(axis).padding(tickPadding).align(straight)(state.stats.data); // Add layout to the current variable object.
+    state.stats.current.forEach(function (el) {
+      var name = el.name,
+          axis = el.axis,
+          straight = el.straight;
+      var labelLayout = labels().nestKey(function (d) {
+        return d.layout[name].value;
+      }).axis(axis).padding(tickPadding).align(straight)(state.stats.data); // Add layout to the current variable object.
 
       el.labelLayout = labelLayout;
     });
@@ -23482,8 +23725,10 @@
 
   function getLinearLine(xRange) {
     // Calculate the line function.
-    const lrInput = state.stats.data.map(d => [d.x, d.y]);
-    const lr = linearRegression(lrInput);
+    var lrInput = state.stats.data.map(function (d) {
+      return [d.x, d.y];
+    });
+    var lr = linearRegression(lrInput);
     lrLine = linearRegressionLine(lr); // Calculate the length and offset and save the
     // variables for the draw func in module scope.
 
@@ -23496,7 +23741,7 @@
   }
 
   function getLinearLineExtension(xRange) {
-    const extension = state.stats.progress.extend * (xRange[1] - xRange[0]);
+    var extension = state.stats.progress.extend * (xRange[1] - xRange[0]);
     start$1 = [xRange[0] - extension, lrLine(xRange[0] - extension)];
     cp1 = start$1.slice();
     end = [xRange[1] + extension, lrLine(xRange[1] + extension)];
@@ -23507,7 +23752,9 @@
 
   function getLogisticLine(xRange) {
     // Need this to get the exact y positions.
-    const yAxisValues = state.stats.current.filter(d => d.axis === 'y'); // Run it only if stars align.
+    var yAxisValues = state.stats.current.filter(function (d) {
+      return d.axis === 'y';
+    }); // Run it only if stars align.
     // We might want to probably also condition this on progress.logistic being > 0
 
     if (!yAxisValues.length || !yAxisValues[0].labelLayout) return; // How to debug:
@@ -23516,13 +23763,13 @@
     // Basically, we need the tick values from the labels for
     // the axes positions we'll use as logistic start and end curve points.
 
-    const yTicks = yAxisValues[0].labelLayout.ticks;
-    const yValues = [yTicks[0].value.y, yTicks[1].value.y];
-    const startDest = [state.stats.current[0].labelLayout.bbox.xMin - 10, yValues[0]];
-    const endDest = [state.stats.current[0].labelLayout.bbox.xMax + 10, yValues[1]]; // The control points are fractions of the xRange distance.
+    var yTicks = yAxisValues[0].labelLayout.ticks;
+    var yValues = [yTicks[0].value.y, yTicks[1].value.y];
+    var startDest = [state.stats.current[0].labelLayout.bbox.xMin - 10, yValues[0]];
+    var endDest = [state.stats.current[0].labelLayout.bbox.xMax + 10, yValues[1]]; // The control points are fractions of the xRange distance.
 
-    const cp1xDest = xRange[0] + (xRange[1] - xRange[0]) * 0.8;
-    const cp2xDest = xRange[0] + (xRange[1] - xRange[0]) * 0.5; // Interpolating (could use gsap here, but that would require state and stuff..)
+    var cp1xDest = xRange[0] + (xRange[1] - xRange[0]) * 0.8;
+    var cp2xDest = xRange[0] + (xRange[1] - xRange[0]) * 0.5; // Interpolating (could use gsap here, but that would require state and stuff..)
 
     start$1[0] += state.stats.progress.logistic * (startDest[0] - start$1[0]);
     start$1[1] += state.stats.progress.logistic * (startDest[1] - start$1[1]);
@@ -23540,7 +23787,9 @@
     if (!state.stats.lr) return; // The points x ranges (not the layout, the actual simulated points in px)
     // help calculate the x, y positions of the linear regression line.
 
-    const xRange = extent(state.stats.data, d => d.x);
+    var xRange = extent(state.stats.data, function (d) {
+      return d.x;
+    });
     xRange[1] += 5; // let it nudge over a little.
     // Calculate the line positions.
 
@@ -23551,11 +23800,13 @@
 
 
   function gatherTickInfo(xTick, array) {
-    const yValue = lrLine(xTick.value.x); // Get the closest y tick.
+    var yValue = lrLine(xTick.value.x); // Get the closest y tick.
 
-    const yTick = array.reduce((a, b) => Math.abs(b.value.y - yValue) < Math.abs(a.value.y - yValue) ? b : a); // A higher x value means we are below the ticl.
+    var yTick = array.reduce(function (a, b) {
+      return Math.abs(b.value.y - yValue) < Math.abs(a.value.y - yValue) ? b : a;
+    }); // A higher x value means we are below the ticl.
 
-    const delta = yValue > yTick.value.y ? 'below' : 'above'; // Store the data in state so we can fetch it later from the article.
+    var delta = yValue > yTick.value.y ? 'below' : 'above'; // Store the data in state so we can fetch it later from the article.
 
     state.stats.pointTickInfo = {
       x: xTick.key,
@@ -23567,17 +23818,19 @@
 
   function getPointDrawingParams() {
     if (!state.stats.lr) return;
-    const xAxisValues = state.stats.current.filter(d => d.axis === 'x')[0];
+    var xAxisValues = state.stats.current.filter(function (d) {
+      return d.axis === 'x';
+    })[0];
     if (!xAxisValues.labelLayout) return; // double safety net due to random race condition issue.
 
-    const bbox = xAxisValues.labelLayout.bbox;
-    const tickNumber = xAxisValues.labelLayout.ticks.length; // This needs to go in state / be picked up by the story
+    var bbox = xAxisValues.labelLayout.bbox;
+    var tickNumber = xAxisValues.labelLayout.ticks.length; // This needs to go in state / be picked up by the story
 
-    const xTick = xAxisValues.labelLayout.ticks[Math.ceil(tickNumber / 2)]; // The points' final destination.
+    var xTick = xAxisValues.labelLayout.ticks[Math.ceil(tickNumber / 2)]; // The points' final destination.
 
     pointStart = [xTick.value.x, bbox.yMax];
-    const pointFinal = [pointStart[0], lrLine(pointStart[0])];
-    const pointEndFinal = [bbox.xMax, lrLine(pointStart[0])]; // The initial point positions.
+    var pointFinal = [pointStart[0], lrLine(pointStart[0])];
+    var pointEndFinal = [bbox.xMax, lrLine(pointStart[0])]; // The initial point positions.
 
     point$3 = pointStart.slice();
     pointEnd = point$3.slice(); // Interpolating from the initial to the final positions.
@@ -23591,7 +23844,9 @@
     // We only need this once to begin with (this func runs repeatedly on render).
 
     if (!state.stats.pointTickInfo) {
-      gatherTickInfo(xTick, state.stats.current.filter(d => d.axis === 'y')[0].labelLayout.ticks);
+      gatherTickInfo(xTick, state.stats.current.filter(function (d) {
+        return d.axis === 'y';
+      })[0].labelLayout.ticks);
     }
   } // Layouts
   // -------
@@ -23601,7 +23856,7 @@
 
   function addLayouts() {
     // Get all variable based layouts.
-    const frequencyLayouts = [{
+    var frequencyLayouts = [{
       name: 'alcohol',
       layout: frequency().variable('alcohol')(state.stats.data)
     }, {
@@ -23624,7 +23879,7 @@
       layout: frequency().variable('quality_binary')(state.stats.data)
     }]; // Prep the scatter layout loop, with the predictors to use...
 
-    const scatterLayouts = [{
+    var scatterLayouts = [{
       name: 'alcohol__quality',
       pred: 'alcohol',
       out: 'quality'
@@ -23638,7 +23893,7 @@
       out: 'quality'
     }]; // Add all layouts to the main data.
 
-    state.stats.data.forEach(d => {
+    state.stats.data.forEach(function (d) {
       d.layout = {}; // That point where the globe disappears to.
 
       d.layout.globeExit = {
@@ -23648,7 +23903,7 @@
       }; // Note, the Lattice layout is controlled by the link dataset.
       // Add all variable layouts to the data.
 
-      frequencyLayouts.forEach(el => {
+      frequencyLayouts.forEach(function (el) {
         d.layout[el.name] = {
           x: xScale$1(el.layout.get(d.id).x),
           y: yScale$1(el.layout.get(d.id).y),
@@ -23656,9 +23911,9 @@
         };
       }); // Add scatter plot layouts
 
-      scatterLayouts.forEach(el => {
-        const predictorScale = getLinearScale(el.pred);
-        const outcomeScale = getLinearScale(el.out);
+      scatterLayouts.forEach(function (el) {
+        var predictorScale = getLinearScale(el.pred);
+        var outcomeScale = getLinearScale(el.out);
         d.layout[el.name] = {
           x: xScale$1(predictorScale(d[el.pred])),
           y: yScale$1(outcomeScale(d[el.out]))
@@ -23669,7 +23924,7 @@
 
 
   function setLayout(name) {
-    state.stats.data.forEach(d => {
+    state.stats.data.forEach(function (d) {
       d.x = d.layout[name].x;
       d.y = d.layout[name].y;
     });
@@ -23678,9 +23933,9 @@
 
 
   function drawDot(r, colour) {
-    const can = document.createElement('canvas');
+    var can = document.createElement('canvas');
     can.width = can.height = r * 2;
-    const ctx = can.getContext('2d');
+    var ctx = can.getContext('2d');
     ctx.beginPath();
     ctx.fillStyle = colour;
     ctx.arc(r, r, r, 0, 2 * Math.PI);
@@ -23730,106 +23985,115 @@
     ctx.globalAlpha = state.stats.alpha.value; // Draw axes and labels.
 
     if (state.stats.current.length) {
-      // Base styles.
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 0.2;
-      const tickFontConfig = '12px Signika'; // Loop through each of the variables we want to show.
+      (function () {
+        // Base styles.
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 0.2;
+        var tickFontConfig = '12px Signika'; // Loop through each of the variables we want to show.
 
-      for (let i = 0; i < state.stats.current.length; i++) {
-        const currentVar = state.stats.current[i]; // Check if there's data to draw with.
+        var _loop = function _loop(i) {
+          var currentVar = state.stats.current[i]; // Check if there's data to draw with.
 
-        if (!currentVar.hasOwnProperty('labelLayout')) break; // Reference element and layout info.
+          if (!currentVar.hasOwnProperty('labelLayout')) return "break"; // Reference element and layout info.
 
-        const labelLayout = currentVar.labelLayout; // Draw each tick.
+          var labelLayout = currentVar.labelLayout; // Draw each tick.
 
-        ctx.fillStyle = '#555555';
-        labelLayout.ticks.forEach((tick, j) => {
-          // Base info.
-          const x = tick.value.x;
-          const y = tick.value.y;
-          const label = tick.key; // For scatter plots (they have label == true)...
+          ctx.fillStyle = '#555555';
+          labelLayout.ticks.forEach(function (tick, j) {
+            // Base info.
+            var x = tick.value.x;
+            var y = tick.value.y;
+            var label = tick.key; // For scatter plots (they have label == true)...
 
-          if (currentVar.label) {
-            if (currentVar.axis === 'x') {
-              // Get the labels' y value.
-              const xTickLine = x;
-              const y1TickLine = labelLayout.bbox.yMin;
-              let y2TickLine = y - 10; // Check for overlapping labels.
+            if (currentVar.label) {
+              if (currentVar.axis === 'x') {
+                // Get the labels' y value.
+                var xTickLine = x;
+                var y1TickLine = labelLayout.bbox.yMin;
+                var y2TickLine = y - 10; // Check for overlapping labels.
 
-              const zigzagCondition = tick.value.zigzag && j % 2 === 0;
-              if (zigzagCondition) y2TickLine += 15; // Draw the tick line.
+                var zigzagCondition = tick.value.zigzag && j % 2 === 0;
+                if (zigzagCondition) y2TickLine += 15; // Draw the tick line.
 
-              ctx.beginPath();
-              ctx.moveTo(xTickLine, y1TickLine);
-              ctx.lineTo(xTickLine, y2TickLine);
-              ctx.stroke(); // Draw the labels.
+                ctx.beginPath();
+                ctx.moveTo(xTickLine, y1TickLine);
+                ctx.lineTo(xTickLine, y2TickLine);
+                ctx.stroke(); // Draw the labels.
+
+                ctx.font = tickFontConfig;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.fillText(label, x, y2TickLine);
+              }
+
+              if (currentVar.axis === 'y') {
+                ctx.font = tickFontConfig;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(label, x, y);
+                var x1TickLine = labelLayout.bbox.xMin;
+                var x2TickLine = x - 10;
+                var yTickLine = y;
+                ctx.beginPath();
+                ctx.moveTo(x1TickLine, yTickLine);
+                ctx.lineTo(x2TickLine, yTickLine);
+                ctx.stroke();
+              }
+            } // For frequency plots (they have label == false)...
+
+
+            if (!currentVar.label) {
+              // Set the lengths of ticks.
+              var y1 = y - tickPadding * 0.5;
+              var y2 = y - tickPadding * 0.1; // Overwrite y2 if we should arrange long labels in zig zag.
+
+              var _zigzagCondition = currentVar.axis === 'x' && tick.value.zigzag && j % 2 === 0;
+
+              if (_zigzagCondition) y2 += 15; // Draw label.
 
               ctx.font = tickFontConfig;
               ctx.textAlign = 'center';
               ctx.textBaseline = 'top';
-              ctx.fillText(label, x, y2TickLine);
-            }
+              ctx.fillText(label, x, y2 + 5); // Draw ticks.
 
-            if (currentVar.axis === 'y') {
-              ctx.font = tickFontConfig;
-              ctx.textAlign = 'left';
-              ctx.textBaseline = 'middle';
-              ctx.fillText(label, x, y);
-              const x1TickLine = labelLayout.bbox.xMin;
-              const x2TickLine = x - 10;
-              const yTickLine = y;
               ctx.beginPath();
-              ctx.moveTo(x1TickLine, yTickLine);
-              ctx.lineTo(x2TickLine, yTickLine);
+              ctx.moveTo(x, y1);
+              ctx.lineTo(x, y2);
               ctx.stroke();
             }
-          } // For frequency plots (they have label == false)...
+          }); // Draw the header.
+
+          ctx.fillStyle = '#000000';
+
+          if (currentVar.header) {
+            var xHeader = labelLayout.label.header.x;
+            var yHeader = labelLayout.label.header.y;
+            var labelHeader = currentVar.name === 'ph' // edge case.
+            ? 'pH' : prettyLabel(currentVar.name).replace('_', ' ');
+            ctx.font = '50px Amatic SC';
+            ctx.fillText(labelHeader, xHeader, yHeader - 50);
+          } // Draw the axis labels.
 
 
-          if (!currentVar.label) {
-            // Set the lengths of ticks.
-            const y1 = y - tickPadding * 0.5;
-            let y2 = y - tickPadding * 0.1; // Overwrite y2 if we should arrange long labels in zig zag.
-
-            const zigzagCondition = currentVar.axis === 'x' && tick.value.zigzag && j % 2 === 0;
-            if (zigzagCondition) y2 += 15; // Draw label.
-
-            ctx.font = tickFontConfig;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-            ctx.fillText(label, x, y2 + 5); // Draw ticks.
-
-            ctx.beginPath();
-            ctx.moveTo(x, y1);
-            ctx.lineTo(x, y2);
-            ctx.stroke();
+          if (currentVar.label) {
+            var xAxisLabel = labelLayout.label.axisLabel.x;
+            var yAxisLabel = labelLayout.label.axisLabel.y;
+            var labelAxis = prettyLabel(currentVar.name).replace('_', ' ');
+            ctx.font = '20px Amatic SC';
+            ctx.fillText(labelAxis, xAxisLabel, yAxisLabel);
           }
-        }); // Draw the header.
+        };
 
-        ctx.fillStyle = '#000000';
+        for (var i = 0; i < state.stats.current.length; i++) {
+          var _ret = _loop(i);
 
-        if (currentVar.header) {
-          const xHeader = labelLayout.label.header.x;
-          const yHeader = labelLayout.label.header.y;
-          const labelHeader = currentVar.name === 'ph' // edge case.
-          ? 'pH' : prettyLabel(currentVar.name).replace('_', ' ');
-          ctx.font = '50px Amatic SC';
-          ctx.fillText(labelHeader, xHeader, yHeader - 50);
-        } // Draw the axis labels.
-
-
-        if (currentVar.label) {
-          const xAxisLabel = labelLayout.label.axisLabel.x;
-          const yAxisLabel = labelLayout.label.axisLabel.y;
-          const labelAxis = prettyLabel(currentVar.name).replace('_', ' ');
-          ctx.font = '20px Amatic SC';
-          ctx.fillText(labelAxis, xAxisLabel, yAxisLabel);
+          if (_ret === "break") break;
         }
-      }
+      })();
     } // Draw dots.
 
 
-    state.stats.data.forEach(d => {
+    state.stats.data.forEach(function (d) {
       if (!state.stats.colourDots) {
         ctx.drawImage(dot, d.x, d.y);
       } else {
@@ -23842,7 +24106,7 @@
   function renderStats() {
     getLineDrawingParams();
     getPointDrawingParams();
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function () {
       drawStats(state.ctx.chart);
       drawLine(state.ctx.chart);
       drawPoint(state.ctx.chart);
@@ -23860,8 +24124,8 @@
 
   function boundingBox() {
     // Relies on some globals.
-    const r = dotRadius;
-    state.stats.data.forEach(node => {
+    var r = dotRadius;
+    state.stats.data.forEach(function (node) {
       node.x = Math.max(r, Math.min(node.x, state.width - r * 2));
       node.y = Math.max(r, Math.min(node.y, state.height - r * 2));
     });
@@ -23888,8 +24152,12 @@
   // External libs.
   // Move to the globe's exit position.
 
-  const xPosGlobe = forceX(d => d.layout.globeExit.x).strength(0.1);
-  const yPosGlobe = forceY(d => d.layout.globeExit.y).strength(0.1);
+  var xPosGlobe = forceX(function (d) {
+    return d.layout.globeExit.x;
+  }).strength(0.1);
+  var yPosGlobe = forceY(function (d) {
+    return d.layout.globeExit.y;
+  }).strength(0.1);
 
   function simulateGlobePosition() {
     // Configure and start simulation.
@@ -23899,10 +24167,14 @@
   } // Move to lattice.
 
 
-  const chargeLattice = forceManyBody().strength(-6);
-  const xPosCentre = forceX(() => state.width / 2).strength(0.05); // 1
+  var chargeLattice = forceManyBody().strength(-6);
+  var xPosCentre = forceX(function () {
+    return state.width / 2;
+  }).strength(0.05); // 1
 
-  const yPosCentre = forceY(() => state.height / 2).strength(0.05);
+  var yPosCentre = forceY(function () {
+    return state.height / 2;
+  }).strength(0.05);
 
   function simulateLattice() {
     // Set the current variable value to null.
@@ -23910,7 +24182,9 @@
     state.stats.current = []; // This ↓ can't be in module scope with its force friends,
     // as it needs to be run after the links are produced.
 
-    const linkForce = forceLink(state.stats.links).id(d => d.index).strength(1).distance(1).iterations(15); // Configure and start simulation.
+    var linkForce = forceLink(state.stats.links).id(function (d) {
+      return d.index;
+    }).strength(1).distance(1).iterations(15); // Configure and start simulation.
 
     sim.nodes(state.stats.data).force('link', linkForce).force('chargeLattice', chargeLattice).force('chargeFrequencies', null).force('xGlobe', null).force('yGlobe', null).force('xCentre', xPosCentre).force('yCentre', yPosCentre).force('xAlcohol', null).force('yAlcohol', null).alpha(0.8).restart(); // Switch the global alpha on.
 
@@ -23918,9 +24192,13 @@
   } // Move to Alcohol frequency.
 
 
-  const chargeFrequencies = forceManyBody().strength(-2);
-  const xPosAlcohol = forceX(d => d.layout.alcohol.x).strength(0.5);
-  const yPosAlcohol = forceY(d => d.layout.alcohol.y).strength(0.5);
+  var chargeFrequencies = forceManyBody().strength(-2);
+  var xPosAlcohol = forceX(function (d) {
+    return d.layout.alcohol.x;
+  }).strength(0.5);
+  var yPosAlcohol = forceY(function (d) {
+    return d.layout.alcohol.y;
+  }).strength(0.5);
 
   function simulateAlcohol() {
     state.stats.current = [{
@@ -23935,8 +24213,12 @@
   } // Move to Density frequency.
 
 
-  const xPosDensity = forceX(d => d.layout.density.x).strength(0.5);
-  const yPosDensity = forceY(d => d.layout.density.y).strength(0.5);
+  var xPosDensity = forceX(function (d) {
+    return d.layout.density.x;
+  }).strength(0.5);
+  var yPosDensity = forceY(function (d) {
+    return d.layout.density.y;
+  }).strength(0.5);
 
   function simulateDensity() {
     state.stats.current = [{
@@ -23950,8 +24232,12 @@
   } // Move to Fixed Acidity frequency.
 
 
-  const xPosFixed = forceX(d => d.layout.fixed_acidity.x).strength(0.5);
-  const yPosFixed = forceY(d => d.layout.fixed_acidity.y).strength(0.5);
+  var xPosFixed = forceX(function (d) {
+    return d.layout.fixed_acidity.x;
+  }).strength(0.5);
+  var yPosFixed = forceY(function (d) {
+    return d.layout.fixed_acidity.y;
+  }).strength(0.5);
 
   function simulateFixed() {
     state.stats.current = [{
@@ -23965,8 +24251,12 @@
   } // Move to pH frequency.
 
 
-  const xPosPh = forceX(d => d.layout.ph.x).strength(0.5);
-  const yPosPh = forceY(d => d.layout.ph.y).strength(0.5);
+  var xPosPh = forceX(function (d) {
+    return d.layout.ph.x;
+  }).strength(0.5);
+  var yPosPh = forceY(function (d) {
+    return d.layout.ph.y;
+  }).strength(0.5);
 
   function simulatePh() {
     state.stats.current = [{
@@ -23980,8 +24270,12 @@
   } // Move to Volatile Acidity frequency.
 
 
-  const xPosVolatile = forceX(d => d.layout.volatile_acidity.x).strength(0.5);
-  const yPosVolatile = forceY(d => d.layout.volatile_acidity.y).strength(0.5);
+  var xPosVolatile = forceX(function (d) {
+    return d.layout.volatile_acidity.x;
+  }).strength(0.5);
+  var yPosVolatile = forceY(function (d) {
+    return d.layout.volatile_acidity.y;
+  }).strength(0.5);
 
   function simulateVolatile() {
     state.stats.current = [{
@@ -23995,8 +24289,12 @@
   } // Move to Quality frequency.
 
 
-  const xPosQuality = forceX(d => d.layout.quality.x).strength(0.5);
-  const yPosQuality = forceY(d => d.layout.quality.y).strength(0.5);
+  var xPosQuality = forceX(function (d) {
+    return d.layout.quality.x;
+  }).strength(0.5);
+  var yPosQuality = forceY(function (d) {
+    return d.layout.quality.y;
+  }).strength(0.5);
 
   function simulateQuality() {
     state.stats.current = [{
@@ -24014,9 +24312,13 @@
   // External libs.
   // Move to Alcohol scatter.
 
-  const chargeScatter = forceManyBody().strength(-1);
-  const xPosQualAlc = forceX(d => d.layout.alcohol__quality.x).strength(0.3);
-  const yPosQualAlc = forceY(d => d.layout.alcohol__quality.y).strength(0.3);
+  var chargeScatter = forceManyBody().strength(-1);
+  var xPosQualAlc = forceX(function (d) {
+    return d.layout.alcohol__quality.x;
+  }).strength(0.3);
+  var yPosQualAlc = forceY(function (d) {
+    return d.layout.alcohol__quality.y;
+  }).strength(0.3);
 
   function simulateQualAlc() {
     state.stats.current = [{
@@ -24036,8 +24338,12 @@
   } // Move to Volatile Acidity scatter.
 
 
-  const xPosQualVol = forceX(d => d.layout.vol_acid__quality.x).strength(0.3);
-  const yPosQualVol = forceY(d => d.layout.vol_acid__quality.y).strength(0.3);
+  var xPosQualVol = forceX(function (d) {
+    return d.layout.vol_acid__quality.x;
+  }).strength(0.3);
+  var yPosQualVol = forceY(function (d) {
+    return d.layout.vol_acid__quality.y;
+  }).strength(0.3);
 
   function simulateQualVol() {
     state.stats.current = [{
@@ -24057,8 +24363,12 @@
   } // Move to Volatile Acidity scatter.
 
 
-  const xPosQualBinAlc = forceX(d => d.layout.alcohol__quality_binary.x).strength(0.3);
-  const yPosQualBinAlc = forceY(d => d.layout.alcohol__quality_binary.y).strength(0.3);
+  var xPosQualBinAlc = forceX(function (d) {
+    return d.layout.alcohol__quality_binary.x;
+  }).strength(0.3);
+  var yPosQualBinAlc = forceY(function (d) {
+    return d.layout.alcohol__quality_binary.y;
+  }).strength(0.3);
 
   function simulateQualBinAlc() {
     state.stats.current = [{
@@ -24077,7 +24387,7 @@
     sim.nodes(state.stats.data).force('chargeScatter', chargeScatter).force('boxForce', boundingBox).force('xPosQualAlc', null).force('yPosQualAlc', null).force('xPosQualVol', null).force('yPosQualVol', null).force('xPosQualBinAlc', xPosQualBinAlc).force('yPosQualBinAlc', yPosQualBinAlc).force('chargeRemove', null).alpha(0.8).restart();
   }
 
-  const chargeRemove = forceManyBody().strength(-4);
+  var chargeRemove = forceManyBody().strength(-4);
 
   function simulateRemove() {
     sim.nodes(state.stats.data).force('chargeScatter', null).force('boxForce', null).force('xPosQualBinAlc', null).force('yPosQualBinAlc', null).force('chargeRemove', chargeRemove).alpha(0.8).restart(); // Switch the global alpha off.
@@ -24087,7 +24397,7 @@
 
   /* eslint-disable no-param-reassign */
 
-  const area = {
+  var area = {
     top: null,
     right: null,
     bottom: null,
@@ -24095,17 +24405,17 @@
     width: null,
     height: null
   };
-  let xScale$2;
-  let yScale$2;
-  const r$1 = 5;
-  const lw = 2;
-  const title = {
+  var xScale$2;
+  var yScale$2;
+  var r$1 = 5;
+  var lw = 2;
+  var title = {
     alpha: 0
   }; // Set up / prep.
 
   function setDimensions$1() {
-    const marginHorz = state.width * 0.1;
-    const marginVert = state.height * 0.1;
+    var marginHorz = state.width * 0.1;
+    var marginVert = state.height * 0.1;
     area.top = Math.floor(marginVert * 2);
     area.right = Math.floor(state.width - marginHorz);
     area.bottom = Math.floor(state.height - marginVert);
@@ -24115,20 +24425,24 @@
   }
 
   function augmentData() {
-    state.varImp.data.forEach(d => {
+    state.varImp.data.forEach(function (d) {
       d.value = 0;
       d.alpha = 0;
     });
   }
 
   function setScales$1() {
-    xScale$2 = linear$1().domain([0, max(state.varImp.data, d => d.importance)]).range([area.left, area.right]);
-    yScale$2 = point$1().domain(state.varImp.data.map(d => d.variable)).range([area.top, area.bottom]);
+    xScale$2 = linear$1().domain([0, max(state.varImp.data, function (d) {
+      return d.importance;
+    })]).range([area.left, area.right]);
+    yScale$2 = point$1().domain(state.varImp.data.map(function (d) {
+      return d.variable;
+    })).range([area.top, area.bottom]);
   } // Draw and render.
 
 
   function drawImportanceChart(ctx) {
-    const rough = state.rough.chart;
+    var rough = state.rough.chart;
     ctx.clearRect(0, 0, state.width, state.height);
     ctx.save(); // General styles.
 
@@ -24142,7 +24456,7 @@
     ctx.fillText('Variable Importance', area.left, area.top - 30);
     ctx.restore(); // The bars.
 
-    state.varImp.data.forEach((d, i) => {
+    state.varImp.data.forEach(function (d, i) {
       // Lime.
       ctx.beginPath();
       rough.line(xScale$2(0), yScale$2(d.variable), xScale$2(d.value), yScale$2(d.variable), {
@@ -24163,7 +24477,7 @@
       ctx.font = '16px Signika';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
-      const text = d.variable === 'ph' ? 'pH' : prettyLabel(d.variable);
+      var text = d.variable === 'ph' ? 'pH' : prettyLabel(d.variable);
       ctx.fillText(text, xScale$2(0), yScale$2(d.variable) + 5);
       ctx.restore();
     });
@@ -24171,30 +24485,30 @@
   }
 
   function renderImportance() {
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function () {
       drawImportanceChart(state.ctx.chart);
     });
   }
 
   function defineTweenImportance() {
-    const tl = gsap.timeline({
+    var tl = gsap.timeline({
       onUpdate: renderImportance
     }); // Tween the title alpha.
 
-    const titletween = gsap.fromTo(title, {
+    var titletween = gsap.fromTo(title, {
       alpha: 0
     }, {
       alpha: 1
     });
     tl.add(titletween); // Tween the variable importance values and alphas.
 
-    state.varImp.data.forEach(d => {
-      const valuetween = gsap.fromTo(d, {
+    state.varImp.data.forEach(function (d) {
+      var valuetween = gsap.fromTo(d, {
         value: 0
       }, {
         value: d.importance
       });
-      const alphatween = gsap.fromTo(d, {
+      var alphatween = gsap.fromTo(d, {
         alpha: 0
       }, {
         alpha: 1
@@ -24205,22 +24519,22 @@
   }
 
   function defineTweenImportanceRemove() {
-    const tl = gsap.timeline({
+    var tl = gsap.timeline({
       onUpdate: renderImportance
     }); // Tween the title alpha.
 
-    const titletween = gsap.fromTo(title, {
+    var titletween = gsap.fromTo(title, {
       alpha: 1
     }, {
       alpha: 0
     });
     tl.add(titletween, 0); // Tween the variable importance values and alphas.
 
-    state.varImp.data.forEach(d => {
-      const valuetween = gsap.to(d, {
+    state.varImp.data.forEach(function (d) {
+      var valuetween = gsap.to(d, {
         value: 0
       });
-      const alphatween = gsap.to(d, {
+      var alphatween = gsap.to(d, {
         alpha: 0
       });
       tl.add(alphatween, '>').add(valuetween, '<');
@@ -24230,8 +24544,8 @@
 
   function tweenAdd() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('importance');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('importance');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.importance) state.tween.importance.kill();
     state.tween.importance = defineTweenImportance();
@@ -24240,8 +24554,8 @@
 
   function tweenRemove$1() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('importanceRemove');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('importanceRemove');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.importanceRemove) state.tween.importanceRemove.kill();
     state.tween.importanceRemove = defineTweenImportanceRemove();
@@ -26338,14 +26652,14 @@
    */
 
   function getProbability(values, weights, intercept) {
-    const check = lodash_isequal(values.keys(), weights.keys());
+    var check = lodash_isequal(values.keys(), weights.keys());
     if (!check) throw Error('values and weights are not equal.');
-    let logOdds = intercept;
-    values.keys().forEach(variable => {
+    var logOdds = intercept;
+    values.keys().forEach(function (variable) {
       logOdds += values.get(variable) * weights.get(variable);
     });
-    const odds = Math.exp(logOdds);
-    const prob = odds / (1 + odds);
+    var odds = Math.exp(logOdds);
+    var prob = odds / (1 + odds);
     return prob;
   }
 
@@ -26353,7 +26667,7 @@
   // This info (and a good/bad/neutral colour) will be
   // picked up by the marker draw function to add the info text.
 
-  const info = [{
+  var info = [{
     variable: 'alcohol',
     operator: '>',
     threshold: 13,
@@ -26420,7 +26734,9 @@
     info: [''],
     infoColour: ''
   }];
-  const infoMap = map(info, d => d.variable);
+  var infoMap = map(info, function (d) {
+    return d.variable;
+  });
 
   function getConditional(value, operator, threshold) {
     if (operator === '' || !operator) return false;
@@ -26437,8 +26753,8 @@
   function setPropertyInfo(variable, value) {
     state.modelBottle.info = [''];
     state.modelBottle.infoColour = '';
-    const current = infoMap.get(variable);
-    const conditional = getConditional(value, current.operator, current.threshold);
+    var current = infoMap.get(variable);
+    var conditional = getConditional(value, current.operator, current.threshold);
 
     if (conditional) {
       state.modelBottle.info = current.info;
@@ -26448,7 +26764,7 @@
 
   /* eslint-disable no-nested-ternary */
 
-  const margin$1 = {
+  var margin$1 = {
     top: 20,
     right: 20,
     bottom: 30,
@@ -26474,73 +26790,93 @@
 
   function buildControl(datapoint) {
     // Get the datum's values.
-    const variable = datapoint.key;
-    let {
-      value
-    } = datapoint; // Identify # of decimals to show.
+    var variable = datapoint.key;
+    var value = datapoint.value; // Identify # of decimals to show.
 
-    const valueRange = state.model.ranges.get(variable);
-    const rangeDelta = valueRange[1] - valueRange[0];
-    const decimals = rangeDelta > 0.09 ? 2 : 3; // Set up.
+    var valueRange = state.model.ranges.get(variable);
+    var rangeDelta = valueRange[1] - valueRange[0];
+    var decimals = rangeDelta > 0.09 ? 2 : 3; // Set up.
 
-    const sel = select(this);
+    var sel = select(this);
     sel.select('svg').remove(); // No join mechanics here - let's be deterministic.
 
-    const svg = sel.append('svg').attr('class', 'control');
-    const rs = st.svg(svg.node()); // SVG is defined as 100% width/height in CSS.
+    var svg = sel.append('svg').attr('class', 'control');
+    var rs = st.svg(svg.node()); // SVG is defined as 100% width/height in CSS.
 
-    const width = parseInt(svg.style('width'), 10) - margin$1.left - margin$1.right;
-    const height = parseInt(svg.style('height'), 10) - margin$1.top - margin$1.bottom; // Clip path for the marker.
+    var width = parseInt(svg.style('width'), 10) - margin$1.left - margin$1.right;
+    var height = parseInt(svg.style('height'), 10) - margin$1.top - margin$1.bottom; // Clip path for the marker.
 
-    const clippy = svg.append('defs').append('clipPath').attr('id', `clippy-${variable}`).append('path'); // The chart g.
+    var clippy = svg.append('defs').append('clipPath').attr('id', "clippy-".concat(variable)).append('path'); // The chart g.
 
-    const g = svg.append('g').attr('transform', `translate(${margin$1.left}, ${margin$1.top})`); // x Scale.
+    var g = svg.append('g').attr('transform', "translate(".concat(margin$1.left, ", ").concat(margin$1.top, ")")); // x Scale.
 
-    const xScale = linear$1().domain(state.model.ranges.get(variable)).range([0, width]); // Label.
+    var xScale = linear$1().domain(state.model.ranges.get(variable)).range([0, width]); // Label.
 
-    const labelText = variable === 'ph' ? 'pH' : prettyLabel(variable);
+    var labelText = variable === 'ph' ? 'pH' : prettyLabel(variable);
     g.append('text').attr('x', width).attr('y', -margin$1.top / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('font-family', 'Signika').style('font-size', 12).text(labelText); // Axis.
 
     g.append('line').attr('y1', height).attr('x2', width).attr('y2', height).style('stroke-width', 1).style('stroke', '#000'); // Density data.
 
-    const k = (state.model.ranges.get(variable)[1] - state.model.ranges.get(variable)[0]) * 0.05;
-    const kde = kernelDensityEstimator(kernelEpanechnikov(k), xScale.ticks(40));
-    const density = kde(state.stats.data.map(d => d[variable])); // Add a start and an end point at x = 0 to the mix.
+    var k = (state.model.ranges.get(variable)[1] - state.model.ranges.get(variable)[0]) * 0.05;
+    var kde = kernelDensityEstimator(kernelEpanechnikov(k), xScale.ticks(40));
+    var density = kde(state.stats.data.map(function (d) {
+      return d[variable];
+    })); // Add a start and an end point at x = 0 to the mix.
 
     density.unshift([density[0][0], 0]);
     density.push([density[density.length - 1][0], 0]); // y Scale.
 
-    const yScale = linear$1().domain([0, max(density.map(d => d[1]))]).range([height, 0]); // Line generator.
+    var yScale = linear$1().domain([0, max(density.map(function (d) {
+      return d[1];
+    }))]).range([height, 0]); // Line generator.
 
-    const lineGen = line().curve(curveBasis).x(d => xScale(d[0])).y(d => yScale(d[1])); // Get density path.
+    var lineGen = line().curve(curveBasis).x(function (d) {
+      return xScale(d[0]);
+    }).y(function (d) {
+      return yScale(d[1]);
+    }); // Get density path.
 
-    const densityPath = lineGen(density); // Density chart.
+    var densityPath = lineGen(density); // Density chart.
 
-    const fill = rs.path(densityPath, {
+    var fill = rs.path(densityPath, {
       fill: '#555',
       stroke: 'rgba(0, 0, 0, 0.7)'
     });
     g.node().appendChild(fill);
-    g.select('path').attr('class', `density ${variable}`); // Clip path data.
+    g.select('path').attr('class', "density ".concat(variable)); // Clip path data.
 
     clippy.attr('d', densityPath); // Position data for the drag subjects.
 
-    const position = {
+    var position = {
       x: xScale(value),
       y: height,
       width: 30,
       height: height + margin$1.bottom
     }; // Marker.
 
-    g.append('line').datum(position).attr('x1', d => d.x).attr('y1', d => d.y).attr('x2', d => d.x).attr('y2', 0).attr('class', 'marker').attr('clip-path', `url(#clippy-${variable})`).style('stroke-width', 1).style('stroke', 'black'); // Handle.
+    g.append('line').datum(position).attr('x1', function (d) {
+      return d.x;
+    }).attr('y1', function (d) {
+      return d.y;
+    }).attr('x2', function (d) {
+      return d.x;
+    }).attr('y2', 0).attr('class', 'marker').attr('clip-path', "url(#clippy-".concat(variable, ")")).style('stroke-width', 1).style('stroke', 'black'); // Handle.
 
-    g.append('circle').datum(position).attr('cx', d => d.x).attr('cy', d => d.y).attr('r', 5).attr('class', 'handle').style('fill', '#000'); // Number.
+    g.append('circle').datum(position).attr('cx', function (d) {
+      return d.x;
+    }).attr('cy', function (d) {
+      return d.y;
+    }).attr('r', 5).attr('class', 'handle').style('fill', '#000'); // Number.
 
-    g.append('text').datum(position).attr('x', d => d.x).attr('y', d => d.y).attr('class', 'label').attr('dy', '0.7em').attr('text-anchor', 'middle').attr('dominant-baseline', 'hanging').style('font-family', 'Signika').style('font-size', 12).text(value.toFixed(decimals)); // Drag handler.
+    g.append('text').datum(position).attr('x', function (d) {
+      return d.x;
+    }).attr('y', function (d) {
+      return d.y;
+    }).attr('class', 'label').attr('dy', '0.7em').attr('text-anchor', 'middle').attr('dominant-baseline', 'hanging').style('font-family', 'Signika').style('font-size', 12).text(value.toFixed(decimals)); // Drag handler.
 
     function handleDrag(datum) {
       // Clamp the x value.
-      const x = event.x > width ? width : event.x < 0 ? 0 : event.x; // Update the data.
+      var x = event.x > width ? width : event.x < 0 ? 0 : event.x; // Update the data.
 
       value = xScale.invert(x);
       state.model.values.set(variable, value);
@@ -26549,11 +26885,11 @@
       decayWave();
       state.bottleWave.lift = state.model.probability; // Update DOM.
 
-      const dragrect = select(this);
-      const circle = select(this.parentNode).select('circle.handle');
-      const marker = select(this.parentNode).select('line.marker');
-      const label = select(this.parentNode).select('text.label');
-      dragrect.attr('x', () => {
+      var dragrect = select(this);
+      var circle = select(this.parentNode).select('circle.handle');
+      var marker = select(this.parentNode).select('line.marker');
+      var label = select(this.parentNode).select('text.label');
+      dragrect.attr('x', function () {
         datum.x = x;
         return datum.x - datum.width / 2;
       });
@@ -26565,16 +26901,26 @@
     } // Drag rectangle.
 
 
-    g.append('rect').datum(position).attr('x', d => d.x - d.width / 2).attr('y', 0).attr('width', d => d.width).attr('height', d => d.height).style('opacity', 0) // can't see it - no no.
+    g.append('rect').datum(position).attr('x', function (d) {
+      return d.x - d.width / 2;
+    }).attr('y', 0).attr('width', function (d) {
+      return d.width;
+    }).attr('height', function (d) {
+      return d.height;
+    }).style('opacity', 0) // can't see it - no no.
     .call(drag().on('drag', handleDrag));
   }
 
   function buildModelControls() {
-    select('#model-app').style('height', `${state.height}px`); // Sort the controls by their variable importance.
+    select('#model-app').style('height', "".concat(state.height, "px")); // Sort the controls by their variable importance.
 
-    const order = state.varImp.data.map(d => d.variable);
-    const controlData = state.model.values.entries();
-    controlData.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key)); // Mount the app.
+    var order = state.varImp.data.map(function (d) {
+      return d.variable;
+    });
+    var controlData = state.model.values.entries();
+    controlData.sort(function (a, b) {
+      return order.indexOf(a.key) - order.indexOf(b.key);
+    }); // Mount the app.
 
     select('#model-app-wrap').selectAll('.model-value-control').data(controlData).join('div').attr('class', 'model-value-control').each(buildControl);
   }
@@ -26599,31 +26945,33 @@
     ctx.scale(t.scale, t.scale);
     ctx.setLineDash([length - offset, offset]); // eslint-disable-next-line no-unused-expressions
 
-    Array.isArray(paths) ? paths.forEach(path => ctx.stroke(path)) : ctx.stroke(paths);
+    Array.isArray(paths) ? paths.forEach(function (path) {
+      return ctx.stroke(path);
+    }) : ctx.stroke(paths);
     ctx.restore();
   }
 
   function renderModelBottle() {
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function () {
       drawPaths(state.ctx.glassBottle, state.modelBottle.paths, state.transform.shape, state.modelBottle.maxLength, state.modelBottle.dashOffset, state.modelBottle.alpha);
     });
   }
 
   function defineTweenModelBottle(offsetDraw, alphaStart, alphaTarget) {
-    const tl = gsapWithCSS.timeline({
+    var tl = gsapWithCSS.timeline({
       onUpdate: renderModelBottle
     });
-    const offsetIn = gsapWithCSS.fromTo(state.modelBottle, {
+    var offsetIn = gsapWithCSS.fromTo(state.modelBottle, {
       dashOffset: state.modelBottle.maxLength
     }, {
       dashOffset: 0
     });
-    const offsetOut = gsapWithCSS.fromTo(state.modelBottle, {
+    var offsetOut = gsapWithCSS.fromTo(state.modelBottle, {
       dashOffset: 0
     }, {
       dashOffset: state.modelBottle.maxLength
     });
-    const alphavalue = gsapWithCSS.fromTo(state.modelBottle, {
+    var alphavalue = gsapWithCSS.fromTo(state.modelBottle, {
       alpha: alphaStart
     }, {
       alpha: alphaTarget
@@ -26633,8 +26981,8 @@
 
   function tweenIn() {
     // Capture current progress.
-    const scroll = ScrollTrigger.getById('modelBottleIn');
-    const progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+    var scroll = ScrollTrigger.getById('modelBottleIn');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
 
     if (state.tween.modelBottleIn) state.tween.modelBottleIn.kill();
     state.tween.modelBottleIn = defineTweenModelBottle(true, 0, 1);
@@ -26645,15 +26993,15 @@
     tweenIn(); // tweenOut(); // not needed but here for if and when required.
   }
 
-  let position = {};
-  const lw$1 = 20;
-  const lh = 3;
-  const pad$1 = 5;
-  const perc = format('.0%');
-  const fontSize = 8; // Draw and render.
+  var position = {};
+  var lw$1 = 20;
+  var lh = 3;
+  var pad$1 = 5;
+  var perc = format('.0%');
+  var fontSize = 8; // Draw and render.
 
   function drawWaveMarkers(ctx, t, path) {
-    const rough = state.rough.chart;
+    var rough = state.rough.chart;
     ctx.clearRect(0, 0, state.width, state.height);
     ctx.save();
     ctx.translate(t.x, t.y);
@@ -26675,14 +27023,14 @@
     ctx.stroke(); // Main text (probability).
 
     ctx.textBaseline = 'middle';
-    ctx.font = `${fontSize}px Signika`;
-    ctx.fillText(`${perc(state.model.probability)} likely to be good`, position.x + lw$1 + pad$1, position.y + 1); // Subtitle (tips).
+    ctx.font = "".concat(fontSize, "px Signika");
+    ctx.fillText("".concat(perc(state.model.probability), " likely to be good"), position.x + lw$1 + pad$1, position.y + 1); // Subtitle (tips).
 
-    ctx.font = `${Math.floor(fontSize * 0.9)}px Signika`;
+    ctx.font = "".concat(Math.floor(fontSize * 0.9), "px Signika");
     ctx.fillStyle = state.modelBottle.infoColour; // This is an array of text with each element getting its own line...
 
-    state.modelBottle.info.forEach((d, i) => {
-      const sublineOffset = i === 0 ? 2 : 0;
+    state.modelBottle.info.forEach(function (d, i) {
+      var sublineOffset = i === 0 ? 2 : 0;
       ctx.fillText(d, position.x + lw$1 + pad$1, position.y + (i + 1) * (fontSize + 2) + sublineOffset);
     }); // Clip.
 
@@ -26695,7 +27043,7 @@
   }
 
   function renderWaveMarkers() {
-    requestAnimationFrame(() => {
+    requestAnimationFrame(function () {
       drawWaveMarkers(state.ctx.chart, state.transform.shape, state.bottleWave.bottlePath);
     });
   } // Make.
@@ -26703,17 +27051,19 @@
 
   function makeWaveMarkers() {
     // Prep.
-    const wave = state.bottleWave;
+    var wave = state.bottleWave;
     if (!wave.wavePoints || !wave.wavePoints.length) return; // A more or less steady y position.
 
-    const h = state.glassBottle.bottleBox.height;
-    let y = mean(wave.wavePoints, d => d[1]);
+    var h = state.glassBottle.bottleBox.height;
+    var y = mean(wave.wavePoints, function (d) {
+      return d[1];
+    });
     if (y > h * 0.98) y = h * 0.98;
     if (y < h * 0.005) y = h * 0.005; // Position will be picked up by the draw function.
 
     position = {
       x: wave.wavePoints[wave.wavePoints.length - 1][0],
-      y
+      y: y
     }; // Render it.
 
     renderWaveMarkers();
@@ -26730,7 +27080,7 @@
 
   // as the tweening malarky wasn't fun and piled up edge cases.
 
-  const subBottle = -0.1; // Scroll from below bottle to the current probability.
+  var subBottle = -0.1; // Scroll from below bottle to the current probability.
 
   function updateModelWave(scroll) {
     state.modelBottle.points = true;
@@ -26767,10 +27117,10 @@
   }
 
   function getTriggerPositions() {
-    const visual = document.querySelector('#visual-container');
-    const visualHeight = parseInt(window.getComputedStyle(visual).height, 10);
-    const windowHeight = window.innerHeight;
-    const textHeight = windowHeight - visualHeight;
+    var visual = document.querySelector('#visual-container');
+    var visualHeight = parseInt(window.getComputedStyle(visual).height, 10);
+    var windowHeight = window.innerHeight;
+    var textHeight = windowHeight - visualHeight;
 
     if (!isMobile()) {
       return {
@@ -26782,12 +27132,12 @@
     } // If we're on mobile.
 
 
-    const offset = visualHeight + textHeight / 2;
+    var offset = visualHeight + textHeight / 2;
     return {
-      start: `top top+=${offset}px`,
-      end: `center top+=${offset}px`,
+      start: "top top+=".concat(offset, "px"),
+      end: "center top+=".concat(offset, "px"),
       endElement: 'center',
-      endContainer: `top+=${offset}px`
+      endContainer: "top+=".concat(offset, "px")
     };
   } // Set ScrollTrigger defaults.
 
@@ -26802,15 +27152,15 @@
   });
 
   function updateDimensions() {
-    const container = document.querySelector('#canvas-main-container');
+    var container = document.querySelector('#canvas-main-container');
     state.width = container.clientWidth;
     state.height = container.clientHeight;
   } // Get contexts and rezize canvases.
 
 
   function updateContexts(names) {
-    const canvases = document.querySelectorAll('canvas');
-    names.forEach((name, i) => {
+    var canvases = document.querySelectorAll('canvas');
+    names.forEach(function (name, i) {
       state.ctx[name] = canvases[i].getContext('2d');
       resizeCanvas(canvases[i], state.width, state.height);
     });
@@ -26824,7 +27174,7 @@
 
   function setVisualStructure() {
     // Get contexts.
-    const contextnames = ['scape', 'glassBottle', 'bottleText', 'bottleWave', 'chart', 'blackBox', 'globe'];
+    var contextnames = ['scape', 'glassBottle', 'bottleText', 'bottleWave', 'chart', 'blackBox', 'globe'];
     updateContexts(contextnames);
     setRoughCanvases();
   }
@@ -26832,7 +27182,7 @@
   function updateTransforms() {
     // Update all necessary transforms.
     // Update winescape image (and glass) transform.
-    const scapeDim = {
+    var scapeDim = {
       width: state.scape.image.width,
       height: state.scape.image.height
     };
@@ -26855,7 +27205,7 @@
     }); // Animals.
     // Get a transform for each animal based on its getBBox dimensions.
 
-    state.animals.data.forEach(animal => {
+    state.animals.data.forEach(function (animal) {
       // debugger;
       state.transform[animal.name] = getTransform(state.animals[animal.name], animal.fit);
     }); // Update the dataset transform.
@@ -26875,161 +27225,156 @@
     sim.stop(); // Clear all contexts with an additional timeout
     // to make sure all above things have been stopped.
 
-    timeout$1(() => {
-      Object.entries(state.ctx).forEach(d => clear(d[1]));
+    timeout$1(function () {
+      Object.entries(state.ctx).forEach(function (d) {
+        return clear(d[1]);
+      });
     }, 50);
   } // Set scroll.
 
 
   function setScrollBase() {
-    const {
-      start,
-      end,
-      endContainer
-    } = getTriggerPositions();
+    var _getTriggerPositions = getTriggerPositions(),
+        start = _getTriggerPositions.start,
+        end = _getTriggerPositions.end,
+        endContainer = _getTriggerPositions.endContainer;
+
     ScrollTrigger.create({
       trigger: '#container-intro',
       start: '10px top',
       id: 'intro',
-
-      onEnter() {
+      onEnter: function onEnter() {
         gsapWithCSS$1.to('#title-image', {
           boxShadow: '0px 2px 10px #ccc'
         });
         tweenIntroIn();
       },
-
-      onLeaveBack() {
+      onLeaveBack: function onLeaveBack() {
         gsapWithCSS$1.to('#title-image', {
           boxShadow: '0px 0px 0px #ccc'
         });
         tweenIntroOut();
       }
-
     });
     ScrollTrigger.create({
       trigger: '.section-0',
-      start,
+      start: start,
       id: 'triggerPositionRefresh',
-
-      onEnter() {
+      onEnter: function onEnter() {
         // The scroll trigger positions need to be calculated when all content
         // has loaded. Giving the first trigger no other job than refreshing
         // the scroll trigger positions seems the best way to guarantee this.
         ScrollTrigger.refresh();
       }
-
     });
     ScrollTrigger.create({
       animation: state.tween.wineScape,
       trigger: '.section-1',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'wineScape',
-
-      onLeaveBack() {
+      onLeaveBack: function onLeaveBack() {
         // Stop all and clear all contexts if users scroll up to top.
         timeout$1(clearAllContexts, 50);
       }
-
     });
     ScrollTrigger.create({
       animation: state.tween.glassBottle,
       trigger: '.section-2',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'glassBottle'
     });
     ScrollTrigger.create({
       animation: state.tween.bottleText,
       trigger: '.section-3',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'bottleText'
     });
     ScrollTrigger.create({
       animation: state.tween.bottleWave,
       trigger: '.section-4',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'bottleWave'
     });
     ScrollTrigger.create({
       animation: state.tween.lolliChart,
       trigger: '.section-5',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'lolliChart'
     });
     ScrollTrigger.create({
       animation: state.tween.lolliUpdate1,
       trigger: '.section-6',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'lolliUpdate1'
     });
     ScrollTrigger.create({
       animation: state.tween.lolliUpdate2,
       trigger: '.section-7',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'lolliUpdate2'
     });
     ScrollTrigger.create({
       animation: state.tween.lolliUpdate3,
       trigger: '.section-8',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'lolliUpdate3',
-      onEnterBack: () => clear(state.ctx.blackBox)
+      onEnterBack: function onEnterBack() {
+        return clear(state.ctx.blackBox);
+      }
     }); // 2 items.
 
-    arrows.forEach((d, i) => {
+    arrows.forEach(function (d, i) {
       ScrollTrigger.create({
         animation: state.tween[d],
-        trigger: `.section-${9 + i}`,
-        start,
-        end,
+        trigger: ".section-".concat(9 + i),
+        start: start,
+        end: end,
         id: d
       });
     });
     ScrollTrigger.create({
       animation: state.tween.cleanup,
       trigger: '.section-11',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'cleanup'
     });
     ScrollTrigger.create({
       animation: state.tween.bottleTextOut,
       trigger: '.section-12',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'bottleTextOut'
     });
     ScrollTrigger.create({
       animation: state.tween.bottleEmpty,
       trigger: '.section-13',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'bottleEmpty',
-
-      onLeave() {
+      onLeave: function onLeave() {
         stopWave();
         clear(state.ctx.bottleWave);
       },
-
       onEnterBack: startWave
     }); // Setting up all the scrolltriggers for the animals.
     // 8 items.
 
-    for (let i = 0; i < animalPaths.length - 1; i++) {
-      const animal = animalPaths[i];
+    for (var i = 0; i < animalPaths.length - 1; i++) {
+      var animal = animalPaths[i];
       ScrollTrigger.create({
         animation: state.tween[animal.name],
-        trigger: `.section-${14 + i}`,
-        start,
-        end,
+        trigger: ".section-".concat(14 + i),
+        start: start,
+        end: end,
         id: animal.name
       });
     }
@@ -27037,303 +27382,308 @@
     ScrollTrigger.create({
       animation: state.tween.bottleFill,
       trigger: '.section-22',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'bottleFill',
       onLeave: stopWave,
       onEnterBack: startWave
     }); // 3 items.
 
-    bottleColours.forEach((d, i) => {
+    bottleColours.forEach(function (d, i) {
       ScrollTrigger.create({
         animation: state.tween[d.name],
-        trigger: `.section-${23 + i}`,
-        start,
-        end,
+        trigger: ".section-".concat(23 + i),
+        start: start,
+        end: end,
         id: d.name
       });
     });
     ScrollTrigger.create({
       animation: state.tween.bottleGrid,
       trigger: '.section-26',
-      start,
-      end: `bottom-=10% ${endContainer}`,
+      start: start,
+      end: "bottom-=10% ".concat(endContainer),
       // the grids need seom more space..
       id: 'bottleGrid'
     });
     ScrollTrigger.create({
       animation: state.tween.bottleGridColour,
       trigger: '.section-27',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'bottleGridColour'
     });
     ScrollTrigger.create({
       animation: state.tween.bottleGridSort,
       trigger: '.section-28',
-      start,
-      end: `bottom-=10% ${endContainer}`,
+      start: start,
+      end: "bottom-=10% ".concat(endContainer),
       id: 'bottleGridSort'
     });
     ScrollTrigger.create({
       animation: state.tween.bottleGridOut,
       trigger: '.section-29',
-      start,
-      end: `bottom-=10% ${endContainer}`,
+      start: start,
+      end: "bottom-=10% ".concat(endContainer),
       id: 'bottleGridOut',
-
       // Shut the glassBottle context up.
-      onEnterBack() {
+      onEnterBack: function onEnterBack() {
         state.glassBottle.alpha = 0;
         clear(state.ctx.glassBottle);
       }
-
     }); // Setting up all the scrolltriggers for the dataset.
     // We set up a scrolltrigger/tween for each column and the grid.
     // 13 items.
 
-    state.dataset.info.forEach((d, i) => {
+    state.dataset.info.forEach(function (d, i) {
       ScrollTrigger.create({
         animation: state.tween[d.tween],
-        trigger: `.section-${30 + i}`,
-        start,
-        end,
+        trigger: ".section-".concat(30 + i),
+        start: start,
+        end: end,
         id: d.tween,
-        onEnter: () => state.glassBottle.alpha = 1,
-        onEnterBack: () => state.glassBottle.alpha = 1
+        onEnter: function onEnter() {
+          return state.glassBottle.alpha = 1;
+        },
+        onEnterBack: function onEnterBack() {
+          return state.glassBottle.alpha = 1;
+        }
       });
     });
     ScrollTrigger.create({
       animation: state.tween.globe,
       trigger: '.section-43',
-      start,
+      start: start,
       end: 'bottom+=10% center',
       // the globe needs some extra screen time 🥂
       id: 'globe',
-
-      onEnter() {
+      onEnter: function onEnter() {
         // Shut the glassBottle context up.
         state.glassBottle.alpha = 0;
         clear(state.ctx.glassBottle);
       },
-
-      onUpdate: self => state.globe.scroll.progress = self.progress
+      onUpdate: function onUpdate(self) {
+        return state.globe.scroll.progress = self.progress;
+      }
     });
     ScrollTrigger.create({
       trigger: '.section-44',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'statsLattice',
       onLeaveBack: simulateGlobePosition,
       onEnter: simulateLattice
     });
     ScrollTrigger.create({
       trigger: '.section-45',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'statsAlcohol',
       onLeaveBack: simulateLattice,
       onEnter: simulateAlcohol
     });
     ScrollTrigger.create({
       trigger: '.section-46',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'statsDensity',
       onLeaveBack: simulateAlcohol,
       onEnter: simulateDensity
     });
     ScrollTrigger.create({
       trigger: '.section-47',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'statsFixed',
       onLeaveBack: simulateDensity,
       onEnter: simulateFixed
     });
     ScrollTrigger.create({
       trigger: '.section-48',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'statsPh',
       onLeaveBack: simulateFixed,
       onEnter: simulatePh
     });
     ScrollTrigger.create({
       trigger: '.section-49',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'statsVolatile',
       onLeaveBack: simulatePh,
       onEnter: simulateVolatile
     });
     ScrollTrigger.create({
       trigger: '.section-50',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'statsQuality',
       onLeaveBack: simulateVolatile,
       onEnter: simulateQuality
     });
     ScrollTrigger.create({
       trigger: '.section-51',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'qualityDots',
-      onLeaveBack: () => state.stats.colourDots = false,
-      onEnter: () => {
+      onLeaveBack: function onLeaveBack() {
+        return state.stats.colourDots = false;
+      },
+      onEnter: function onEnter() {
         state.stats.colourDots = true;
         sim.restart(); // ...won't change colours if it's cold.
       }
     });
     ScrollTrigger.create({
       trigger: '.section-52',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'statsAlcoholColoured',
       onLeaveBack: simulateQuality,
       onEnter: simulateVolatile
     });
     ScrollTrigger.create({
       trigger: '.section-53',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'statsAlcoholColoured',
       onLeaveBack: simulateVolatile,
       onEnter: simulateQualVol
     });
     ScrollTrigger.create({
       trigger: '.section-54',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'statsAlcoholColoured',
       onLeaveBack: simulateQualVol,
       onEnter: simulateAlcohol
     });
     ScrollTrigger.create({
       trigger: '.section-55',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'statsAlcoholQuality',
       onLeaveBack: simulateAlcohol,
       onEnter: simulateQualAlc
     });
     ScrollTrigger.create({
       trigger: '.section-56',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'statsDrawLR',
-      onLeaveBack: () => {
+      onLeaveBack: function onLeaveBack() {
         state.stats.lr = false;
         simulateQualAlc();
       },
-      onEnter: () => state.stats.lr = true,
-
-      onUpdate(self) {
+      onEnter: function onEnter() {
+        return state.stats.lr = true;
+      },
+      onUpdate: function onUpdate(self) {
         state.stats.progress.draw = self.progress;
         renderStats();
       }
-
     });
     ScrollTrigger.create({
       trigger: '.section-57',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'statsDrawLRPoint',
-
-      onUpdate(self) {
+      onUpdate: function onUpdate(self) {
         state.stats.progress.point = self.progress;
         renderStats();
       }
-
     });
     ScrollTrigger.create({
       trigger: '.section-58',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'statsExtendLR',
-
-      onUpdate(self) {
+      onUpdate: function onUpdate(self) {
         state.stats.progress.extend = self.progress;
         renderStats();
       }
-
     });
     ScrollTrigger.create({
       trigger: '.section-59',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'statsQualityBinaryAlcohol',
       onLeaveBack: simulateQualAlc,
       onEnter: simulateQualBinAlc
     });
     ScrollTrigger.create({
       trigger: '.section-60',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'statsLogisticLine',
       onLeaveBack: simulateQualBinAlc,
-
-      onUpdate(self) {
+      onUpdate: function onUpdate(self) {
         state.stats.progress.logistic = self.progress;
         renderStats();
       }
-
     });
     ScrollTrigger.create({
       trigger: '.section-61',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'statsRemove',
-
-      onLeaveBack() {
+      onLeaveBack: function onLeaveBack() {
         state.stats.lr = true;
         tweenStatsAlpha(1); // Switch the global alpha back on.
 
         simulateQualBinAlc();
       },
-
-      onEnter() {
+      onEnter: function onEnter() {
         state.stats.lr = false;
         simulateRemove();
       }
-
     });
     ScrollTrigger.create({
       animation: state.tween.importance,
       trigger: '.section-62',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'importance',
       // Stop the simulation as it would otherwise
       // continue to draw on the context.
-      onEnter: () => sim.stop(),
-      onEnterBack: () => clear(state.ctx.bottleWave) // 1
+      onEnter: function onEnter() {
+        return sim.stop();
+      },
+      onEnterBack: function onEnterBack() {
+        return clear(state.ctx.bottleWave);
+      } // 1
 
     });
     ScrollTrigger.create({
       animation: state.tween.importanceRemove,
       trigger: '.section-63',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'importanceRemove'
     });
     ScrollTrigger.create({
       animation: state.tween.modelBottleIn,
       trigger: '.section-64',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'modelBottleIn',
-      onEnterBack: () => clear(state.ctx.bottleWave) // 1
+      onEnterBack: function onEnterBack() {
+        return clear(state.ctx.bottleWave);
+      } // 1
 
     });
     ScrollTrigger.create({
       trigger: '.section-65',
-      start,
-      end,
+      start: start,
+      end: end,
       id: 'modelWaveInit',
-      onLeaveBack: () => stopModelWave(),
-      onUpdate: self => updateModelWave(self)
+      onLeaveBack: function onLeaveBack() {
+        return stopModelWave();
+      },
+      onUpdate: function onUpdate(self) {
+        return updateModelWave(self);
+      }
     });
     ScrollTrigger.create({
       trigger: '#model-app',
@@ -27341,15 +27691,23 @@
       end: 'top top+=5px',
       id: 'scrollBreak',
       // Fade the outro button in and out.
-      onEnter: () => gsapWithCSS$1.to('#outro', {
-        left: '2vw'
-      }),
-      onLeaveBack: () => gsapWithCSS$1.to('#outro', {
-        left: '-20vw'
-      }),
+      onEnter: function onEnter() {
+        return gsapWithCSS$1.to('#outro', {
+          left: '2vw'
+        });
+      },
+      onLeaveBack: function onLeaveBack() {
+        return gsapWithCSS$1.to('#outro', {
+          left: '-20vw'
+        });
+      },
       // Lock/unlock the model app scroll during main scroll.
-      onLeave: () => select('#model-app').style('overflow', 'scroll'),
-      onEnterBack: () => select('#model-app').style('overflow', 'hidden')
+      onLeave: function onLeave() {
+        return select('#model-app').style('overflow', 'scroll');
+      },
+      onEnterBack: function onEnterBack() {
+        return select('#model-app').style('overflow', 'hidden');
+      }
     });
   }
 
@@ -28252,27 +28610,33 @@
 
   var part9Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div id=\"outro-modal-inner\">");t.b("\n" + i);t.b("  ");t.b("\n" + i);t.b("  <div id=\"outro-close\">");t.b("\n" + i);t.b("    <img id=\"outro-close-image\" src=\"../../static/close-grey.png\" alt=\"close\">");t.b("\n" + i);t.b("  </div>");t.b("\n");t.b("\n" + i);t.b("  <div id=\"outro-modal-text\">");t.b("\n" + i);t.b("    <h3>What next?</h3>");t.b("\n");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      This little exploration was supposed to give you an idea of how machines can learn, enlighten and possibly help making and gauging wine. We predicted red wine quality using a dataset full of physiochemical properties of  Vinho Verde wines with a simple linear model. ");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      As a next step it'd be interesting to swap out any or all of these components:");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      What other <span class=\"highlight\">outputs</span> would be helpful to predict or classify? Maybe a different quality definition or indeed a different outcome variable altogether like specific taste features, sales figures, or other measures of success or failure.");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      What other <span class=\"highlight\">data sources</span> do we have at hands? What metrics do we have in these datasets? Wineries might have structured data going back several years, logging physiochemical properties as well as information on varietal and growing conditions.");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      And lastly, what <span class=\"highlight\">model</span> might be most instructive to use? Will a simple linear model suffice to capture the associations? Do we need a non-linear model like for example <a href=\"https://en.wikipedia.org/wiki/Support_vector_machine\" target=\"_blank\">Support Vector Machines</a> or <a href=\"https://en.wikipedia.org/wiki/Artificial_neural_network\" target=\"_blank\">Neural Networks</a> &mdash; harder to reason about but possibly providing higher accuracy?");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      Let's see and take this as the beginning of a conversation...");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      Santé 🍷");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("  </div>");t.b("\n");t.b("\n" + i);t.b("  <div id=\"credits\">");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      The dataset and a discussion around the original model built comes from the paper: <i>P. Cortez, A. Cerdeira, F. Almeida, T. Matos and J. Reis. <a href=\"https://scinapse.io/papers/2103459159\" target=\"_blank\">Modeling wine preferences by data mining from physicochemical properties.</a> In Decision Support Systems, Elsevier, 47(4):547-553, 2009</i>. ");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      However, this paper wasn't the only analytical adventure based on the data. The dataset aquired a life of its own thereafter, being adopted and embraced by the data science and machine learning community, so you can find a lot of analyses out there wrangling and modelling this very dataset.");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      Much thanks to <a href=\"https://www.linkedin.com/in/shawn-zizzo-109783/\" target=\"_blank\">Shawn Zizzo</a> for kicking this thing off! Big thanks also to Krista Ehrenclou for the most detailed, valuable and wise feedback about all the wine related aspects in particular as well as <a href=\"https://twitter.com/martgnz\" target=\"_blank\">Martin Gonzales</a> and <a href=\"https://www.behance.net/g-gaborieau-bookatme\" target=\"_blank\">Geoffroy Gaborieau</a> for keeping me honest on the visual and design side.");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      Built with a lot of help from <a href=\"https://greensock.com/\" target=\"_blank\">gsap</a>, <a href=\"https://roughjs.com/\" target=\"_blank\">roughjs</a>, <a href=\"http://d3js.org/\" target=\"_blank\">d3</a> and <a href=\"https://www.r-project.org/about.html\" target=\"_blank\">R</a>.");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>  ");t.b("\n");t.b("\n");t.b("\n");return t.fl(); },partials: {}, subs: {  }});
 
-  /* eslint-disable no-param-reassign */
-
   gsapWithCSS.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools); // Helpers.
 
   function setModelWeightMap(array) {
-    const mapResult = map();
-    array.forEach(d => mapResult.set(d.term, d.estimate));
+    var mapResult = map();
+    array.forEach(function (d) {
+      return mapResult.set(d.term, d.estimate);
+    });
     return mapResult;
   }
 
   function getModelValues(data) {
-    const predictors = data.columns.filter(d => d !== 'id' && d !== 'index' && d !== 'quality' && d !== 'quality_binary');
-    const meanMap = map();
-    const rangeMap = map();
-    predictors.forEach(col => {
-      meanMap.set(col, mean(data, d => d[col]));
-      rangeMap.set(col, extent(data, d => d[col]));
+    var predictors = data.columns.filter(function (d) {
+      return d !== 'id' && d !== 'index' && d !== 'quality' && d !== 'quality_binary';
+    });
+    var meanMap = map();
+    var rangeMap = map();
+    predictors.forEach(function (col) {
+      meanMap.set(col, mean(data, function (d) {
+        return d[col];
+      }));
+      rangeMap.set(col, extent(data, function (d) {
+        return d[col];
+      }));
     });
     return {
-      meanMap,
-      rangeMap
+      meanMap: meanMap,
+      rangeMap: rangeMap
     };
   } // Handlers.
 
@@ -28280,7 +28644,7 @@
   function removeSpinner() {
     // Remove the loading site just after loading.
     // (to give it some time to stretch).
-    timeout$1(() => {
+    timeout$1(function () {
       select('#loading img').transition().duration(500).style('opacity', 0);
       select('#loading').transition().duration(1000).style('opacity', 0);
     }, 750);
@@ -28310,29 +28674,35 @@
 
 
   function prepareVisuals(globeData, wineData, varImpData, modelIntercept, modelWeights) {
-    const svg = select('#svg-hidden');
-    const stageGroup = svg.append('g').attr('id', 'stage-group');
-    const rg = st.svg(svg.node()).generator; // Add glass/bottle morph paths.
+    var svg = select('#svg-hidden');
+    var stageGroup = svg.append('g').attr('id', 'stage-group');
+    var rg = st.svg(svg.node()).generator; // Add glass/bottle morph paths.
 
-    const roughBottle = rg.path(bottle, {
+    var roughBottle = rg.path(bottle, {
       simplification: 0.6
     });
-    const roughBottlePath = rg.toPaths(roughBottle);
+    var roughBottlePath = rg.toPaths(roughBottle);
     stageGroup.append('path').attr('id', 'glass-path').attr('d', glass).style('fill', 'none').style('stroke-width', 1).style('stroke', 'grey');
     stageGroup.append('path').attr('id', 'bottle-path').attr('d', roughBottlePath[0].d).style('fill', 'none').style('stroke-width', 1).style('stroke', 'grey'); // Prep bottle dims.
 
     state.glassBottle.bottleBox = getBox('#bottle-path'); // Prep text bottle.
 
-    const bottleTexts = splitPath(textBottle);
-    state.bottleText.dims = bottleTexts.map(p => getPathData(p));
-    state.bottleText.maxLength = max(state.bottleText.dims, d => d.length);
+    var bottleTexts = splitPath(textBottle);
+    state.bottleText.dims = bottleTexts.map(function (p) {
+      return getPathData(p);
+    });
+    state.bottleText.maxLength = max(state.bottleText.dims, function (d) {
+      return d.length;
+    });
     state.bottleText.dashOffset = lodash_clonedeep(state.bottleText.maxLength);
-    state.bottleText.paths = bottleTexts.map(p => new Path2D(p)); // Prep bottle wave.
+    state.bottleText.paths = bottleTexts.map(function (p) {
+      return new Path2D(p);
+    }); // Prep bottle wave.
 
     state.bottleWave.bottlePath = new Path2D(bottle); // Prep lolly chart.
     // Get the lolly's path data (the paths and the length).
 
-    const lolliTextPaths = [textAlcohol, textAcids, textSugars, textQuality].map(getPathData); // Set the data
+    var lolliTextPaths = [textAlcohol, textAcids, textSugars, textQuality].map(getPathData); // Set the data
     // `value` is the mutable value to change,
     // `values` has all values we want to gsap to.
 
@@ -28440,7 +28810,11 @@
       }
     }]; // Add the paths to the DOM.
 
-    const animalPaths = stageGroup.append('g').attr('class', 'animals').selectAll('.animal').data(state.animals.data).join('path').attr('class', 'animal').attr('id', d => d.name).attr('d', d => d.path); // Get each animal path's BBox.
+    var animalPaths = stageGroup.append('g').attr('class', 'animals').selectAll('.animal').data(state.animals.data).join('path').attr('class', 'animal').attr('id', function (d) {
+      return d.name;
+    }).attr('d', function (d) {
+      return d.path;
+    }); // Get each animal path's BBox.
 
     animalPaths.each(function (d) {
       state.animals[d.name] = this.getBBox();
@@ -28500,7 +28874,9 @@
       tween: 'datasetAlcohol'
     }]; // Get the path info for each element.
 
-    state.dataset.info.forEach(d => state.dataset[d.name] = getPathData(d.paths)); // Also, the grid and columns share the same base bounding box,
+    state.dataset.info.forEach(function (d) {
+      return state.dataset[d.name] = getPathData(d.paths);
+    }); // Also, the grid and columns share the same base bounding box,
     // so we just need a single bbox, we take from the grid:
 
     state.dataset.box = getBox(false, dataset00Grid); // Save the world json.
@@ -28509,11 +28885,11 @@
 
     state.stats.data = wineData; // Get a link grid.
 
-    const n = 40;
-    const links = [];
+    var n = 40;
+    var links = [];
 
-    for (let y = 0; y < n; ++y) {
-      for (let x = 0; x < n; ++x) {
+    for (var y = 0; y < n; ++y) {
+      for (var x = 0; x < n; ++x) {
         if (y > 0) links.push({
           source: (y - 1) * n + x,
           target: y * n + x
@@ -28527,17 +28903,21 @@
 
     state.stats.links = links; // Variable importance.
 
-    state.varImp.data = varImpData.sort((a, b) => b.importance - a.importance); // Model.
+    state.varImp.data = varImpData.sort(function (a, b) {
+      return b.importance - a.importance;
+    }); // Model.
 
     state.model.intercept = modelIntercept[0].estimate;
     state.model.weights = setModelWeightMap(modelWeights);
-    const modelValues = getModelValues(state.stats.data);
+    var modelValues = getModelValues(state.stats.data);
     state.model.values = modelValues.meanMap;
     state.model.ranges = modelValues.rangeMap;
     state.model.probability = getProbability(state.model.values, state.model.weights, state.model.intercept); // Model bottle.
 
-    const bottlePath = roughBottlePath.map(d => d.d).join();
-    const bottlePathInfo = getPathData(bottlePath);
+    var bottlePath = roughBottlePath.map(function (d) {
+      return d.d;
+    }).join();
+    var bottlePathInfo = getPathData(bottlePath);
     state.modelBottle.paths = bottlePathInfo.paths;
     state.modelBottle.maxLength = bottlePathInfo.length;
   }
@@ -28547,13 +28927,13 @@
     // SVG dimensions controlled by CSS (overwriting given attributes).
     select('#logo').node().append(logoSvg.documentElement); // Intro text.
 
-    const introContainer = select('#container-intro');
-    const introHtml = part0Html.render();
+    var introContainer = select('#container-intro');
+    var introHtml = part0Html.render();
     introContainer.html(introHtml); // Main text.
 
-    const container = select('#text-container'); // Set up the article sections.
+    var container = select('#text-container'); // Set up the article sections.
 
-    const sectionData = [{
+    var sectionData = [{
       id: 'part-1',
       html: part1Html.render()
     }, {
@@ -28576,10 +28956,14 @@
       html: part7Html.render()
     }]; // Add the main text html.
 
-    container.selectAll('.main-section').data(sectionData).join('section').attr('class', d => `main-section ${d.id}`).html(d => d.html); // Add model base.
+    container.selectAll('.main-section').data(sectionData).join('section').attr('class', function (d) {
+      return "main-section ".concat(d.id);
+    }).html(function (d) {
+      return d.html;
+    }); // Add model base.
     // needs to come at the bitter end to stop at top and become scrollable.
 
-    const modelApp = select('#text-container').append('div').attr('id', 'model-app');
+    var modelApp = select('#text-container').append('div').attr('id', 'model-app');
     modelApp.append('div').attr('id', 'model-app-header').html(part8Html.render());
     modelApp.append('div').attr('id', 'model-app-wrap'); // Outro.
 
@@ -28589,25 +28973,36 @@
   } // Main func.
 
 
-  function ready([wineScape, logo, globeData, wineData, varImpData, modelIntercept, modelWeights]) {
+  function ready(_ref) {
+    var _ref2 = _slicedToArray(_ref, 7),
+        wineScape = _ref2[0],
+        logo = _ref2[1],
+        globeData = _ref2[2],
+        wineData = _ref2[3],
+        varImpData = _ref2[4],
+        modelIntercept = _ref2[5],
+        modelWeights = _ref2[6];
+
     // Make sure all variable names are lower case! This is not checked in the app.
     prepareVisuals(globeData, wineData, varImpData, modelIntercept, modelWeights);
     buildStory(logo);
     update(wineScape); // Debounced resize.
 
-    const debounced = lodash_debounce(() => update(wineScape), 500);
+    var debounced = lodash_debounce(function () {
+      return update(wineScape);
+    }, 500);
     window.addEventListener('resize', debounced);
   }
 
   function init$1() {
     window.addEventListener('load', removeSpinner);
-    const wineScape = image('../../static/wine-scape.png');
-    const logo = xml('../../static/vinoez.svg');
-    const globeData = json('../../data/world-simple.json');
-    const wineData = csv$1('../../data/winedata.csv', autoType);
-    const varImpData = csv$1('../../data/importance.csv', autoType);
-    const modelIntercept = csv$1('../../data/model-intercept.csv', autoType);
-    const modelWeights = csv$1('../../data/model-weights.csv', autoType);
+    var wineScape = image('../../static/wine-scape.png');
+    var logo = xml('../../static/vinoez.svg');
+    var globeData = json('../../data/world-simple.json');
+    var wineData = csv$1('../../data/winedata.csv', autoType);
+    var varImpData = csv$1('../../data/importance.csv', autoType);
+    var modelIntercept = csv$1('../../data/model-intercept.csv', autoType);
+    var modelWeights = csv$1('../../data/model-weights.csv', autoType);
     Promise.all([wineScape, logo, globeData, wineData, varImpData, modelIntercept, modelWeights]).then(ready);
   }
 
