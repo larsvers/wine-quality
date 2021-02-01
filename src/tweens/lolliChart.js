@@ -42,7 +42,7 @@ function setDimensions() {
     [state.lolli.area.left, state.lolli.area.right]
   );
   state.lolli.y = scalePoint()
-    .domain(state.lolli.values)
+    .domain(state.lolli.keys)
     .range([state.lolli.area.top, state.lolli.area.bottom]);
 }
 
@@ -54,13 +54,13 @@ function drawLolliChart(ctx, t) {
   ctx.translate(t.x, t.y);
   ctx.scale(t.scale, t.scale);
 
-  state.lolli.values.forEach((d, i) => {
+  state.lolli.keys.forEach((d, i) => {
     const datapoint = state.lolli.data[d];
 
     const xValue = datapoint.value;
-    const { length } = state.lolli.data[d].text;
-    const { offset } = state.lolli.data[d].text;
-    const { paths } = state.lolli.data[d].text;
+    const { length } = datapoint.text;
+    const { offset } = datapoint.text;
+    const { paths } = datapoint.text;
 
     // Line.
     ctx.beginPath();
@@ -71,8 +71,6 @@ function drawLolliChart(ctx, t) {
       state.lolli.y(d),
       { seed: i + 1, roughness: 0.5 }
     );
-    // ctx.moveTo(state.lolli.x(0), state.lolli.y(d));
-    // ctx.lineTo(state.lolli.x(xValue), state.lolli.y(d));
     ctx.stroke();
 
     // Circle.
@@ -104,7 +102,7 @@ function renderLolliChart() {
   );
 }
 
-// As tweenLolliUpdate and blackbos are set later, it seems to change
+// As tweenLolliUpdate and blackbox are set later, it seems to change
 // all initial values (.values[0]) as set by this tweenLolliChart. 🤷‍♂️
 function forceInitialValues() {
   Object.keys(state.lolli.data).forEach(d => {
@@ -166,4 +164,4 @@ function tweenLolliChart() {
 }
 
 export default tweenLolliChart;
-export { renderLolliChart, drawLolliChart };
+export { renderLolliChart };

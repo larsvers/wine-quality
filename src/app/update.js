@@ -13,6 +13,8 @@ import rough from 'roughjs/bundled/rough.esm';
 // Internal.
 import state from './state';
 import { resizeCanvas, getTransform, clear } from './utils';
+import setupLolliSlider from '../lollislider/lollislider';
+import buildModelControls from '../model/buildModel';
 
 // Tweens
 import { tweenIntroIn, tweenIntroOut } from '../tweens/intro';
@@ -21,11 +23,6 @@ import tweenWineScape from '../tweens/wineScape';
 import tweenGlassBottle from '../tweens/glassBottle';
 import tweenBottleText from '../tweens/bottleText';
 import tweenLolliChart from '../tweens/lolliChart';
-import {
-  tweenLolliUpdate1,
-  tweenLolliUpdate2,
-  tweenLolliUpdate3,
-} from '../tweens/lolliUpdate';
 import tweenBlackBox, { arrows } from '../tweens/blackBox';
 import tweenCleanup from '../tweens/cleanup';
 import tweenBottleEmpty from '../tweens/bottleEmpty';
@@ -57,7 +54,6 @@ import {
   simulateRemove,
 } from '../tweens/statsScatter';
 import tweenImportance from '../tweens/importance';
-import buildModelControls from '../model/buildModel';
 import tweenModelBottle from '../tweens/modelBottle';
 import {
   updateModelWave,
@@ -65,6 +61,8 @@ import {
   checkModelWave,
 } from '../tweens/modelWaveInit';
 import { stopWaveMarkers } from '../tweens/modelWaveMarker';
+
+import { renderLolliChart } from '../tweens/lolliChart';
 
 // Helpers.
 function isMobile() {
@@ -93,6 +91,10 @@ function getTriggerPositions() {
     endElement: 'center',
     endContainer: `top+=${offset}px`,
   };
+}
+
+function lerp(a, b, t) {
+  return a * (1 - t) + b * t;
 }
 
 // Set ScrollTrigger defaults.
@@ -173,7 +175,6 @@ function updateTransforms() {
   // Animals.
   // Get a transform for each animal based on its getBBox dimensions.
   state.animals.data.forEach(animal => {
-    // debugger;
     state.transform[animal.name] = getTransform(
       state.animals[animal.name],
       animal.fit
@@ -268,6 +269,7 @@ function setScrollBase() {
   });
 
   ScrollTrigger.create({
+    // The initial transition is done via tween...
     animation: state.tween.lolliChart,
     trigger: '.section-5',
     start,
@@ -276,28 +278,76 @@ function setScrollBase() {
   });
 
   ScrollTrigger.create({
-    animation: state.tween.lolliUpdate1,
+    // ...all others lolli transitions are done manually to have
+    // better access to the possibly changed  slider values.
     trigger: '.section-6',
     start,
     end,
     id: 'lolliUpdate1',
+    onUpdate({ progress }) {
+      // Lines.
+      state.lolli.keys.forEach(d => {
+        const a = state.lolli.data[d].values[1];
+        const b = state.lolli.data[d].values[2];
+        const current = lerp(a, b, progress);
+
+        state.lolli.data[d].value = current;
+      });
+      renderLolliChart();
+    },
   });
 
   ScrollTrigger.create({
-    animation: state.tween.lolliUpdate2,
     trigger: '.section-7',
     start,
     end,
     id: 'lolliUpdate2',
+    onUpdate({ progress }) {
+      // Lines.
+      state.lolli.keys.forEach(d => {
+        const a = state.lolli.data[d].values[2];
+        const b = state.lolli.data[d].values[3];
+        const current = lerp(a, b, progress);
+
+        state.lolli.data[d].value = current;
+      });
+      renderLolliChart();
+    },
   });
 
   ScrollTrigger.create({
-    animation: state.tween.lolliUpdate3,
     trigger: '.section-8',
     start,
     end,
     id: 'lolliUpdate3',
-    onEnterBack: () => clear(state.ctx.blackBox),
+    onUpdate({ progress }) {
+      // Circle radius.
+      const startRadius = state.lolli.radiusTarget;
+      const endRadius = 0;
+      const currentRadius = lerp(startRadius, endRadius, progress);
+
+      // Lines.
+      state.lolli.keys.forEach(d => {
+        const startValue = state.lolli.data[d].values[3];
+        const endValue = state.lolli.data[d].values[4];
+        const currentValue = lerp(startValue, endValue, progress);
+
+        state.lolli.data[d].value = currentValue;
+        state.lolli.data[d].radius = currentRadius;
+      });
+
+      // Quality text.
+      const { quality } = state.lolli.data;
+      const startOffset = 0;
+      const endOffset = quality.text.length;
+      const currentOffset = lerp(startOffset, endOffset, progress);
+      quality.text.offset = currentOffset;
+
+      renderLolliChart();
+    },
+    onEnterBack() {
+      clear(state.ctx.blackBox);
+    },
   });
 
   // 2 items.
@@ -699,14 +749,13 @@ function update(wineScapeImg) {
   updateTransforms();
   buildModelControls();
 
+  setupLolliSlider();
+
   tweenWineScape();
   tweenGlassBottle();
   tweenBottleText();
   tweenBottleWave();
   tweenLolliChart();
-  tweenLolliUpdate1();
-  tweenLolliUpdate2();
-  tweenLolliUpdate3();
   tweenBlackBox();
   tweenCleanup();
   tweenBottleEmpty();

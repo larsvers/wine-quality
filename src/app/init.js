@@ -242,7 +242,7 @@ function prepareVisuals(
   // A bit roundabout, but in order to gsapolate the values we need them in
   // objects as below. But to iterate through them in the canvas draw function
   // we need at least the names in an array like here:
-  state.lolli.values = Object.keys(state.lolli.data);
+  state.lolli.keys = Object.keys(state.lolli.data);
 
   // Get the blackbox pathdata.
   state.blackBox.box = getPathData(blackBox);

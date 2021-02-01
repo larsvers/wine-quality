@@ -18073,46 +18073,2261 @@
     ctx.clearRect(0, 0, state.width, state.height);
   }
 
-  function tweenIntroIn() {
-    // Hack as moving the #brand's xPercent doesn't work in Safari.
-    var w = window.innerWidth;
-    var left = w < 750 ? '90%' : '95%';
-    gsapWithCSS$1.timeline({
-      defaults: {
-        duration: 1,
-        ease: 'sine.inOut'
-      }
-    }).fromTo('#brand p', {
-      opacity: 1,
-      fontSize: '0.8em'
-    }, {
-      opacity: 0,
-      fontSize: '0em',
-      duration: 0.3
-    }).to('#brand', {
-      left: left
-    }, 0) // move right
-    .to('#logo path', {
-      fill: '#ccc'
-    }, 0);
+  /* eslint-disable prefer-destructuring */
+  state.lolli.area = {
+    top: undefined,
+    right: undefined,
+    bottom: undefined,
+    left: undefined,
+    height: undefined,
+    width: undefined
+  }; // Utils.
+
+  function setDimensions() {
+    // Set the lolli area.
+    var bottle = state.glassBottle; // Just for shortness.
+    // Horizontal dims.
+
+    state.lolli.area.left = Math.floor(bottle.bottleBox.width * 1.05);
+    state.lolli.area.width = Math.floor(state.width / state.transform.bottle.scale * bottle.bottleLeft + bottle.bottleBox.width);
+    state.lolli.area.right = Math.floor(state.lolli.area.left + state.lolli.area.width); // Vertical dims.
+
+    state.lolli.area.top = Math.floor(bottle.bottleBox.height * 0.5);
+    state.lolli.area.bottom = Math.floor(bottle.bottleBox.height * 0.9);
+    state.lolli.area.height = Math.floor(state.lolli.area.bottom - state.lolli.area.top); // Set the lolli radius' target value.
+
+    state.lolli.radiusTarget = 5 / state.transform.bottle.scale; // Set the lolly scales.
+
+    state.lolli.x = linear$1([0, 1], [state.lolli.area.left, state.lolli.area.right]);
+    state.lolli.y = point$1().domain(state.lolli.keys).range([state.lolli.area.top, state.lolli.area.bottom]);
+  } // Canvas draw function.
+
+
+  function drawLolliChart(ctx, t) {
+    var rough = state.rough.chart;
+    ctx.clearRect(0, 0, state.width, state.height);
+    ctx.save();
+    ctx.translate(t.x, t.y);
+    ctx.scale(t.scale, t.scale);
+    state.lolli.keys.forEach(function (d, i) {
+      var datapoint = state.lolli.data[d];
+      var xValue = datapoint.value;
+      var length = datapoint.text.length;
+      var offset = datapoint.text.offset;
+      var paths = datapoint.text.paths; // Line.
+
+      ctx.beginPath();
+      rough.line(state.lolli.x(0), state.lolli.y(d), state.lolli.x(xValue), state.lolli.y(d), {
+        seed: i + 1,
+        roughness: 0.5
+      });
+      ctx.stroke(); // Circle.
+
+      ctx.beginPath();
+      ctx.arc(state.lolli.x(xValue), state.lolli.y(d), datapoint.radius, 0, 2 * Math.PI);
+      ctx.fill(); // Text.
+
+      ctx.save();
+      ctx.translate(state.lolli.x(0), state.lolli.y(d) + 2);
+      ctx.lineWidth = 0.5;
+      ctx.setLineDash([length - offset, offset]);
+      paths.forEach(function (path) {
+        return ctx.stroke(path);
+      });
+      ctx.restore();
+    });
+    ctx.restore();
   }
 
-  function tweenIntroOut() {
-    gsapWithCSS$1.timeline({
-      defaults: {
-        duration: 1,
-        ease: 'sine.inOut'
+  function renderLolliChart() {
+    requestAnimationFrame(function () {
+      return drawLolliChart(state.ctx.chart, state.transform.bottle);
+    });
+  } // As tweenLolliUpdate and blackbox are set later, it seems to change
+  // all initial values (.values[0]) as set by this tweenLolliChart. 🤷‍♂️
+
+
+  function forceInitialValues() {
+    Object.keys(state.lolli.data).forEach(function (d) {
+      var datapoint = state.lolli.data[d];
+      datapoint.value = datapoint.values[0];
+      datapoint.radius = 0;
+      datapoint.text.offset = datapoint.text.length;
+    });
+  }
+
+  function defineTweenLolliChart() {
+    setDimensions(); // Things to tween.
+
+    var tl = gsapWithCSS.timeline({
+      onStart: forceInitialValues,
+      onUpdate: renderLolliChart
+    }); // Loop through all lolli-data (which is an object).
+
+    Object.keys(state.lolli.data).forEach(function (d) {
+      // Datapoint to tween around with.
+      var datapoint = state.lolli.data[d]; // Set up the tweens.
+
+      var valueTween = gsapWithCSS.fromTo(datapoint, {
+        value: datapoint.values[0]
+      }, {
+        value: datapoint.values[1]
+      });
+      var radiusTween = gsapWithCSS.fromTo(datapoint, {
+        radius: 0
+      }, {
+        radius: state.lolli.radiusTarget
+      });
+      var offsetTween = gsapWithCSS.fromTo(datapoint.text, {
+        offset: datapoint.text.length
+      }, {
+        offset: 0
+      }); // Add the tweens to the timeline.
+      // "<" start or ">" end of previous tween.
+
+      tl.add(valueTween, '>').add(radiusTween, '<').add(offsetTween, '>');
+    });
+    return tl;
+  }
+
+  function tweenLolliChart() {
+    // Capture current progress.
+    var scroll = ScrollTrigger.getById('lolliChart');
+    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
+
+    if (state.tween.lolliChart) state.tween.lolliChart.kill();
+    state.tween.lolliChart = defineTweenLolliChart();
+    state.tween.lolliChart.totalProgress(progress);
+  }
+
+  var lodash_isequal = createCommonjsModule(function (module, exports) {
+  /**
+   * Lodash (Custom Build) <https://lodash.com/>
+   * Build: `lodash modularize exports="npm" -o ./`
+   * Copyright JS Foundation and other contributors <https://js.foundation/>
+   * Released under MIT license <https://lodash.com/license>
+   * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+   * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+   */
+
+  /** Used as the size to enable large array optimizations. */
+  var LARGE_ARRAY_SIZE = 200;
+
+  /** Used to stand-in for `undefined` hash values. */
+  var HASH_UNDEFINED = '__lodash_hash_undefined__';
+
+  /** Used to compose bitmasks for value comparisons. */
+  var COMPARE_PARTIAL_FLAG = 1,
+      COMPARE_UNORDERED_FLAG = 2;
+
+  /** Used as references for various `Number` constants. */
+  var MAX_SAFE_INTEGER = 9007199254740991;
+
+  /** `Object#toString` result references. */
+  var argsTag = '[object Arguments]',
+      arrayTag = '[object Array]',
+      asyncTag = '[object AsyncFunction]',
+      boolTag = '[object Boolean]',
+      dateTag = '[object Date]',
+      errorTag = '[object Error]',
+      funcTag = '[object Function]',
+      genTag = '[object GeneratorFunction]',
+      mapTag = '[object Map]',
+      numberTag = '[object Number]',
+      nullTag = '[object Null]',
+      objectTag = '[object Object]',
+      promiseTag = '[object Promise]',
+      proxyTag = '[object Proxy]',
+      regexpTag = '[object RegExp]',
+      setTag = '[object Set]',
+      stringTag = '[object String]',
+      symbolTag = '[object Symbol]',
+      undefinedTag = '[object Undefined]',
+      weakMapTag = '[object WeakMap]';
+
+  var arrayBufferTag = '[object ArrayBuffer]',
+      dataViewTag = '[object DataView]',
+      float32Tag = '[object Float32Array]',
+      float64Tag = '[object Float64Array]',
+      int8Tag = '[object Int8Array]',
+      int16Tag = '[object Int16Array]',
+      int32Tag = '[object Int32Array]',
+      uint8Tag = '[object Uint8Array]',
+      uint8ClampedTag = '[object Uint8ClampedArray]',
+      uint16Tag = '[object Uint16Array]',
+      uint32Tag = '[object Uint32Array]';
+
+  /**
+   * Used to match `RegExp`
+   * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
+   */
+  var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
+
+  /** Used to detect host constructors (Safari). */
+  var reIsHostCtor = /^\[object .+?Constructor\]$/;
+
+  /** Used to detect unsigned integer values. */
+  var reIsUint = /^(?:0|[1-9]\d*)$/;
+
+  /** Used to identify `toStringTag` values of typed arrays. */
+  var typedArrayTags = {};
+  typedArrayTags[float32Tag] = typedArrayTags[float64Tag] =
+  typedArrayTags[int8Tag] = typedArrayTags[int16Tag] =
+  typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] =
+  typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] =
+  typedArrayTags[uint32Tag] = true;
+  typedArrayTags[argsTag] = typedArrayTags[arrayTag] =
+  typedArrayTags[arrayBufferTag] = typedArrayTags[boolTag] =
+  typedArrayTags[dataViewTag] = typedArrayTags[dateTag] =
+  typedArrayTags[errorTag] = typedArrayTags[funcTag] =
+  typedArrayTags[mapTag] = typedArrayTags[numberTag] =
+  typedArrayTags[objectTag] = typedArrayTags[regexpTag] =
+  typedArrayTags[setTag] = typedArrayTags[stringTag] =
+  typedArrayTags[weakMapTag] = false;
+
+  /** Detect free variable `global` from Node.js. */
+  var freeGlobal = typeof commonjsGlobal == 'object' && commonjsGlobal && commonjsGlobal.Object === Object && commonjsGlobal;
+
+  /** Detect free variable `self`. */
+  var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
+
+  /** Used as a reference to the global object. */
+  var root = freeGlobal || freeSelf || Function('return this')();
+
+  /** Detect free variable `exports`. */
+  var freeExports =  exports && !exports.nodeType && exports;
+
+  /** Detect free variable `module`. */
+  var freeModule = freeExports && 'object' == 'object' && module && !module.nodeType && module;
+
+  /** Detect the popular CommonJS extension `module.exports`. */
+  var moduleExports = freeModule && freeModule.exports === freeExports;
+
+  /** Detect free variable `process` from Node.js. */
+  var freeProcess = moduleExports && freeGlobal.process;
+
+  /** Used to access faster Node.js helpers. */
+  var nodeUtil = (function() {
+    try {
+      return freeProcess && freeProcess.binding && freeProcess.binding('util');
+    } catch (e) {}
+  }());
+
+  /* Node.js helper references. */
+  var nodeIsTypedArray = nodeUtil && nodeUtil.isTypedArray;
+
+  /**
+   * A specialized version of `_.filter` for arrays without support for
+   * iteratee shorthands.
+   *
+   * @private
+   * @param {Array} [array] The array to iterate over.
+   * @param {Function} predicate The function invoked per iteration.
+   * @returns {Array} Returns the new filtered array.
+   */
+  function arrayFilter(array, predicate) {
+    var index = -1,
+        length = array == null ? 0 : array.length,
+        resIndex = 0,
+        result = [];
+
+    while (++index < length) {
+      var value = array[index];
+      if (predicate(value, index, array)) {
+        result[resIndex++] = value;
       }
-    }).to('#brand p', {
-      opacity: 1,
-      fontSize: '0.8em',
-      delay: 0.7,
-      duration: 0.3
-    }).to('#brand', {
-      left: '50%'
-    }, 0).to('#logo path', {
-      fill: 'rgba(41, 14, 56, 0.5)'
-    }, 0);
+    }
+    return result;
+  }
+
+  /**
+   * Appends the elements of `values` to `array`.
+   *
+   * @private
+   * @param {Array} array The array to modify.
+   * @param {Array} values The values to append.
+   * @returns {Array} Returns `array`.
+   */
+  function arrayPush(array, values) {
+    var index = -1,
+        length = values.length,
+        offset = array.length;
+
+    while (++index < length) {
+      array[offset + index] = values[index];
+    }
+    return array;
+  }
+
+  /**
+   * A specialized version of `_.some` for arrays without support for iteratee
+   * shorthands.
+   *
+   * @private
+   * @param {Array} [array] The array to iterate over.
+   * @param {Function} predicate The function invoked per iteration.
+   * @returns {boolean} Returns `true` if any element passes the predicate check,
+   *  else `false`.
+   */
+  function arraySome(array, predicate) {
+    var index = -1,
+        length = array == null ? 0 : array.length;
+
+    while (++index < length) {
+      if (predicate(array[index], index, array)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * The base implementation of `_.times` without support for iteratee shorthands
+   * or max array length checks.
+   *
+   * @private
+   * @param {number} n The number of times to invoke `iteratee`.
+   * @param {Function} iteratee The function invoked per iteration.
+   * @returns {Array} Returns the array of results.
+   */
+  function baseTimes(n, iteratee) {
+    var index = -1,
+        result = Array(n);
+
+    while (++index < n) {
+      result[index] = iteratee(index);
+    }
+    return result;
+  }
+
+  /**
+   * The base implementation of `_.unary` without support for storing metadata.
+   *
+   * @private
+   * @param {Function} func The function to cap arguments for.
+   * @returns {Function} Returns the new capped function.
+   */
+  function baseUnary(func) {
+    return function(value) {
+      return func(value);
+    };
+  }
+
+  /**
+   * Checks if a `cache` value for `key` exists.
+   *
+   * @private
+   * @param {Object} cache The cache to query.
+   * @param {string} key The key of the entry to check.
+   * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+   */
+  function cacheHas(cache, key) {
+    return cache.has(key);
+  }
+
+  /**
+   * Gets the value at `key` of `object`.
+   *
+   * @private
+   * @param {Object} [object] The object to query.
+   * @param {string} key The key of the property to get.
+   * @returns {*} Returns the property value.
+   */
+  function getValue(object, key) {
+    return object == null ? undefined : object[key];
+  }
+
+  /**
+   * Converts `map` to its key-value pairs.
+   *
+   * @private
+   * @param {Object} map The map to convert.
+   * @returns {Array} Returns the key-value pairs.
+   */
+  function mapToArray(map) {
+    var index = -1,
+        result = Array(map.size);
+
+    map.forEach(function(value, key) {
+      result[++index] = [key, value];
+    });
+    return result;
+  }
+
+  /**
+   * Creates a unary function that invokes `func` with its argument transformed.
+   *
+   * @private
+   * @param {Function} func The function to wrap.
+   * @param {Function} transform The argument transform.
+   * @returns {Function} Returns the new function.
+   */
+  function overArg(func, transform) {
+    return function(arg) {
+      return func(transform(arg));
+    };
+  }
+
+  /**
+   * Converts `set` to an array of its values.
+   *
+   * @private
+   * @param {Object} set The set to convert.
+   * @returns {Array} Returns the values.
+   */
+  function setToArray(set) {
+    var index = -1,
+        result = Array(set.size);
+
+    set.forEach(function(value) {
+      result[++index] = value;
+    });
+    return result;
+  }
+
+  /** Used for built-in method references. */
+  var arrayProto = Array.prototype,
+      funcProto = Function.prototype,
+      objectProto = Object.prototype;
+
+  /** Used to detect overreaching core-js shims. */
+  var coreJsData = root['__core-js_shared__'];
+
+  /** Used to resolve the decompiled source of functions. */
+  var funcToString = funcProto.toString;
+
+  /** Used to check objects for own properties. */
+  var hasOwnProperty = objectProto.hasOwnProperty;
+
+  /** Used to detect methods masquerading as native. */
+  var maskSrcKey = (function() {
+    var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || '');
+    return uid ? ('Symbol(src)_1.' + uid) : '';
+  }());
+
+  /**
+   * Used to resolve the
+   * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+   * of values.
+   */
+  var nativeObjectToString = objectProto.toString;
+
+  /** Used to detect if a method is native. */
+  var reIsNative = RegExp('^' +
+    funcToString.call(hasOwnProperty).replace(reRegExpChar, '\\$&')
+    .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
+  );
+
+  /** Built-in value references. */
+  var Buffer = moduleExports ? root.Buffer : undefined,
+      Symbol = root.Symbol,
+      Uint8Array = root.Uint8Array,
+      propertyIsEnumerable = objectProto.propertyIsEnumerable,
+      splice = arrayProto.splice,
+      symToStringTag = Symbol ? Symbol.toStringTag : undefined;
+
+  /* Built-in method references for those with the same name as other `lodash` methods. */
+  var nativeGetSymbols = Object.getOwnPropertySymbols,
+      nativeIsBuffer = Buffer ? Buffer.isBuffer : undefined,
+      nativeKeys = overArg(Object.keys, Object);
+
+  /* Built-in method references that are verified to be native. */
+  var DataView = getNative(root, 'DataView'),
+      Map = getNative(root, 'Map'),
+      Promise = getNative(root, 'Promise'),
+      Set = getNative(root, 'Set'),
+      WeakMap = getNative(root, 'WeakMap'),
+      nativeCreate = getNative(Object, 'create');
+
+  /** Used to detect maps, sets, and weakmaps. */
+  var dataViewCtorString = toSource(DataView),
+      mapCtorString = toSource(Map),
+      promiseCtorString = toSource(Promise),
+      setCtorString = toSource(Set),
+      weakMapCtorString = toSource(WeakMap);
+
+  /** Used to convert symbols to primitives and strings. */
+  var symbolProto = Symbol ? Symbol.prototype : undefined,
+      symbolValueOf = symbolProto ? symbolProto.valueOf : undefined;
+
+  /**
+   * Creates a hash object.
+   *
+   * @private
+   * @constructor
+   * @param {Array} [entries] The key-value pairs to cache.
+   */
+  function Hash(entries) {
+    var index = -1,
+        length = entries == null ? 0 : entries.length;
+
+    this.clear();
+    while (++index < length) {
+      var entry = entries[index];
+      this.set(entry[0], entry[1]);
+    }
+  }
+
+  /**
+   * Removes all key-value entries from the hash.
+   *
+   * @private
+   * @name clear
+   * @memberOf Hash
+   */
+  function hashClear() {
+    this.__data__ = nativeCreate ? nativeCreate(null) : {};
+    this.size = 0;
+  }
+
+  /**
+   * Removes `key` and its value from the hash.
+   *
+   * @private
+   * @name delete
+   * @memberOf Hash
+   * @param {Object} hash The hash to modify.
+   * @param {string} key The key of the value to remove.
+   * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+   */
+  function hashDelete(key) {
+    var result = this.has(key) && delete this.__data__[key];
+    this.size -= result ? 1 : 0;
+    return result;
+  }
+
+  /**
+   * Gets the hash value for `key`.
+   *
+   * @private
+   * @name get
+   * @memberOf Hash
+   * @param {string} key The key of the value to get.
+   * @returns {*} Returns the entry value.
+   */
+  function hashGet(key) {
+    var data = this.__data__;
+    if (nativeCreate) {
+      var result = data[key];
+      return result === HASH_UNDEFINED ? undefined : result;
+    }
+    return hasOwnProperty.call(data, key) ? data[key] : undefined;
+  }
+
+  /**
+   * Checks if a hash value for `key` exists.
+   *
+   * @private
+   * @name has
+   * @memberOf Hash
+   * @param {string} key The key of the entry to check.
+   * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+   */
+  function hashHas(key) {
+    var data = this.__data__;
+    return nativeCreate ? (data[key] !== undefined) : hasOwnProperty.call(data, key);
+  }
+
+  /**
+   * Sets the hash `key` to `value`.
+   *
+   * @private
+   * @name set
+   * @memberOf Hash
+   * @param {string} key The key of the value to set.
+   * @param {*} value The value to set.
+   * @returns {Object} Returns the hash instance.
+   */
+  function hashSet(key, value) {
+    var data = this.__data__;
+    this.size += this.has(key) ? 0 : 1;
+    data[key] = (nativeCreate && value === undefined) ? HASH_UNDEFINED : value;
+    return this;
+  }
+
+  // Add methods to `Hash`.
+  Hash.prototype.clear = hashClear;
+  Hash.prototype['delete'] = hashDelete;
+  Hash.prototype.get = hashGet;
+  Hash.prototype.has = hashHas;
+  Hash.prototype.set = hashSet;
+
+  /**
+   * Creates an list cache object.
+   *
+   * @private
+   * @constructor
+   * @param {Array} [entries] The key-value pairs to cache.
+   */
+  function ListCache(entries) {
+    var index = -1,
+        length = entries == null ? 0 : entries.length;
+
+    this.clear();
+    while (++index < length) {
+      var entry = entries[index];
+      this.set(entry[0], entry[1]);
+    }
+  }
+
+  /**
+   * Removes all key-value entries from the list cache.
+   *
+   * @private
+   * @name clear
+   * @memberOf ListCache
+   */
+  function listCacheClear() {
+    this.__data__ = [];
+    this.size = 0;
+  }
+
+  /**
+   * Removes `key` and its value from the list cache.
+   *
+   * @private
+   * @name delete
+   * @memberOf ListCache
+   * @param {string} key The key of the value to remove.
+   * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+   */
+  function listCacheDelete(key) {
+    var data = this.__data__,
+        index = assocIndexOf(data, key);
+
+    if (index < 0) {
+      return false;
+    }
+    var lastIndex = data.length - 1;
+    if (index == lastIndex) {
+      data.pop();
+    } else {
+      splice.call(data, index, 1);
+    }
+    --this.size;
+    return true;
+  }
+
+  /**
+   * Gets the list cache value for `key`.
+   *
+   * @private
+   * @name get
+   * @memberOf ListCache
+   * @param {string} key The key of the value to get.
+   * @returns {*} Returns the entry value.
+   */
+  function listCacheGet(key) {
+    var data = this.__data__,
+        index = assocIndexOf(data, key);
+
+    return index < 0 ? undefined : data[index][1];
+  }
+
+  /**
+   * Checks if a list cache value for `key` exists.
+   *
+   * @private
+   * @name has
+   * @memberOf ListCache
+   * @param {string} key The key of the entry to check.
+   * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+   */
+  function listCacheHas(key) {
+    return assocIndexOf(this.__data__, key) > -1;
+  }
+
+  /**
+   * Sets the list cache `key` to `value`.
+   *
+   * @private
+   * @name set
+   * @memberOf ListCache
+   * @param {string} key The key of the value to set.
+   * @param {*} value The value to set.
+   * @returns {Object} Returns the list cache instance.
+   */
+  function listCacheSet(key, value) {
+    var data = this.__data__,
+        index = assocIndexOf(data, key);
+
+    if (index < 0) {
+      ++this.size;
+      data.push([key, value]);
+    } else {
+      data[index][1] = value;
+    }
+    return this;
+  }
+
+  // Add methods to `ListCache`.
+  ListCache.prototype.clear = listCacheClear;
+  ListCache.prototype['delete'] = listCacheDelete;
+  ListCache.prototype.get = listCacheGet;
+  ListCache.prototype.has = listCacheHas;
+  ListCache.prototype.set = listCacheSet;
+
+  /**
+   * Creates a map cache object to store key-value pairs.
+   *
+   * @private
+   * @constructor
+   * @param {Array} [entries] The key-value pairs to cache.
+   */
+  function MapCache(entries) {
+    var index = -1,
+        length = entries == null ? 0 : entries.length;
+
+    this.clear();
+    while (++index < length) {
+      var entry = entries[index];
+      this.set(entry[0], entry[1]);
+    }
+  }
+
+  /**
+   * Removes all key-value entries from the map.
+   *
+   * @private
+   * @name clear
+   * @memberOf MapCache
+   */
+  function mapCacheClear() {
+    this.size = 0;
+    this.__data__ = {
+      'hash': new Hash,
+      'map': new (Map || ListCache),
+      'string': new Hash
+    };
+  }
+
+  /**
+   * Removes `key` and its value from the map.
+   *
+   * @private
+   * @name delete
+   * @memberOf MapCache
+   * @param {string} key The key of the value to remove.
+   * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+   */
+  function mapCacheDelete(key) {
+    var result = getMapData(this, key)['delete'](key);
+    this.size -= result ? 1 : 0;
+    return result;
+  }
+
+  /**
+   * Gets the map value for `key`.
+   *
+   * @private
+   * @name get
+   * @memberOf MapCache
+   * @param {string} key The key of the value to get.
+   * @returns {*} Returns the entry value.
+   */
+  function mapCacheGet(key) {
+    return getMapData(this, key).get(key);
+  }
+
+  /**
+   * Checks if a map value for `key` exists.
+   *
+   * @private
+   * @name has
+   * @memberOf MapCache
+   * @param {string} key The key of the entry to check.
+   * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+   */
+  function mapCacheHas(key) {
+    return getMapData(this, key).has(key);
+  }
+
+  /**
+   * Sets the map `key` to `value`.
+   *
+   * @private
+   * @name set
+   * @memberOf MapCache
+   * @param {string} key The key of the value to set.
+   * @param {*} value The value to set.
+   * @returns {Object} Returns the map cache instance.
+   */
+  function mapCacheSet(key, value) {
+    var data = getMapData(this, key),
+        size = data.size;
+
+    data.set(key, value);
+    this.size += data.size == size ? 0 : 1;
+    return this;
+  }
+
+  // Add methods to `MapCache`.
+  MapCache.prototype.clear = mapCacheClear;
+  MapCache.prototype['delete'] = mapCacheDelete;
+  MapCache.prototype.get = mapCacheGet;
+  MapCache.prototype.has = mapCacheHas;
+  MapCache.prototype.set = mapCacheSet;
+
+  /**
+   *
+   * Creates an array cache object to store unique values.
+   *
+   * @private
+   * @constructor
+   * @param {Array} [values] The values to cache.
+   */
+  function SetCache(values) {
+    var index = -1,
+        length = values == null ? 0 : values.length;
+
+    this.__data__ = new MapCache;
+    while (++index < length) {
+      this.add(values[index]);
+    }
+  }
+
+  /**
+   * Adds `value` to the array cache.
+   *
+   * @private
+   * @name add
+   * @memberOf SetCache
+   * @alias push
+   * @param {*} value The value to cache.
+   * @returns {Object} Returns the cache instance.
+   */
+  function setCacheAdd(value) {
+    this.__data__.set(value, HASH_UNDEFINED);
+    return this;
+  }
+
+  /**
+   * Checks if `value` is in the array cache.
+   *
+   * @private
+   * @name has
+   * @memberOf SetCache
+   * @param {*} value The value to search for.
+   * @returns {number} Returns `true` if `value` is found, else `false`.
+   */
+  function setCacheHas(value) {
+    return this.__data__.has(value);
+  }
+
+  // Add methods to `SetCache`.
+  SetCache.prototype.add = SetCache.prototype.push = setCacheAdd;
+  SetCache.prototype.has = setCacheHas;
+
+  /**
+   * Creates a stack cache object to store key-value pairs.
+   *
+   * @private
+   * @constructor
+   * @param {Array} [entries] The key-value pairs to cache.
+   */
+  function Stack(entries) {
+    var data = this.__data__ = new ListCache(entries);
+    this.size = data.size;
+  }
+
+  /**
+   * Removes all key-value entries from the stack.
+   *
+   * @private
+   * @name clear
+   * @memberOf Stack
+   */
+  function stackClear() {
+    this.__data__ = new ListCache;
+    this.size = 0;
+  }
+
+  /**
+   * Removes `key` and its value from the stack.
+   *
+   * @private
+   * @name delete
+   * @memberOf Stack
+   * @param {string} key The key of the value to remove.
+   * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+   */
+  function stackDelete(key) {
+    var data = this.__data__,
+        result = data['delete'](key);
+
+    this.size = data.size;
+    return result;
+  }
+
+  /**
+   * Gets the stack value for `key`.
+   *
+   * @private
+   * @name get
+   * @memberOf Stack
+   * @param {string} key The key of the value to get.
+   * @returns {*} Returns the entry value.
+   */
+  function stackGet(key) {
+    return this.__data__.get(key);
+  }
+
+  /**
+   * Checks if a stack value for `key` exists.
+   *
+   * @private
+   * @name has
+   * @memberOf Stack
+   * @param {string} key The key of the entry to check.
+   * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+   */
+  function stackHas(key) {
+    return this.__data__.has(key);
+  }
+
+  /**
+   * Sets the stack `key` to `value`.
+   *
+   * @private
+   * @name set
+   * @memberOf Stack
+   * @param {string} key The key of the value to set.
+   * @param {*} value The value to set.
+   * @returns {Object} Returns the stack cache instance.
+   */
+  function stackSet(key, value) {
+    var data = this.__data__;
+    if (data instanceof ListCache) {
+      var pairs = data.__data__;
+      if (!Map || (pairs.length < LARGE_ARRAY_SIZE - 1)) {
+        pairs.push([key, value]);
+        this.size = ++data.size;
+        return this;
+      }
+      data = this.__data__ = new MapCache(pairs);
+    }
+    data.set(key, value);
+    this.size = data.size;
+    return this;
+  }
+
+  // Add methods to `Stack`.
+  Stack.prototype.clear = stackClear;
+  Stack.prototype['delete'] = stackDelete;
+  Stack.prototype.get = stackGet;
+  Stack.prototype.has = stackHas;
+  Stack.prototype.set = stackSet;
+
+  /**
+   * Creates an array of the enumerable property names of the array-like `value`.
+   *
+   * @private
+   * @param {*} value The value to query.
+   * @param {boolean} inherited Specify returning inherited property names.
+   * @returns {Array} Returns the array of property names.
+   */
+  function arrayLikeKeys(value, inherited) {
+    var isArr = isArray(value),
+        isArg = !isArr && isArguments(value),
+        isBuff = !isArr && !isArg && isBuffer(value),
+        isType = !isArr && !isArg && !isBuff && isTypedArray(value),
+        skipIndexes = isArr || isArg || isBuff || isType,
+        result = skipIndexes ? baseTimes(value.length, String) : [],
+        length = result.length;
+
+    for (var key in value) {
+      if ((inherited || hasOwnProperty.call(value, key)) &&
+          !(skipIndexes && (
+             // Safari 9 has enumerable `arguments.length` in strict mode.
+             key == 'length' ||
+             // Node.js 0.10 has enumerable non-index properties on buffers.
+             (isBuff && (key == 'offset' || key == 'parent')) ||
+             // PhantomJS 2 has enumerable non-index properties on typed arrays.
+             (isType && (key == 'buffer' || key == 'byteLength' || key == 'byteOffset')) ||
+             // Skip index properties.
+             isIndex(key, length)
+          ))) {
+        result.push(key);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Gets the index at which the `key` is found in `array` of key-value pairs.
+   *
+   * @private
+   * @param {Array} array The array to inspect.
+   * @param {*} key The key to search for.
+   * @returns {number} Returns the index of the matched value, else `-1`.
+   */
+  function assocIndexOf(array, key) {
+    var length = array.length;
+    while (length--) {
+      if (eq(array[length][0], key)) {
+        return length;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * The base implementation of `getAllKeys` and `getAllKeysIn` which uses
+   * `keysFunc` and `symbolsFunc` to get the enumerable property names and
+   * symbols of `object`.
+   *
+   * @private
+   * @param {Object} object The object to query.
+   * @param {Function} keysFunc The function to get the keys of `object`.
+   * @param {Function} symbolsFunc The function to get the symbols of `object`.
+   * @returns {Array} Returns the array of property names and symbols.
+   */
+  function baseGetAllKeys(object, keysFunc, symbolsFunc) {
+    var result = keysFunc(object);
+    return isArray(object) ? result : arrayPush(result, symbolsFunc(object));
+  }
+
+  /**
+   * The base implementation of `getTag` without fallbacks for buggy environments.
+   *
+   * @private
+   * @param {*} value The value to query.
+   * @returns {string} Returns the `toStringTag`.
+   */
+  function baseGetTag(value) {
+    if (value == null) {
+      return value === undefined ? undefinedTag : nullTag;
+    }
+    return (symToStringTag && symToStringTag in Object(value))
+      ? getRawTag(value)
+      : objectToString(value);
+  }
+
+  /**
+   * The base implementation of `_.isArguments`.
+   *
+   * @private
+   * @param {*} value The value to check.
+   * @returns {boolean} Returns `true` if `value` is an `arguments` object,
+   */
+  function baseIsArguments(value) {
+    return isObjectLike(value) && baseGetTag(value) == argsTag;
+  }
+
+  /**
+   * The base implementation of `_.isEqual` which supports partial comparisons
+   * and tracks traversed objects.
+   *
+   * @private
+   * @param {*} value The value to compare.
+   * @param {*} other The other value to compare.
+   * @param {boolean} bitmask The bitmask flags.
+   *  1 - Unordered comparison
+   *  2 - Partial comparison
+   * @param {Function} [customizer] The function to customize comparisons.
+   * @param {Object} [stack] Tracks traversed `value` and `other` objects.
+   * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+   */
+  function baseIsEqual(value, other, bitmask, customizer, stack) {
+    if (value === other) {
+      return true;
+    }
+    if (value == null || other == null || (!isObjectLike(value) && !isObjectLike(other))) {
+      return value !== value && other !== other;
+    }
+    return baseIsEqualDeep(value, other, bitmask, customizer, baseIsEqual, stack);
+  }
+
+  /**
+   * A specialized version of `baseIsEqual` for arrays and objects which performs
+   * deep comparisons and tracks traversed objects enabling objects with circular
+   * references to be compared.
+   *
+   * @private
+   * @param {Object} object The object to compare.
+   * @param {Object} other The other object to compare.
+   * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
+   * @param {Function} customizer The function to customize comparisons.
+   * @param {Function} equalFunc The function to determine equivalents of values.
+   * @param {Object} [stack] Tracks traversed `object` and `other` objects.
+   * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
+   */
+  function baseIsEqualDeep(object, other, bitmask, customizer, equalFunc, stack) {
+    var objIsArr = isArray(object),
+        othIsArr = isArray(other),
+        objTag = objIsArr ? arrayTag : getTag(object),
+        othTag = othIsArr ? arrayTag : getTag(other);
+
+    objTag = objTag == argsTag ? objectTag : objTag;
+    othTag = othTag == argsTag ? objectTag : othTag;
+
+    var objIsObj = objTag == objectTag,
+        othIsObj = othTag == objectTag,
+        isSameTag = objTag == othTag;
+
+    if (isSameTag && isBuffer(object)) {
+      if (!isBuffer(other)) {
+        return false;
+      }
+      objIsArr = true;
+      objIsObj = false;
+    }
+    if (isSameTag && !objIsObj) {
+      stack || (stack = new Stack);
+      return (objIsArr || isTypedArray(object))
+        ? equalArrays(object, other, bitmask, customizer, equalFunc, stack)
+        : equalByTag(object, other, objTag, bitmask, customizer, equalFunc, stack);
+    }
+    if (!(bitmask & COMPARE_PARTIAL_FLAG)) {
+      var objIsWrapped = objIsObj && hasOwnProperty.call(object, '__wrapped__'),
+          othIsWrapped = othIsObj && hasOwnProperty.call(other, '__wrapped__');
+
+      if (objIsWrapped || othIsWrapped) {
+        var objUnwrapped = objIsWrapped ? object.value() : object,
+            othUnwrapped = othIsWrapped ? other.value() : other;
+
+        stack || (stack = new Stack);
+        return equalFunc(objUnwrapped, othUnwrapped, bitmask, customizer, stack);
+      }
+    }
+    if (!isSameTag) {
+      return false;
+    }
+    stack || (stack = new Stack);
+    return equalObjects(object, other, bitmask, customizer, equalFunc, stack);
+  }
+
+  /**
+   * The base implementation of `_.isNative` without bad shim checks.
+   *
+   * @private
+   * @param {*} value The value to check.
+   * @returns {boolean} Returns `true` if `value` is a native function,
+   *  else `false`.
+   */
+  function baseIsNative(value) {
+    if (!isObject(value) || isMasked(value)) {
+      return false;
+    }
+    var pattern = isFunction(value) ? reIsNative : reIsHostCtor;
+    return pattern.test(toSource(value));
+  }
+
+  /**
+   * The base implementation of `_.isTypedArray` without Node.js optimizations.
+   *
+   * @private
+   * @param {*} value The value to check.
+   * @returns {boolean} Returns `true` if `value` is a typed array, else `false`.
+   */
+  function baseIsTypedArray(value) {
+    return isObjectLike(value) &&
+      isLength(value.length) && !!typedArrayTags[baseGetTag(value)];
+  }
+
+  /**
+   * The base implementation of `_.keys` which doesn't treat sparse arrays as dense.
+   *
+   * @private
+   * @param {Object} object The object to query.
+   * @returns {Array} Returns the array of property names.
+   */
+  function baseKeys(object) {
+    if (!isPrototype(object)) {
+      return nativeKeys(object);
+    }
+    var result = [];
+    for (var key in Object(object)) {
+      if (hasOwnProperty.call(object, key) && key != 'constructor') {
+        result.push(key);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * A specialized version of `baseIsEqualDeep` for arrays with support for
+   * partial deep comparisons.
+   *
+   * @private
+   * @param {Array} array The array to compare.
+   * @param {Array} other The other array to compare.
+   * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
+   * @param {Function} customizer The function to customize comparisons.
+   * @param {Function} equalFunc The function to determine equivalents of values.
+   * @param {Object} stack Tracks traversed `array` and `other` objects.
+   * @returns {boolean} Returns `true` if the arrays are equivalent, else `false`.
+   */
+  function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
+    var isPartial = bitmask & COMPARE_PARTIAL_FLAG,
+        arrLength = array.length,
+        othLength = other.length;
+
+    if (arrLength != othLength && !(isPartial && othLength > arrLength)) {
+      return false;
+    }
+    // Assume cyclic values are equal.
+    var stacked = stack.get(array);
+    if (stacked && stack.get(other)) {
+      return stacked == other;
+    }
+    var index = -1,
+        result = true,
+        seen = (bitmask & COMPARE_UNORDERED_FLAG) ? new SetCache : undefined;
+
+    stack.set(array, other);
+    stack.set(other, array);
+
+    // Ignore non-index properties.
+    while (++index < arrLength) {
+      var arrValue = array[index],
+          othValue = other[index];
+
+      if (customizer) {
+        var compared = isPartial
+          ? customizer(othValue, arrValue, index, other, array, stack)
+          : customizer(arrValue, othValue, index, array, other, stack);
+      }
+      if (compared !== undefined) {
+        if (compared) {
+          continue;
+        }
+        result = false;
+        break;
+      }
+      // Recursively compare arrays (susceptible to call stack limits).
+      if (seen) {
+        if (!arraySome(other, function(othValue, othIndex) {
+              if (!cacheHas(seen, othIndex) &&
+                  (arrValue === othValue || equalFunc(arrValue, othValue, bitmask, customizer, stack))) {
+                return seen.push(othIndex);
+              }
+            })) {
+          result = false;
+          break;
+        }
+      } else if (!(
+            arrValue === othValue ||
+              equalFunc(arrValue, othValue, bitmask, customizer, stack)
+          )) {
+        result = false;
+        break;
+      }
+    }
+    stack['delete'](array);
+    stack['delete'](other);
+    return result;
+  }
+
+  /**
+   * A specialized version of `baseIsEqualDeep` for comparing objects of
+   * the same `toStringTag`.
+   *
+   * **Note:** This function only supports comparing values with tags of
+   * `Boolean`, `Date`, `Error`, `Number`, `RegExp`, or `String`.
+   *
+   * @private
+   * @param {Object} object The object to compare.
+   * @param {Object} other The other object to compare.
+   * @param {string} tag The `toStringTag` of the objects to compare.
+   * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
+   * @param {Function} customizer The function to customize comparisons.
+   * @param {Function} equalFunc The function to determine equivalents of values.
+   * @param {Object} stack Tracks traversed `object` and `other` objects.
+   * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
+   */
+  function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
+    switch (tag) {
+      case dataViewTag:
+        if ((object.byteLength != other.byteLength) ||
+            (object.byteOffset != other.byteOffset)) {
+          return false;
+        }
+        object = object.buffer;
+        other = other.buffer;
+
+      case arrayBufferTag:
+        if ((object.byteLength != other.byteLength) ||
+            !equalFunc(new Uint8Array(object), new Uint8Array(other))) {
+          return false;
+        }
+        return true;
+
+      case boolTag:
+      case dateTag:
+      case numberTag:
+        // Coerce booleans to `1` or `0` and dates to milliseconds.
+        // Invalid dates are coerced to `NaN`.
+        return eq(+object, +other);
+
+      case errorTag:
+        return object.name == other.name && object.message == other.message;
+
+      case regexpTag:
+      case stringTag:
+        // Coerce regexes to strings and treat strings, primitives and objects,
+        // as equal. See http://www.ecma-international.org/ecma-262/7.0/#sec-regexp.prototype.tostring
+        // for more details.
+        return object == (other + '');
+
+      case mapTag:
+        var convert = mapToArray;
+
+      case setTag:
+        var isPartial = bitmask & COMPARE_PARTIAL_FLAG;
+        convert || (convert = setToArray);
+
+        if (object.size != other.size && !isPartial) {
+          return false;
+        }
+        // Assume cyclic values are equal.
+        var stacked = stack.get(object);
+        if (stacked) {
+          return stacked == other;
+        }
+        bitmask |= COMPARE_UNORDERED_FLAG;
+
+        // Recursively compare objects (susceptible to call stack limits).
+        stack.set(object, other);
+        var result = equalArrays(convert(object), convert(other), bitmask, customizer, equalFunc, stack);
+        stack['delete'](object);
+        return result;
+
+      case symbolTag:
+        if (symbolValueOf) {
+          return symbolValueOf.call(object) == symbolValueOf.call(other);
+        }
+    }
+    return false;
+  }
+
+  /**
+   * A specialized version of `baseIsEqualDeep` for objects with support for
+   * partial deep comparisons.
+   *
+   * @private
+   * @param {Object} object The object to compare.
+   * @param {Object} other The other object to compare.
+   * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
+   * @param {Function} customizer The function to customize comparisons.
+   * @param {Function} equalFunc The function to determine equivalents of values.
+   * @param {Object} stack Tracks traversed `object` and `other` objects.
+   * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
+   */
+  function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
+    var isPartial = bitmask & COMPARE_PARTIAL_FLAG,
+        objProps = getAllKeys(object),
+        objLength = objProps.length,
+        othProps = getAllKeys(other),
+        othLength = othProps.length;
+
+    if (objLength != othLength && !isPartial) {
+      return false;
+    }
+    var index = objLength;
+    while (index--) {
+      var key = objProps[index];
+      if (!(isPartial ? key in other : hasOwnProperty.call(other, key))) {
+        return false;
+      }
+    }
+    // Assume cyclic values are equal.
+    var stacked = stack.get(object);
+    if (stacked && stack.get(other)) {
+      return stacked == other;
+    }
+    var result = true;
+    stack.set(object, other);
+    stack.set(other, object);
+
+    var skipCtor = isPartial;
+    while (++index < objLength) {
+      key = objProps[index];
+      var objValue = object[key],
+          othValue = other[key];
+
+      if (customizer) {
+        var compared = isPartial
+          ? customizer(othValue, objValue, key, other, object, stack)
+          : customizer(objValue, othValue, key, object, other, stack);
+      }
+      // Recursively compare objects (susceptible to call stack limits).
+      if (!(compared === undefined
+            ? (objValue === othValue || equalFunc(objValue, othValue, bitmask, customizer, stack))
+            : compared
+          )) {
+        result = false;
+        break;
+      }
+      skipCtor || (skipCtor = key == 'constructor');
+    }
+    if (result && !skipCtor) {
+      var objCtor = object.constructor,
+          othCtor = other.constructor;
+
+      // Non `Object` object instances with different constructors are not equal.
+      if (objCtor != othCtor &&
+          ('constructor' in object && 'constructor' in other) &&
+          !(typeof objCtor == 'function' && objCtor instanceof objCtor &&
+            typeof othCtor == 'function' && othCtor instanceof othCtor)) {
+        result = false;
+      }
+    }
+    stack['delete'](object);
+    stack['delete'](other);
+    return result;
+  }
+
+  /**
+   * Creates an array of own enumerable property names and symbols of `object`.
+   *
+   * @private
+   * @param {Object} object The object to query.
+   * @returns {Array} Returns the array of property names and symbols.
+   */
+  function getAllKeys(object) {
+    return baseGetAllKeys(object, keys, getSymbols);
+  }
+
+  /**
+   * Gets the data for `map`.
+   *
+   * @private
+   * @param {Object} map The map to query.
+   * @param {string} key The reference key.
+   * @returns {*} Returns the map data.
+   */
+  function getMapData(map, key) {
+    var data = map.__data__;
+    return isKeyable(key)
+      ? data[typeof key == 'string' ? 'string' : 'hash']
+      : data.map;
+  }
+
+  /**
+   * Gets the native function at `key` of `object`.
+   *
+   * @private
+   * @param {Object} object The object to query.
+   * @param {string} key The key of the method to get.
+   * @returns {*} Returns the function if it's native, else `undefined`.
+   */
+  function getNative(object, key) {
+    var value = getValue(object, key);
+    return baseIsNative(value) ? value : undefined;
+  }
+
+  /**
+   * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
+   *
+   * @private
+   * @param {*} value The value to query.
+   * @returns {string} Returns the raw `toStringTag`.
+   */
+  function getRawTag(value) {
+    var isOwn = hasOwnProperty.call(value, symToStringTag),
+        tag = value[symToStringTag];
+
+    try {
+      value[symToStringTag] = undefined;
+      var unmasked = true;
+    } catch (e) {}
+
+    var result = nativeObjectToString.call(value);
+    if (unmasked) {
+      if (isOwn) {
+        value[symToStringTag] = tag;
+      } else {
+        delete value[symToStringTag];
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Creates an array of the own enumerable symbols of `object`.
+   *
+   * @private
+   * @param {Object} object The object to query.
+   * @returns {Array} Returns the array of symbols.
+   */
+  var getSymbols = !nativeGetSymbols ? stubArray : function(object) {
+    if (object == null) {
+      return [];
+    }
+    object = Object(object);
+    return arrayFilter(nativeGetSymbols(object), function(symbol) {
+      return propertyIsEnumerable.call(object, symbol);
+    });
+  };
+
+  /**
+   * Gets the `toStringTag` of `value`.
+   *
+   * @private
+   * @param {*} value The value to query.
+   * @returns {string} Returns the `toStringTag`.
+   */
+  var getTag = baseGetTag;
+
+  // Fallback for data views, maps, sets, and weak maps in IE 11 and promises in Node.js < 6.
+  if ((DataView && getTag(new DataView(new ArrayBuffer(1))) != dataViewTag) ||
+      (Map && getTag(new Map) != mapTag) ||
+      (Promise && getTag(Promise.resolve()) != promiseTag) ||
+      (Set && getTag(new Set) != setTag) ||
+      (WeakMap && getTag(new WeakMap) != weakMapTag)) {
+    getTag = function(value) {
+      var result = baseGetTag(value),
+          Ctor = result == objectTag ? value.constructor : undefined,
+          ctorString = Ctor ? toSource(Ctor) : '';
+
+      if (ctorString) {
+        switch (ctorString) {
+          case dataViewCtorString: return dataViewTag;
+          case mapCtorString: return mapTag;
+          case promiseCtorString: return promiseTag;
+          case setCtorString: return setTag;
+          case weakMapCtorString: return weakMapTag;
+        }
+      }
+      return result;
+    };
+  }
+
+  /**
+   * Checks if `value` is a valid array-like index.
+   *
+   * @private
+   * @param {*} value The value to check.
+   * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
+   * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
+   */
+  function isIndex(value, length) {
+    length = length == null ? MAX_SAFE_INTEGER : length;
+    return !!length &&
+      (typeof value == 'number' || reIsUint.test(value)) &&
+      (value > -1 && value % 1 == 0 && value < length);
+  }
+
+  /**
+   * Checks if `value` is suitable for use as unique object key.
+   *
+   * @private
+   * @param {*} value The value to check.
+   * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
+   */
+  function isKeyable(value) {
+    var type = typeof value;
+    return (type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean')
+      ? (value !== '__proto__')
+      : (value === null);
+  }
+
+  /**
+   * Checks if `func` has its source masked.
+   *
+   * @private
+   * @param {Function} func The function to check.
+   * @returns {boolean} Returns `true` if `func` is masked, else `false`.
+   */
+  function isMasked(func) {
+    return !!maskSrcKey && (maskSrcKey in func);
+  }
+
+  /**
+   * Checks if `value` is likely a prototype object.
+   *
+   * @private
+   * @param {*} value The value to check.
+   * @returns {boolean} Returns `true` if `value` is a prototype, else `false`.
+   */
+  function isPrototype(value) {
+    var Ctor = value && value.constructor,
+        proto = (typeof Ctor == 'function' && Ctor.prototype) || objectProto;
+
+    return value === proto;
+  }
+
+  /**
+   * Converts `value` to a string using `Object.prototype.toString`.
+   *
+   * @private
+   * @param {*} value The value to convert.
+   * @returns {string} Returns the converted string.
+   */
+  function objectToString(value) {
+    return nativeObjectToString.call(value);
+  }
+
+  /**
+   * Converts `func` to its source code.
+   *
+   * @private
+   * @param {Function} func The function to convert.
+   * @returns {string} Returns the source code.
+   */
+  function toSource(func) {
+    if (func != null) {
+      try {
+        return funcToString.call(func);
+      } catch (e) {}
+      try {
+        return (func + '');
+      } catch (e) {}
+    }
+    return '';
+  }
+
+  /**
+   * Performs a
+   * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
+   * comparison between two values to determine if they are equivalent.
+   *
+   * @static
+   * @memberOf _
+   * @since 4.0.0
+   * @category Lang
+   * @param {*} value The value to compare.
+   * @param {*} other The other value to compare.
+   * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+   * @example
+   *
+   * var object = { 'a': 1 };
+   * var other = { 'a': 1 };
+   *
+   * _.eq(object, object);
+   * // => true
+   *
+   * _.eq(object, other);
+   * // => false
+   *
+   * _.eq('a', 'a');
+   * // => true
+   *
+   * _.eq('a', Object('a'));
+   * // => false
+   *
+   * _.eq(NaN, NaN);
+   * // => true
+   */
+  function eq(value, other) {
+    return value === other || (value !== value && other !== other);
+  }
+
+  /**
+   * Checks if `value` is likely an `arguments` object.
+   *
+   * @static
+   * @memberOf _
+   * @since 0.1.0
+   * @category Lang
+   * @param {*} value The value to check.
+   * @returns {boolean} Returns `true` if `value` is an `arguments` object,
+   *  else `false`.
+   * @example
+   *
+   * _.isArguments(function() { return arguments; }());
+   * // => true
+   *
+   * _.isArguments([1, 2, 3]);
+   * // => false
+   */
+  var isArguments = baseIsArguments(function() { return arguments; }()) ? baseIsArguments : function(value) {
+    return isObjectLike(value) && hasOwnProperty.call(value, 'callee') &&
+      !propertyIsEnumerable.call(value, 'callee');
+  };
+
+  /**
+   * Checks if `value` is classified as an `Array` object.
+   *
+   * @static
+   * @memberOf _
+   * @since 0.1.0
+   * @category Lang
+   * @param {*} value The value to check.
+   * @returns {boolean} Returns `true` if `value` is an array, else `false`.
+   * @example
+   *
+   * _.isArray([1, 2, 3]);
+   * // => true
+   *
+   * _.isArray(document.body.children);
+   * // => false
+   *
+   * _.isArray('abc');
+   * // => false
+   *
+   * _.isArray(_.noop);
+   * // => false
+   */
+  var isArray = Array.isArray;
+
+  /**
+   * Checks if `value` is array-like. A value is considered array-like if it's
+   * not a function and has a `value.length` that's an integer greater than or
+   * equal to `0` and less than or equal to `Number.MAX_SAFE_INTEGER`.
+   *
+   * @static
+   * @memberOf _
+   * @since 4.0.0
+   * @category Lang
+   * @param {*} value The value to check.
+   * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
+   * @example
+   *
+   * _.isArrayLike([1, 2, 3]);
+   * // => true
+   *
+   * _.isArrayLike(document.body.children);
+   * // => true
+   *
+   * _.isArrayLike('abc');
+   * // => true
+   *
+   * _.isArrayLike(_.noop);
+   * // => false
+   */
+  function isArrayLike(value) {
+    return value != null && isLength(value.length) && !isFunction(value);
+  }
+
+  /**
+   * Checks if `value` is a buffer.
+   *
+   * @static
+   * @memberOf _
+   * @since 4.3.0
+   * @category Lang
+   * @param {*} value The value to check.
+   * @returns {boolean} Returns `true` if `value` is a buffer, else `false`.
+   * @example
+   *
+   * _.isBuffer(new Buffer(2));
+   * // => true
+   *
+   * _.isBuffer(new Uint8Array(2));
+   * // => false
+   */
+  var isBuffer = nativeIsBuffer || stubFalse;
+
+  /**
+   * Performs a deep comparison between two values to determine if they are
+   * equivalent.
+   *
+   * **Note:** This method supports comparing arrays, array buffers, booleans,
+   * date objects, error objects, maps, numbers, `Object` objects, regexes,
+   * sets, strings, symbols, and typed arrays. `Object` objects are compared
+   * by their own, not inherited, enumerable properties. Functions and DOM
+   * nodes are compared by strict equality, i.e. `===`.
+   *
+   * @static
+   * @memberOf _
+   * @since 0.1.0
+   * @category Lang
+   * @param {*} value The value to compare.
+   * @param {*} other The other value to compare.
+   * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+   * @example
+   *
+   * var object = { 'a': 1 };
+   * var other = { 'a': 1 };
+   *
+   * _.isEqual(object, other);
+   * // => true
+   *
+   * object === other;
+   * // => false
+   */
+  function isEqual(value, other) {
+    return baseIsEqual(value, other);
+  }
+
+  /**
+   * Checks if `value` is classified as a `Function` object.
+   *
+   * @static
+   * @memberOf _
+   * @since 0.1.0
+   * @category Lang
+   * @param {*} value The value to check.
+   * @returns {boolean} Returns `true` if `value` is a function, else `false`.
+   * @example
+   *
+   * _.isFunction(_);
+   * // => true
+   *
+   * _.isFunction(/abc/);
+   * // => false
+   */
+  function isFunction(value) {
+    if (!isObject(value)) {
+      return false;
+    }
+    // The use of `Object#toString` avoids issues with the `typeof` operator
+    // in Safari 9 which returns 'object' for typed arrays and other constructors.
+    var tag = baseGetTag(value);
+    return tag == funcTag || tag == genTag || tag == asyncTag || tag == proxyTag;
+  }
+
+  /**
+   * Checks if `value` is a valid array-like length.
+   *
+   * **Note:** This method is loosely based on
+   * [`ToLength`](http://ecma-international.org/ecma-262/7.0/#sec-tolength).
+   *
+   * @static
+   * @memberOf _
+   * @since 4.0.0
+   * @category Lang
+   * @param {*} value The value to check.
+   * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
+   * @example
+   *
+   * _.isLength(3);
+   * // => true
+   *
+   * _.isLength(Number.MIN_VALUE);
+   * // => false
+   *
+   * _.isLength(Infinity);
+   * // => false
+   *
+   * _.isLength('3');
+   * // => false
+   */
+  function isLength(value) {
+    return typeof value == 'number' &&
+      value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+  }
+
+  /**
+   * Checks if `value` is the
+   * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
+   * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+   *
+   * @static
+   * @memberOf _
+   * @since 0.1.0
+   * @category Lang
+   * @param {*} value The value to check.
+   * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+   * @example
+   *
+   * _.isObject({});
+   * // => true
+   *
+   * _.isObject([1, 2, 3]);
+   * // => true
+   *
+   * _.isObject(_.noop);
+   * // => true
+   *
+   * _.isObject(null);
+   * // => false
+   */
+  function isObject(value) {
+    var type = typeof value;
+    return value != null && (type == 'object' || type == 'function');
+  }
+
+  /**
+   * Checks if `value` is object-like. A value is object-like if it's not `null`
+   * and has a `typeof` result of "object".
+   *
+   * @static
+   * @memberOf _
+   * @since 4.0.0
+   * @category Lang
+   * @param {*} value The value to check.
+   * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+   * @example
+   *
+   * _.isObjectLike({});
+   * // => true
+   *
+   * _.isObjectLike([1, 2, 3]);
+   * // => true
+   *
+   * _.isObjectLike(_.noop);
+   * // => false
+   *
+   * _.isObjectLike(null);
+   * // => false
+   */
+  function isObjectLike(value) {
+    return value != null && typeof value == 'object';
+  }
+
+  /**
+   * Checks if `value` is classified as a typed array.
+   *
+   * @static
+   * @memberOf _
+   * @since 3.0.0
+   * @category Lang
+   * @param {*} value The value to check.
+   * @returns {boolean} Returns `true` if `value` is a typed array, else `false`.
+   * @example
+   *
+   * _.isTypedArray(new Uint8Array);
+   * // => true
+   *
+   * _.isTypedArray([]);
+   * // => false
+   */
+  var isTypedArray = nodeIsTypedArray ? baseUnary(nodeIsTypedArray) : baseIsTypedArray;
+
+  /**
+   * Creates an array of the own enumerable property names of `object`.
+   *
+   * **Note:** Non-object values are coerced to objects. See the
+   * [ES spec](http://ecma-international.org/ecma-262/7.0/#sec-object.keys)
+   * for more details.
+   *
+   * @static
+   * @since 0.1.0
+   * @memberOf _
+   * @category Object
+   * @param {Object} object The object to query.
+   * @returns {Array} Returns the array of property names.
+   * @example
+   *
+   * function Foo() {
+   *   this.a = 1;
+   *   this.b = 2;
+   * }
+   *
+   * Foo.prototype.c = 3;
+   *
+   * _.keys(new Foo);
+   * // => ['a', 'b'] (iteration order is not guaranteed)
+   *
+   * _.keys('hi');
+   * // => ['0', '1']
+   */
+  function keys(object) {
+    return isArrayLike(object) ? arrayLikeKeys(object) : baseKeys(object);
+  }
+
+  /**
+   * This method returns a new empty array.
+   *
+   * @static
+   * @memberOf _
+   * @since 4.13.0
+   * @category Util
+   * @returns {Array} Returns the new empty array.
+   * @example
+   *
+   * var arrays = _.times(2, _.stubArray);
+   *
+   * console.log(arrays);
+   * // => [[], []]
+   *
+   * console.log(arrays[0] === arrays[1]);
+   * // => false
+   */
+  function stubArray() {
+    return [];
+  }
+
+  /**
+   * This method returns `false`.
+   *
+   * @static
+   * @memberOf _
+   * @since 4.13.0
+   * @category Util
+   * @returns {boolean} Returns `false`.
+   * @example
+   *
+   * _.times(2, _.stubFalse);
+   * // => [false, false]
+   */
+  function stubFalse() {
+    return false;
+  }
+
+  module.exports = isEqual;
+  });
+
+  /**
+   * Calculates the Logistic Regression probability for the
+   * given values based on the given model parameters.
+   * @param { map } values map of the values
+   * @param { map } weights map of the weights
+   * @param { number } intercept the model intercept
+   */
+
+  function getProbability(values, weights, intercept) {
+    var check = lodash_isequal(values.keys(), weights.keys());
+    if (!check) throw Error('values and weights are not equal.');
+    var logOdds = intercept;
+    values.keys().forEach(function (variable) {
+      logOdds += values.get(variable) * weights.get(variable);
+    });
+    var odds = Math.exp(logOdds);
+    var prob = odds / (1 + odds);
+    return prob;
+  }
+
+  /* eslint-disable prefer-destructuring */
+
+  var intercept = 0;
+  var weights = map();
+  weights.set('acids', -2);
+  weights.set('sugars', 2);
+  weights.set('alcohol', 3); // The model values.
+
+  var values = map();
+
+  function updateValues() {
+    values.set('acids', state.lolli.data.acids.value);
+    values.set('sugars', state.lolli.data.sugars.value);
+    values.set('alcohol', state.lolli.data.alcohol.value);
+  }
+
+  function slide() {
+    var name = this.name,
+        value = this.value; // Set input values.
+
+    state.lolli.data[name].value = +value;
+    state.lolli.data[name].values[3] = +value; // Set quality values.
+
+    updateValues();
+    var quality = getProbability(values, weights, intercept);
+    state.lolli.data.quality.value = +quality;
+    state.lolli.data.quality.values[3] = quality; // render chart
+
+    renderLolliChart();
+  }
+
+  function setupLolliSlider() {
+    select('#slider-tool').selectAll('input').each(function () {
+      // Set initial value.
+      var name = this.name;
+      this.value = state.lolli.data[name].values[3];
+    }).on('input', slide);
+  }
+
+  function nopropagation() {
+    event.stopImmediatePropagation();
+  }
+
+  function noevent() {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }
+
+  function nodrag(view) {
+    var root = view.document.documentElement,
+        selection = select(view).on("dragstart.drag", noevent, true);
+    if ("onselectstart" in root) {
+      selection.on("selectstart.drag", noevent, true);
+    } else {
+      root.__noselect = root.style.MozUserSelect;
+      root.style.MozUserSelect = "none";
+    }
+  }
+
+  function yesdrag(view, noclick) {
+    var root = view.document.documentElement,
+        selection = select(view).on("dragstart.drag", null);
+    if (noclick) {
+      selection.on("click.drag", noevent, true);
+      setTimeout(function() { selection.on("click.drag", null); }, 0);
+    }
+    if ("onselectstart" in root) {
+      selection.on("selectstart.drag", null);
+    } else {
+      root.style.MozUserSelect = root.__noselect;
+      delete root.__noselect;
+    }
+  }
+
+  function constant$3(x) {
+    return function() {
+      return x;
+    };
+  }
+
+  function DragEvent(target, type, subject, id, active, x, y, dx, dy, dispatch) {
+    this.target = target;
+    this.type = type;
+    this.subject = subject;
+    this.identifier = id;
+    this.active = active;
+    this.x = x;
+    this.y = y;
+    this.dx = dx;
+    this.dy = dy;
+    this._ = dispatch;
+  }
+
+  DragEvent.prototype.on = function() {
+    var value = this._.on.apply(this._, arguments);
+    return value === this._ ? this : value;
+  };
+
+  // Ignore right-click, since that should open the context menu.
+  function defaultFilter() {
+    return !event.ctrlKey && !event.button;
+  }
+
+  function defaultContainer() {
+    return this.parentNode;
+  }
+
+  function defaultSubject(d) {
+    return d == null ? {x: event.x, y: event.y} : d;
+  }
+
+  function defaultTouchable() {
+    return navigator.maxTouchPoints || ("ontouchstart" in this);
+  }
+
+  function drag() {
+    var filter = defaultFilter,
+        container = defaultContainer,
+        subject = defaultSubject,
+        touchable = defaultTouchable,
+        gestures = {},
+        listeners = dispatch("start", "drag", "end"),
+        active = 0,
+        mousedownx,
+        mousedowny,
+        mousemoving,
+        touchending,
+        clickDistance2 = 0;
+
+    function drag(selection) {
+      selection
+          .on("mousedown.drag", mousedowned)
+        .filter(touchable)
+          .on("touchstart.drag", touchstarted)
+          .on("touchmove.drag", touchmoved)
+          .on("touchend.drag touchcancel.drag", touchended)
+          .style("touch-action", "none")
+          .style("-webkit-tap-highlight-color", "rgba(0,0,0,0)");
+    }
+
+    function mousedowned() {
+      if (touchending || !filter.apply(this, arguments)) return;
+      var gesture = beforestart("mouse", container.apply(this, arguments), mouse, this, arguments);
+      if (!gesture) return;
+      select(event.view).on("mousemove.drag", mousemoved, true).on("mouseup.drag", mouseupped, true);
+      nodrag(event.view);
+      nopropagation();
+      mousemoving = false;
+      mousedownx = event.clientX;
+      mousedowny = event.clientY;
+      gesture("start");
+    }
+
+    function mousemoved() {
+      noevent();
+      if (!mousemoving) {
+        var dx = event.clientX - mousedownx, dy = event.clientY - mousedowny;
+        mousemoving = dx * dx + dy * dy > clickDistance2;
+      }
+      gestures.mouse("drag");
+    }
+
+    function mouseupped() {
+      select(event.view).on("mousemove.drag mouseup.drag", null);
+      yesdrag(event.view, mousemoving);
+      noevent();
+      gestures.mouse("end");
+    }
+
+    function touchstarted() {
+      if (!filter.apply(this, arguments)) return;
+      var touches = event.changedTouches,
+          c = container.apply(this, arguments),
+          n = touches.length, i, gesture;
+
+      for (i = 0; i < n; ++i) {
+        if (gesture = beforestart(touches[i].identifier, c, touch, this, arguments)) {
+          nopropagation();
+          gesture("start");
+        }
+      }
+    }
+
+    function touchmoved() {
+      var touches = event.changedTouches,
+          n = touches.length, i, gesture;
+
+      for (i = 0; i < n; ++i) {
+        if (gesture = gestures[touches[i].identifier]) {
+          noevent();
+          gesture("drag");
+        }
+      }
+    }
+
+    function touchended() {
+      var touches = event.changedTouches,
+          n = touches.length, i, gesture;
+
+      if (touchending) clearTimeout(touchending);
+      touchending = setTimeout(function() { touchending = null; }, 500); // Ghost clicks are delayed!
+      for (i = 0; i < n; ++i) {
+        if (gesture = gestures[touches[i].identifier]) {
+          nopropagation();
+          gesture("end");
+        }
+      }
+    }
+
+    function beforestart(id, container, point, that, args) {
+      var p = point(container, id), s, dx, dy,
+          sublisteners = listeners.copy();
+
+      if (!customEvent(new DragEvent(drag, "beforestart", s, id, active, p[0], p[1], 0, 0, sublisteners), function() {
+        if ((event.subject = s = subject.apply(that, args)) == null) return false;
+        dx = s.x - p[0] || 0;
+        dy = s.y - p[1] || 0;
+        return true;
+      })) return;
+
+      return function gesture(type) {
+        var p0 = p, n;
+        switch (type) {
+          case "start": gestures[id] = gesture, n = active++; break;
+          case "end": delete gestures[id], --active; // nobreak
+          case "drag": p = point(container, id), n = active; break;
+        }
+        customEvent(new DragEvent(drag, type, s, id, n, p[0] + dx, p[1] + dy, p[0] - p0[0], p[1] - p0[1], sublisteners), sublisteners.apply, sublisteners, [type, that, args]);
+      };
+    }
+
+    drag.filter = function(_) {
+      return arguments.length ? (filter = typeof _ === "function" ? _ : constant$3(!!_), drag) : filter;
+    };
+
+    drag.container = function(_) {
+      return arguments.length ? (container = typeof _ === "function" ? _ : constant$3(_), drag) : container;
+    };
+
+    drag.subject = function(_) {
+      return arguments.length ? (subject = typeof _ === "function" ? _ : constant$3(_), drag) : subject;
+    };
+
+    drag.touchable = function(_) {
+      return arguments.length ? (touchable = typeof _ === "function" ? _ : constant$3(!!_), drag) : touchable;
+    };
+
+    drag.on = function() {
+      var value = listeners.on.apply(listeners, arguments);
+      return value === listeners ? drag : value;
+    };
+
+    drag.clickDistance = function(_) {
+      return arguments.length ? (clickDistance2 = (_ = +_) * _, drag) : Math.sqrt(clickDistance2);
+    };
+
+    return drag;
   }
 
   var pi = Math.PI,
@@ -18244,7 +20459,7 @@
     }
   };
 
-  function constant$3(x) {
+  function constant$4(x) {
     return function constant() {
       return x;
     };
@@ -18293,7 +20508,7 @@
   function line() {
     var x = x$1,
         y = y$1,
-        defined = constant$3(true),
+        defined = constant$4(true),
         context = null,
         curve = curveLinear,
         output = null;
@@ -18319,15 +20534,15 @@
     }
 
     line.x = function(_) {
-      return arguments.length ? (x = typeof _ === "function" ? _ : constant$3(+_), line) : x;
+      return arguments.length ? (x = typeof _ === "function" ? _ : constant$4(+_), line) : x;
     };
 
     line.y = function(_) {
-      return arguments.length ? (y = typeof _ === "function" ? _ : constant$3(+_), line) : y;
+      return arguments.length ? (y = typeof _ === "function" ? _ : constant$4(+_), line) : y;
     };
 
     line.defined = function(_) {
-      return arguments.length ? (defined = typeof _ === "function" ? _ : constant$3(!!_), line) : defined;
+      return arguments.length ? (defined = typeof _ === "function" ? _ : constant$4(!!_), line) : defined;
     };
 
     line.curve = function(_) {
@@ -18391,6 +20606,105 @@
 
   function curveBasis(context) {
     return new Basis(context);
+  }
+
+  // moves a variable value across a defined threshold.
+  // This info (and a good/bad/neutral colour) will be
+  // picked up by the marker draw function to add the info text.
+
+  var info = [{
+    variable: 'alcohol',
+    operator: '>',
+    threshold: 13,
+    info: ['our model likes alcohol!'],
+    infoColour: state.bottleColour.good.stop1
+  }, {
+    variable: 'volatile_acidity',
+    operator: '>',
+    threshold: 0.9,
+    info: ['careful, your wine might', 'get too acid-reach'],
+    infoColour: state.bottleColour.bad.stop1
+  }, {
+    variable: 'sulphates',
+    operator: '<',
+    threshold: 0.5,
+    info: [''],
+    infoColour: state.bottleColour.bad.stop1
+  }, {
+    variable: 'density',
+    operator: '',
+    threshold: null,
+    info: [''],
+    infoColour: ''
+  }, {
+    variable: 'citric_acid',
+    operator: '>',
+    threshold: 0.35,
+    info: [''],
+    infoColour: state.bottleColour.good.stop1
+  }, {
+    variable: 'chlorides',
+    operator: '>',
+    threshold: 0.1,
+    info: ["don't oversalt it"],
+    infoColour: state.bottleColour.bad.stop1
+  }, {
+    variable: 'total_sulfur_dioxide',
+    operator: '',
+    threshold: null,
+    info: [''],
+    infoColour: ''
+  }, {
+    variable: 'fixed_acidity',
+    operator: '>',
+    threshold: 8.5,
+    info: [''],
+    infoColour: state.bottleColour.bad.stop1
+  }, {
+    variable: 'ph',
+    operator: '',
+    threshold: null,
+    info: [''],
+    infoColour: ''
+  }, {
+    variable: 'residual_sugar',
+    operator: '>',
+    threshold: 3.8,
+    info: ['getting on the sweater', 'side for a red wine now'],
+    infoColour: '#777'
+  }, {
+    variable: 'free_sulfur_dioxide',
+    operator: '',
+    threshold: null,
+    info: [''],
+    infoColour: ''
+  }];
+  var infoMap = map(info, function (d) {
+    return d.variable;
+  });
+
+  function getConditional(value, operator, threshold) {
+    if (operator === '' || !operator) return false;
+    if (operator === '>') return value > threshold;
+    if (operator === '<') return value < threshold;
+  }
+  /**
+   * Return info for that variable  based on the given value.
+   * @param { string } variable property at question
+   * @param { number } value the current value
+   */
+
+
+  function setPropertyInfo(variable, value) {
+    state.modelBottle.info = [''];
+    state.modelBottle.infoColour = '';
+    var current = infoMap.get(variable);
+    var conditional = getConditional(value, current.operator, current.threshold);
+
+    if (conditional) {
+      state.modelBottle.info = current.info;
+      state.modelBottle.infoColour = current.infoColour;
+    }
   }
 
   /* eslint-disable no-use-before-define */
@@ -18533,6 +20847,213 @@
     if (state.tween.bottleWave) state.tween.bottleWave.kill();
     state.tween.bottleWave = defineTweenBottleWave(-0.1, 0.6);
     state.tween.bottleWave.totalProgress(progress);
+  }
+
+  /* eslint-disable no-nested-ternary */
+
+  var margin = {
+    top: 20,
+    right: 20,
+    bottom: 30,
+    left: 20
+  }; // Function to compute density
+
+  function kernelDensityEstimator(kernel, X) {
+    return function (V) {
+      return X.map(function (x) {
+        return [x, mean(V, function (v) {
+          return kernel(x - v);
+        })];
+      });
+    };
+  }
+
+  function kernelEpanechnikov(k) {
+    return function (v) {
+      return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
+    };
+  } // Control build function.
+
+
+  function buildControl(datapoint) {
+    // Get the datum's values.
+    var variable = datapoint.key;
+    var value = datapoint.value; // Identify # of decimals to show.
+
+    var valueRange = state.model.ranges.get(variable);
+    var rangeDelta = valueRange[1] - valueRange[0];
+    var decimals = rangeDelta > 0.09 ? 2 : 3; // Set up.
+
+    var sel = select(this);
+    sel.select('svg').remove(); // No join mechanics here - let's be deterministic.
+
+    var svg = sel.append('svg').attr('class', 'control');
+    var rs = st.svg(svg.node()); // SVG is defined as 100% width/height in CSS.
+
+    var width = parseInt(svg.style('width'), 10) - margin.left - margin.right;
+    var height = parseInt(svg.style('height'), 10) - margin.top - margin.bottom; // Clip path for the marker.
+
+    var clippy = svg.append('defs').append('clipPath').attr('id', "clippy-".concat(variable)).append('path'); // The chart g.
+
+    var g = svg.append('g').attr('transform', "translate(".concat(margin.left, ", ").concat(margin.top, ")")); // x Scale.
+
+    var xScale = linear$1().domain(state.model.ranges.get(variable)).range([0, width]); // Label.
+
+    var labelText = variable === 'ph' ? 'pH' : prettyLabel(variable);
+    g.append('text').attr('x', width).attr('y', -margin.top / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('font-family', 'Signika').style('font-size', 12).text(labelText); // Axis.
+
+    g.append('line').attr('y1', height).attr('x2', width).attr('y2', height).style('stroke-width', 1).style('stroke', '#000'); // Density data.
+
+    var k = (state.model.ranges.get(variable)[1] - state.model.ranges.get(variable)[0]) * 0.05;
+    var kde = kernelDensityEstimator(kernelEpanechnikov(k), xScale.ticks(40));
+    var density = kde(state.stats.data.map(function (d) {
+      return d[variable];
+    })); // Add a start and an end point at x = 0 to the mix.
+
+    density.unshift([density[0][0], 0]);
+    density.push([density[density.length - 1][0], 0]); // y Scale.
+
+    var yScale = linear$1().domain([0, max(density.map(function (d) {
+      return d[1];
+    }))]).range([height, 0]); // Line generator.
+
+    var lineGen = line().curve(curveBasis).x(function (d) {
+      return xScale(d[0]);
+    }).y(function (d) {
+      return yScale(d[1]);
+    }); // Get density path.
+
+    var densityPath = lineGen(density); // Density chart.
+
+    var fill = rs.path(densityPath, {
+      fill: '#555',
+      stroke: 'rgba(0, 0, 0, 0.7)'
+    });
+    g.node().appendChild(fill);
+    g.select('path').attr('class', "density ".concat(variable)); // Clip path data.
+
+    clippy.attr('d', densityPath); // Position data for the drag subjects.
+
+    var position = {
+      x: xScale(value),
+      y: height,
+      width: 30,
+      height: height + margin.bottom
+    }; // Marker.
+
+    g.append('line').datum(position).attr('x1', function (d) {
+      return d.x;
+    }).attr('y1', function (d) {
+      return d.y;
+    }).attr('x2', function (d) {
+      return d.x;
+    }).attr('y2', 0).attr('class', 'marker').attr('clip-path', "url(#clippy-".concat(variable, ")")).style('stroke-width', 1).style('stroke', 'black'); // Handle.
+
+    g.append('circle').datum(position).attr('cx', function (d) {
+      return d.x;
+    }).attr('cy', function (d) {
+      return d.y;
+    }).attr('r', 5).attr('class', 'handle').style('fill', '#000'); // Number.
+
+    g.append('text').datum(position).attr('x', function (d) {
+      return d.x;
+    }).attr('y', function (d) {
+      return d.y;
+    }).attr('class', 'label').attr('dy', '0.7em').attr('text-anchor', 'middle').attr('dominant-baseline', 'hanging').style('font-family', 'Signika').style('font-size', 12).text(value.toFixed(decimals)); // Drag handler.
+
+    function handleDrag(datum) {
+      // Clamp the x value.
+      var x = event.x > width ? width : event.x < 0 ? 0 : event.x; // Update the data.
+
+      value = xScale.invert(x);
+      state.model.values.set(variable, value);
+      state.model.probability = getProbability(state.model.values, state.model.weights, state.model.intercept); // Operate the bottle wave on change.
+
+      decayWave();
+      state.bottleWave.lift = state.model.probability; // Update DOM.
+
+      var dragrect = select(this);
+      var circle = select(this.parentNode).select('circle.handle');
+      var marker = select(this.parentNode).select('line.marker');
+      var label = select(this.parentNode).select('text.label');
+      dragrect.attr('x', function () {
+        datum.x = x;
+        return datum.x - datum.width / 2;
+      });
+      circle.attr('cx', datum.x = x);
+      marker.attr('x1', datum.x = x).attr('x2', datum.x = x);
+      label.attr('x', datum.x = x).text(value.toFixed(decimals)); // Add some wine making tips to the canvas indirectly.
+
+      setPropertyInfo(variable, value);
+    } // Drag rectangle.
+
+
+    g.append('rect').datum(position).attr('x', function (d) {
+      return d.x - d.width / 2;
+    }).attr('y', 0).attr('width', function (d) {
+      return d.width;
+    }).attr('height', function (d) {
+      return d.height;
+    }).style('opacity', 0) // can't see it - no no.
+    .call(drag().on('drag', handleDrag));
+  }
+
+  function buildModelControls() {
+    select('#model-app').style('height', "".concat(state.height, "px")); // Sort the controls by their variable importance.
+
+    var order = state.varImp.data.map(function (d) {
+      return d.variable;
+    });
+    var controlData = state.model.values.entries();
+    controlData.sort(function (a, b) {
+      return order.indexOf(a.key) - order.indexOf(b.key);
+    }); // Mount the app.
+
+    select('#model-app-wrap').selectAll('.model-value-control').data(controlData).join('div').attr('class', 'model-value-control').each(buildControl);
+  }
+  //    Hence the minimum would be 0.5% of the width.
+  //    However, we give it a little leeway here with 0.475
+
+  function tweenIntroIn() {
+    // Hack as moving the #brand's xPercent doesn't work in Safari.
+    var w = window.innerWidth;
+    var left = w < 750 ? '90%' : '95%';
+    gsapWithCSS$1.timeline({
+      defaults: {
+        duration: 1,
+        ease: 'sine.inOut'
+      }
+    }).fromTo('#brand p', {
+      opacity: 1,
+      fontSize: '0.8em'
+    }, {
+      opacity: 0,
+      fontSize: '0em',
+      duration: 0.3
+    }).to('#brand', {
+      left: left
+    }, 0) // move right
+    .to('#logo path', {
+      fill: '#ccc'
+    }, 0);
+  }
+
+  function tweenIntroOut() {
+    gsapWithCSS$1.timeline({
+      defaults: {
+        duration: 1,
+        ease: 'sine.inOut'
+      }
+    }).to('#brand p', {
+      opacity: 1,
+      fontSize: '0.8em',
+      delay: 0.7,
+      duration: 0.3
+    }).to('#brand', {
+      left: '50%'
+    }, 0).to('#logo path', {
+      fill: 'rgba(41, 14, 56, 0.5)'
+    }, 0);
   }
 
   function drawScape(ctx, img, t, alpha) {
@@ -18722,243 +21243,6 @@
     if (state.tween.bottleText) state.tween.bottleText.kill();
     state.tween.bottleText = defineTweenBottleText(true, 0, 1);
     state.tween.bottleText.totalProgress(progress);
-  }
-
-  /* eslint-disable prefer-destructuring */
-  state.lolli.area = {
-    top: undefined,
-    right: undefined,
-    bottom: undefined,
-    left: undefined,
-    height: undefined,
-    width: undefined
-  }; // Utils.
-
-  function setDimensions() {
-    // Set the lolli area.
-    var bottle = state.glassBottle; // Just for shortness.
-    // Horizontal dims.
-
-    state.lolli.area.left = Math.floor(bottle.bottleBox.width * 1.05);
-    state.lolli.area.width = Math.floor(state.width / state.transform.bottle.scale * bottle.bottleLeft + bottle.bottleBox.width);
-    state.lolli.area.right = Math.floor(state.lolli.area.left + state.lolli.area.width); // Vertical dims.
-
-    state.lolli.area.top = Math.floor(bottle.bottleBox.height * 0.5);
-    state.lolli.area.bottom = Math.floor(bottle.bottleBox.height * 0.9);
-    state.lolli.area.height = Math.floor(state.lolli.area.bottom - state.lolli.area.top); // Set the lolli radius' target value.
-
-    state.lolli.radiusTarget = 5 / state.transform.bottle.scale; // Set the lolly scales.
-
-    state.lolli.x = linear$1([0, 1], [state.lolli.area.left, state.lolli.area.right]);
-    state.lolli.y = point$1().domain(state.lolli.values).range([state.lolli.area.top, state.lolli.area.bottom]);
-  } // Canvas draw function.
-
-
-  function drawLolliChart(ctx, t) {
-    var rough = state.rough.chart;
-    ctx.clearRect(0, 0, state.width, state.height);
-    ctx.save();
-    ctx.translate(t.x, t.y);
-    ctx.scale(t.scale, t.scale);
-    state.lolli.values.forEach(function (d, i) {
-      var datapoint = state.lolli.data[d];
-      var xValue = datapoint.value;
-      var length = state.lolli.data[d].text.length;
-      var offset = state.lolli.data[d].text.offset;
-      var paths = state.lolli.data[d].text.paths; // Line.
-
-      ctx.beginPath();
-      rough.line(state.lolli.x(0), state.lolli.y(d), state.lolli.x(xValue), state.lolli.y(d), {
-        seed: i + 1,
-        roughness: 0.5
-      }); // ctx.moveTo(state.lolli.x(0), state.lolli.y(d));
-      // ctx.lineTo(state.lolli.x(xValue), state.lolli.y(d));
-
-      ctx.stroke(); // Circle.
-
-      ctx.beginPath();
-      ctx.arc(state.lolli.x(xValue), state.lolli.y(d), datapoint.radius, 0, 2 * Math.PI);
-      ctx.fill(); // Text.
-
-      ctx.save();
-      ctx.translate(state.lolli.x(0), state.lolli.y(d) + 2);
-      ctx.lineWidth = 0.5;
-      ctx.setLineDash([length - offset, offset]);
-      paths.forEach(function (path) {
-        return ctx.stroke(path);
-      });
-      ctx.restore();
-    });
-    ctx.restore();
-  }
-
-  function renderLolliChart() {
-    requestAnimationFrame(function () {
-      return drawLolliChart(state.ctx.chart, state.transform.bottle);
-    });
-  } // As tweenLolliUpdate and blackbos are set later, it seems to change
-  // all initial values (.values[0]) as set by this tweenLolliChart. 🤷‍♂️
-
-
-  function forceInitialValues() {
-    Object.keys(state.lolli.data).forEach(function (d) {
-      var datapoint = state.lolli.data[d];
-      datapoint.value = datapoint.values[0];
-      datapoint.radius = 0;
-      datapoint.text.offset = datapoint.text.length;
-    });
-  }
-
-  function defineTweenLolliChart() {
-    setDimensions(); // Things to tween.
-
-    var tl = gsapWithCSS.timeline({
-      onStart: forceInitialValues,
-      onUpdate: renderLolliChart
-    }); // Loop through all lolli-data (which is an object).
-
-    Object.keys(state.lolli.data).forEach(function (d) {
-      // Datapoint to tween around with.
-      var datapoint = state.lolli.data[d]; // Set up the tweens.
-
-      var valueTween = gsapWithCSS.fromTo(datapoint, {
-        value: datapoint.values[0]
-      }, {
-        value: datapoint.values[1]
-      });
-      var radiusTween = gsapWithCSS.fromTo(datapoint, {
-        radius: 0
-      }, {
-        radius: state.lolli.radiusTarget
-      });
-      var offsetTween = gsapWithCSS.fromTo(datapoint.text, {
-        offset: datapoint.text.length
-      }, {
-        offset: 0
-      }); // Add the tweens to the timeline.
-      // "<" start or ">" end of previous tween.
-
-      tl.add(valueTween, '>').add(radiusTween, '<').add(offsetTween, '>');
-    });
-    return tl;
-  }
-
-  function tweenLolliChart() {
-    // Capture current progress.
-    var scroll = ScrollTrigger.getById('lolliChart');
-    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
-
-    if (state.tween.lolliChart) state.tween.lolliChart.kill();
-    state.tween.lolliChart = defineTweenLolliChart();
-    state.tween.lolliChart.totalProgress(progress);
-  }
-
-  function defineTweenLolliUpdate1() {
-    // Things to tween.
-    var tl = gsapWithCSS.timeline({
-      onUpdate: renderLolliChart
-    }); // Loop through all lolli-data (which is an object).
-
-    Object.keys(state.lolli.data).forEach(function (d) {
-      // Datapoint to tween around with.
-      var datapoint = state.lolli.data[d]; // Set up the tweens.
-
-      var valueTween = gsapWithCSS.fromTo(datapoint, {
-        value: datapoint.values[1]
-      }, {
-        value: datapoint.values[2]
-      }); // Add the tweens to the timeline.
-      // "<" start or ">" end of previous tween.
-
-      tl.add(valueTween, '<');
-    });
-    return tl;
-  }
-
-  function defineTweenLolliUpdate2() {
-    // Things to tween.
-    var tl = gsapWithCSS.timeline({
-      onUpdate: renderLolliChart
-    }); // Loop through all lolli-data (which is an object).
-
-    Object.keys(state.lolli.data).forEach(function (d) {
-      // Datapoint to tween around with.
-      var datapoint = state.lolli.data[d]; // Set up the tweens.
-
-      var valueTween = gsapWithCSS.fromTo(datapoint, {
-        value: datapoint.values[2]
-      }, {
-        value: datapoint.values[3]
-      }); // Add the tweens to the timeline.
-      // "<" start or ">" end of previous tween.
-
-      tl.add(valueTween, '<');
-    });
-    return tl;
-  }
-
-  function defineTweenLolliUpdate3() {
-    // Things to tween.
-    var tl = gsapWithCSS.timeline({
-      onUpdate: renderLolliChart
-    }); // Loop through all lolli-data (which is an object).
-
-    Object.keys(state.lolli.data).forEach(function (d) {
-      // Datapoint to tween around with.
-      var datapoint = state.lolli.data[d]; // Set up the tweens.
-
-      var valueTween = gsapWithCSS.fromTo(datapoint, {
-        value: datapoint.values[3]
-      }, {
-        value: datapoint.values[4]
-      });
-      var radiusTween = gsapWithCSS.fromTo(datapoint, {
-        radius: state.lolli.radiusTarget
-      }, {
-        radius: 0
-      });
-      tl.add(valueTween, '>').add(radiusTween, '<');
-
-      if (d === 'quality') {
-        var offsetTween = gsapWithCSS.fromTo(datapoint.text, {
-          offset: 0
-        }, {
-          offset: datapoint.text.length
-        });
-        tl.add(offsetTween, '>');
-      }
-    });
-    return tl;
-  }
-
-  function tweenLolliUpdate1() {
-    // Capture current progress.
-    var scroll = ScrollTrigger.getById('lolliUpdate1');
-    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
-
-    if (state.tween.lolliUpdate1) state.tween.lolliUpdate1.kill();
-    state.tween.lolliUpdate1 = defineTweenLolliUpdate1();
-    state.tween.lolliUpdate1.totalProgress(progress);
-  }
-
-  function tweenLolliUpdate2() {
-    // Capture current progress.
-    var scroll = ScrollTrigger.getById('lolliUpdate2');
-    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
-
-    if (state.tween.lolliUpdate2) state.tween.lolliUpdate2.kill();
-    state.tween.lolliUpdate2 = defineTweenLolliUpdate2();
-    state.tween.lolliUpdate2.totalProgress(progress);
-  }
-
-  function tweenLolliUpdate3() {
-    // Capture current progress.
-    var scroll = ScrollTrigger.getById('lolliUpdate3');
-    var progress = scroll ? scroll.progress : 0; // Kill old - set up new timeline.
-
-    if (state.tween.lolliUpdate3) state.tween.lolliUpdate3.kill();
-    state.tween.lolliUpdate3 = defineTweenLolliUpdate3();
-    state.tween.lolliUpdate3.totalProgress(progress);
   }
 
   /* eslint-disable no-param-reassign */
@@ -22332,7 +24616,7 @@
   //    is still being used though - although this could be solved with a
   //    simple linear scale synced with the scale-scale.
 
-  function constant$4(x) {
+  function constant$5(x) {
     return function() {
       return x;
     };
@@ -22763,7 +25047,7 @@
     var id = index,
         strength = defaultStrength,
         strengths,
-        distance = constant$4(30),
+        distance = constant$5(30),
         distances,
         nodes,
         count,
@@ -22852,11 +25136,11 @@
     };
 
     force.strength = function(_) {
-      return arguments.length ? (strength = typeof _ === "function" ? _ : constant$4(+_), initializeStrength(), force) : strength;
+      return arguments.length ? (strength = typeof _ === "function" ? _ : constant$5(+_), initializeStrength(), force) : strength;
     };
 
     force.distance = function(_) {
-      return arguments.length ? (distance = typeof _ === "function" ? _ : constant$4(+_), initializeDistance(), force) : distance;
+      return arguments.length ? (distance = typeof _ === "function" ? _ : constant$5(+_), initializeDistance(), force) : distance;
     };
 
     return force;
@@ -23125,7 +25409,7 @@
     var nodes,
         node,
         alpha,
-        strength = constant$4(-30),
+        strength = constant$5(-30),
         strengths,
         distanceMin2 = 1,
         distanceMax2 = Infinity,
@@ -23213,7 +25497,7 @@
     };
 
     force.strength = function(_) {
-      return arguments.length ? (strength = typeof _ === "function" ? _ : constant$4(+_), initialize(), force) : strength;
+      return arguments.length ? (strength = typeof _ === "function" ? _ : constant$5(+_), initialize(), force) : strength;
     };
 
     force.distanceMin = function(_) {
@@ -23232,12 +25516,12 @@
   }
 
   function forceX(x) {
-    var strength = constant$4(0.1),
+    var strength = constant$5(0.1),
         nodes,
         strengths,
         xz;
 
-    if (typeof x !== "function") x = constant$4(x == null ? 0 : +x);
+    if (typeof x !== "function") x = constant$5(x == null ? 0 : +x);
 
     function force(alpha) {
       for (var i = 0, n = nodes.length, node; i < n; ++i) {
@@ -23261,23 +25545,23 @@
     };
 
     force.strength = function(_) {
-      return arguments.length ? (strength = typeof _ === "function" ? _ : constant$4(+_), initialize(), force) : strength;
+      return arguments.length ? (strength = typeof _ === "function" ? _ : constant$5(+_), initialize(), force) : strength;
     };
 
     force.x = function(_) {
-      return arguments.length ? (x = typeof _ === "function" ? _ : constant$4(+_), initialize(), force) : x;
+      return arguments.length ? (x = typeof _ === "function" ? _ : constant$5(+_), initialize(), force) : x;
     };
 
     return force;
   }
 
   function forceY(y) {
-    var strength = constant$4(0.1),
+    var strength = constant$5(0.1),
         nodes,
         strengths,
         yz;
 
-    if (typeof y !== "function") y = constant$4(y == null ? 0 : +y);
+    if (typeof y !== "function") y = constant$5(y == null ? 0 : +y);
 
     function force(alpha) {
       for (var i = 0, n = nodes.length, node; i < n; ++i) {
@@ -23301,11 +25585,11 @@
     };
 
     force.strength = function(_) {
-      return arguments.length ? (strength = typeof _ === "function" ? _ : constant$4(+_), initialize(), force) : strength;
+      return arguments.length ? (strength = typeof _ === "function" ? _ : constant$5(+_), initialize(), force) : strength;
     };
 
     force.y = function(_) {
-      return arguments.length ? (y = typeof _ === "function" ? _ : constant$4(+_), initialize(), force) : y;
+      return arguments.length ? (y = typeof _ === "function" ? _ : constant$5(+_), initialize(), force) : y;
     };
 
     return force;
@@ -23664,7 +25948,7 @@
   var dot;
   var dotGood;
   var dotBad;
-  var margin;
+  var margin$1;
   var xScale$1;
   var yScale$1;
   var sim;
@@ -23695,14 +25979,14 @@
 
 
   function getScales() {
-    margin = {
+    margin$1 = {
       top: state.height * 0.3,
       right: state.width * 0.3,
       bottom: state.height * 0.3,
       left: state.width * 0.3
     };
-    xScale$1 = linear$1().range([margin.left, state.width - margin.right]);
-    yScale$1 = linear$1().range([state.height - margin.bottom, margin.top]);
+    xScale$1 = linear$1().range([margin$1.left, state.width - margin$1.right]);
+    yScale$1 = linear$1().range([state.height - margin$1.bottom, margin$1.top]);
   } // At each tick, this returns an object with the x and y position
   // for each label as well as their text value.
 
@@ -24572,2361 +26856,6 @@
     tweenRemove$1();
   }
 
-  function nopropagation() {
-    event.stopImmediatePropagation();
-  }
-
-  function noevent() {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-  }
-
-  function nodrag(view) {
-    var root = view.document.documentElement,
-        selection = select(view).on("dragstart.drag", noevent, true);
-    if ("onselectstart" in root) {
-      selection.on("selectstart.drag", noevent, true);
-    } else {
-      root.__noselect = root.style.MozUserSelect;
-      root.style.MozUserSelect = "none";
-    }
-  }
-
-  function yesdrag(view, noclick) {
-    var root = view.document.documentElement,
-        selection = select(view).on("dragstart.drag", null);
-    if (noclick) {
-      selection.on("click.drag", noevent, true);
-      setTimeout(function() { selection.on("click.drag", null); }, 0);
-    }
-    if ("onselectstart" in root) {
-      selection.on("selectstart.drag", null);
-    } else {
-      root.style.MozUserSelect = root.__noselect;
-      delete root.__noselect;
-    }
-  }
-
-  function constant$5(x) {
-    return function() {
-      return x;
-    };
-  }
-
-  function DragEvent(target, type, subject, id, active, x, y, dx, dy, dispatch) {
-    this.target = target;
-    this.type = type;
-    this.subject = subject;
-    this.identifier = id;
-    this.active = active;
-    this.x = x;
-    this.y = y;
-    this.dx = dx;
-    this.dy = dy;
-    this._ = dispatch;
-  }
-
-  DragEvent.prototype.on = function() {
-    var value = this._.on.apply(this._, arguments);
-    return value === this._ ? this : value;
-  };
-
-  // Ignore right-click, since that should open the context menu.
-  function defaultFilter() {
-    return !event.ctrlKey && !event.button;
-  }
-
-  function defaultContainer() {
-    return this.parentNode;
-  }
-
-  function defaultSubject(d) {
-    return d == null ? {x: event.x, y: event.y} : d;
-  }
-
-  function defaultTouchable() {
-    return navigator.maxTouchPoints || ("ontouchstart" in this);
-  }
-
-  function drag() {
-    var filter = defaultFilter,
-        container = defaultContainer,
-        subject = defaultSubject,
-        touchable = defaultTouchable,
-        gestures = {},
-        listeners = dispatch("start", "drag", "end"),
-        active = 0,
-        mousedownx,
-        mousedowny,
-        mousemoving,
-        touchending,
-        clickDistance2 = 0;
-
-    function drag(selection) {
-      selection
-          .on("mousedown.drag", mousedowned)
-        .filter(touchable)
-          .on("touchstart.drag", touchstarted)
-          .on("touchmove.drag", touchmoved)
-          .on("touchend.drag touchcancel.drag", touchended)
-          .style("touch-action", "none")
-          .style("-webkit-tap-highlight-color", "rgba(0,0,0,0)");
-    }
-
-    function mousedowned() {
-      if (touchending || !filter.apply(this, arguments)) return;
-      var gesture = beforestart("mouse", container.apply(this, arguments), mouse, this, arguments);
-      if (!gesture) return;
-      select(event.view).on("mousemove.drag", mousemoved, true).on("mouseup.drag", mouseupped, true);
-      nodrag(event.view);
-      nopropagation();
-      mousemoving = false;
-      mousedownx = event.clientX;
-      mousedowny = event.clientY;
-      gesture("start");
-    }
-
-    function mousemoved() {
-      noevent();
-      if (!mousemoving) {
-        var dx = event.clientX - mousedownx, dy = event.clientY - mousedowny;
-        mousemoving = dx * dx + dy * dy > clickDistance2;
-      }
-      gestures.mouse("drag");
-    }
-
-    function mouseupped() {
-      select(event.view).on("mousemove.drag mouseup.drag", null);
-      yesdrag(event.view, mousemoving);
-      noevent();
-      gestures.mouse("end");
-    }
-
-    function touchstarted() {
-      if (!filter.apply(this, arguments)) return;
-      var touches = event.changedTouches,
-          c = container.apply(this, arguments),
-          n = touches.length, i, gesture;
-
-      for (i = 0; i < n; ++i) {
-        if (gesture = beforestart(touches[i].identifier, c, touch, this, arguments)) {
-          nopropagation();
-          gesture("start");
-        }
-      }
-    }
-
-    function touchmoved() {
-      var touches = event.changedTouches,
-          n = touches.length, i, gesture;
-
-      for (i = 0; i < n; ++i) {
-        if (gesture = gestures[touches[i].identifier]) {
-          noevent();
-          gesture("drag");
-        }
-      }
-    }
-
-    function touchended() {
-      var touches = event.changedTouches,
-          n = touches.length, i, gesture;
-
-      if (touchending) clearTimeout(touchending);
-      touchending = setTimeout(function() { touchending = null; }, 500); // Ghost clicks are delayed!
-      for (i = 0; i < n; ++i) {
-        if (gesture = gestures[touches[i].identifier]) {
-          nopropagation();
-          gesture("end");
-        }
-      }
-    }
-
-    function beforestart(id, container, point, that, args) {
-      var p = point(container, id), s, dx, dy,
-          sublisteners = listeners.copy();
-
-      if (!customEvent(new DragEvent(drag, "beforestart", s, id, active, p[0], p[1], 0, 0, sublisteners), function() {
-        if ((event.subject = s = subject.apply(that, args)) == null) return false;
-        dx = s.x - p[0] || 0;
-        dy = s.y - p[1] || 0;
-        return true;
-      })) return;
-
-      return function gesture(type) {
-        var p0 = p, n;
-        switch (type) {
-          case "start": gestures[id] = gesture, n = active++; break;
-          case "end": delete gestures[id], --active; // nobreak
-          case "drag": p = point(container, id), n = active; break;
-        }
-        customEvent(new DragEvent(drag, type, s, id, n, p[0] + dx, p[1] + dy, p[0] - p0[0], p[1] - p0[1], sublisteners), sublisteners.apply, sublisteners, [type, that, args]);
-      };
-    }
-
-    drag.filter = function(_) {
-      return arguments.length ? (filter = typeof _ === "function" ? _ : constant$5(!!_), drag) : filter;
-    };
-
-    drag.container = function(_) {
-      return arguments.length ? (container = typeof _ === "function" ? _ : constant$5(_), drag) : container;
-    };
-
-    drag.subject = function(_) {
-      return arguments.length ? (subject = typeof _ === "function" ? _ : constant$5(_), drag) : subject;
-    };
-
-    drag.touchable = function(_) {
-      return arguments.length ? (touchable = typeof _ === "function" ? _ : constant$5(!!_), drag) : touchable;
-    };
-
-    drag.on = function() {
-      var value = listeners.on.apply(listeners, arguments);
-      return value === listeners ? drag : value;
-    };
-
-    drag.clickDistance = function(_) {
-      return arguments.length ? (clickDistance2 = (_ = +_) * _, drag) : Math.sqrt(clickDistance2);
-    };
-
-    return drag;
-  }
-
-  var lodash_isequal = createCommonjsModule(function (module, exports) {
-  /**
-   * Lodash (Custom Build) <https://lodash.com/>
-   * Build: `lodash modularize exports="npm" -o ./`
-   * Copyright JS Foundation and other contributors <https://js.foundation/>
-   * Released under MIT license <https://lodash.com/license>
-   * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
-   * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-   */
-
-  /** Used as the size to enable large array optimizations. */
-  var LARGE_ARRAY_SIZE = 200;
-
-  /** Used to stand-in for `undefined` hash values. */
-  var HASH_UNDEFINED = '__lodash_hash_undefined__';
-
-  /** Used to compose bitmasks for value comparisons. */
-  var COMPARE_PARTIAL_FLAG = 1,
-      COMPARE_UNORDERED_FLAG = 2;
-
-  /** Used as references for various `Number` constants. */
-  var MAX_SAFE_INTEGER = 9007199254740991;
-
-  /** `Object#toString` result references. */
-  var argsTag = '[object Arguments]',
-      arrayTag = '[object Array]',
-      asyncTag = '[object AsyncFunction]',
-      boolTag = '[object Boolean]',
-      dateTag = '[object Date]',
-      errorTag = '[object Error]',
-      funcTag = '[object Function]',
-      genTag = '[object GeneratorFunction]',
-      mapTag = '[object Map]',
-      numberTag = '[object Number]',
-      nullTag = '[object Null]',
-      objectTag = '[object Object]',
-      promiseTag = '[object Promise]',
-      proxyTag = '[object Proxy]',
-      regexpTag = '[object RegExp]',
-      setTag = '[object Set]',
-      stringTag = '[object String]',
-      symbolTag = '[object Symbol]',
-      undefinedTag = '[object Undefined]',
-      weakMapTag = '[object WeakMap]';
-
-  var arrayBufferTag = '[object ArrayBuffer]',
-      dataViewTag = '[object DataView]',
-      float32Tag = '[object Float32Array]',
-      float64Tag = '[object Float64Array]',
-      int8Tag = '[object Int8Array]',
-      int16Tag = '[object Int16Array]',
-      int32Tag = '[object Int32Array]',
-      uint8Tag = '[object Uint8Array]',
-      uint8ClampedTag = '[object Uint8ClampedArray]',
-      uint16Tag = '[object Uint16Array]',
-      uint32Tag = '[object Uint32Array]';
-
-  /**
-   * Used to match `RegExp`
-   * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
-   */
-  var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
-
-  /** Used to detect host constructors (Safari). */
-  var reIsHostCtor = /^\[object .+?Constructor\]$/;
-
-  /** Used to detect unsigned integer values. */
-  var reIsUint = /^(?:0|[1-9]\d*)$/;
-
-  /** Used to identify `toStringTag` values of typed arrays. */
-  var typedArrayTags = {};
-  typedArrayTags[float32Tag] = typedArrayTags[float64Tag] =
-  typedArrayTags[int8Tag] = typedArrayTags[int16Tag] =
-  typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] =
-  typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] =
-  typedArrayTags[uint32Tag] = true;
-  typedArrayTags[argsTag] = typedArrayTags[arrayTag] =
-  typedArrayTags[arrayBufferTag] = typedArrayTags[boolTag] =
-  typedArrayTags[dataViewTag] = typedArrayTags[dateTag] =
-  typedArrayTags[errorTag] = typedArrayTags[funcTag] =
-  typedArrayTags[mapTag] = typedArrayTags[numberTag] =
-  typedArrayTags[objectTag] = typedArrayTags[regexpTag] =
-  typedArrayTags[setTag] = typedArrayTags[stringTag] =
-  typedArrayTags[weakMapTag] = false;
-
-  /** Detect free variable `global` from Node.js. */
-  var freeGlobal = typeof commonjsGlobal == 'object' && commonjsGlobal && commonjsGlobal.Object === Object && commonjsGlobal;
-
-  /** Detect free variable `self`. */
-  var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
-
-  /** Used as a reference to the global object. */
-  var root = freeGlobal || freeSelf || Function('return this')();
-
-  /** Detect free variable `exports`. */
-  var freeExports =  exports && !exports.nodeType && exports;
-
-  /** Detect free variable `module`. */
-  var freeModule = freeExports && 'object' == 'object' && module && !module.nodeType && module;
-
-  /** Detect the popular CommonJS extension `module.exports`. */
-  var moduleExports = freeModule && freeModule.exports === freeExports;
-
-  /** Detect free variable `process` from Node.js. */
-  var freeProcess = moduleExports && freeGlobal.process;
-
-  /** Used to access faster Node.js helpers. */
-  var nodeUtil = (function() {
-    try {
-      return freeProcess && freeProcess.binding && freeProcess.binding('util');
-    } catch (e) {}
-  }());
-
-  /* Node.js helper references. */
-  var nodeIsTypedArray = nodeUtil && nodeUtil.isTypedArray;
-
-  /**
-   * A specialized version of `_.filter` for arrays without support for
-   * iteratee shorthands.
-   *
-   * @private
-   * @param {Array} [array] The array to iterate over.
-   * @param {Function} predicate The function invoked per iteration.
-   * @returns {Array} Returns the new filtered array.
-   */
-  function arrayFilter(array, predicate) {
-    var index = -1,
-        length = array == null ? 0 : array.length,
-        resIndex = 0,
-        result = [];
-
-    while (++index < length) {
-      var value = array[index];
-      if (predicate(value, index, array)) {
-        result[resIndex++] = value;
-      }
-    }
-    return result;
-  }
-
-  /**
-   * Appends the elements of `values` to `array`.
-   *
-   * @private
-   * @param {Array} array The array to modify.
-   * @param {Array} values The values to append.
-   * @returns {Array} Returns `array`.
-   */
-  function arrayPush(array, values) {
-    var index = -1,
-        length = values.length,
-        offset = array.length;
-
-    while (++index < length) {
-      array[offset + index] = values[index];
-    }
-    return array;
-  }
-
-  /**
-   * A specialized version of `_.some` for arrays without support for iteratee
-   * shorthands.
-   *
-   * @private
-   * @param {Array} [array] The array to iterate over.
-   * @param {Function} predicate The function invoked per iteration.
-   * @returns {boolean} Returns `true` if any element passes the predicate check,
-   *  else `false`.
-   */
-  function arraySome(array, predicate) {
-    var index = -1,
-        length = array == null ? 0 : array.length;
-
-    while (++index < length) {
-      if (predicate(array[index], index, array)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * The base implementation of `_.times` without support for iteratee shorthands
-   * or max array length checks.
-   *
-   * @private
-   * @param {number} n The number of times to invoke `iteratee`.
-   * @param {Function} iteratee The function invoked per iteration.
-   * @returns {Array} Returns the array of results.
-   */
-  function baseTimes(n, iteratee) {
-    var index = -1,
-        result = Array(n);
-
-    while (++index < n) {
-      result[index] = iteratee(index);
-    }
-    return result;
-  }
-
-  /**
-   * The base implementation of `_.unary` without support for storing metadata.
-   *
-   * @private
-   * @param {Function} func The function to cap arguments for.
-   * @returns {Function} Returns the new capped function.
-   */
-  function baseUnary(func) {
-    return function(value) {
-      return func(value);
-    };
-  }
-
-  /**
-   * Checks if a `cache` value for `key` exists.
-   *
-   * @private
-   * @param {Object} cache The cache to query.
-   * @param {string} key The key of the entry to check.
-   * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
-   */
-  function cacheHas(cache, key) {
-    return cache.has(key);
-  }
-
-  /**
-   * Gets the value at `key` of `object`.
-   *
-   * @private
-   * @param {Object} [object] The object to query.
-   * @param {string} key The key of the property to get.
-   * @returns {*} Returns the property value.
-   */
-  function getValue(object, key) {
-    return object == null ? undefined : object[key];
-  }
-
-  /**
-   * Converts `map` to its key-value pairs.
-   *
-   * @private
-   * @param {Object} map The map to convert.
-   * @returns {Array} Returns the key-value pairs.
-   */
-  function mapToArray(map) {
-    var index = -1,
-        result = Array(map.size);
-
-    map.forEach(function(value, key) {
-      result[++index] = [key, value];
-    });
-    return result;
-  }
-
-  /**
-   * Creates a unary function that invokes `func` with its argument transformed.
-   *
-   * @private
-   * @param {Function} func The function to wrap.
-   * @param {Function} transform The argument transform.
-   * @returns {Function} Returns the new function.
-   */
-  function overArg(func, transform) {
-    return function(arg) {
-      return func(transform(arg));
-    };
-  }
-
-  /**
-   * Converts `set` to an array of its values.
-   *
-   * @private
-   * @param {Object} set The set to convert.
-   * @returns {Array} Returns the values.
-   */
-  function setToArray(set) {
-    var index = -1,
-        result = Array(set.size);
-
-    set.forEach(function(value) {
-      result[++index] = value;
-    });
-    return result;
-  }
-
-  /** Used for built-in method references. */
-  var arrayProto = Array.prototype,
-      funcProto = Function.prototype,
-      objectProto = Object.prototype;
-
-  /** Used to detect overreaching core-js shims. */
-  var coreJsData = root['__core-js_shared__'];
-
-  /** Used to resolve the decompiled source of functions. */
-  var funcToString = funcProto.toString;
-
-  /** Used to check objects for own properties. */
-  var hasOwnProperty = objectProto.hasOwnProperty;
-
-  /** Used to detect methods masquerading as native. */
-  var maskSrcKey = (function() {
-    var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || '');
-    return uid ? ('Symbol(src)_1.' + uid) : '';
-  }());
-
-  /**
-   * Used to resolve the
-   * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
-   * of values.
-   */
-  var nativeObjectToString = objectProto.toString;
-
-  /** Used to detect if a method is native. */
-  var reIsNative = RegExp('^' +
-    funcToString.call(hasOwnProperty).replace(reRegExpChar, '\\$&')
-    .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
-  );
-
-  /** Built-in value references. */
-  var Buffer = moduleExports ? root.Buffer : undefined,
-      Symbol = root.Symbol,
-      Uint8Array = root.Uint8Array,
-      propertyIsEnumerable = objectProto.propertyIsEnumerable,
-      splice = arrayProto.splice,
-      symToStringTag = Symbol ? Symbol.toStringTag : undefined;
-
-  /* Built-in method references for those with the same name as other `lodash` methods. */
-  var nativeGetSymbols = Object.getOwnPropertySymbols,
-      nativeIsBuffer = Buffer ? Buffer.isBuffer : undefined,
-      nativeKeys = overArg(Object.keys, Object);
-
-  /* Built-in method references that are verified to be native. */
-  var DataView = getNative(root, 'DataView'),
-      Map = getNative(root, 'Map'),
-      Promise = getNative(root, 'Promise'),
-      Set = getNative(root, 'Set'),
-      WeakMap = getNative(root, 'WeakMap'),
-      nativeCreate = getNative(Object, 'create');
-
-  /** Used to detect maps, sets, and weakmaps. */
-  var dataViewCtorString = toSource(DataView),
-      mapCtorString = toSource(Map),
-      promiseCtorString = toSource(Promise),
-      setCtorString = toSource(Set),
-      weakMapCtorString = toSource(WeakMap);
-
-  /** Used to convert symbols to primitives and strings. */
-  var symbolProto = Symbol ? Symbol.prototype : undefined,
-      symbolValueOf = symbolProto ? symbolProto.valueOf : undefined;
-
-  /**
-   * Creates a hash object.
-   *
-   * @private
-   * @constructor
-   * @param {Array} [entries] The key-value pairs to cache.
-   */
-  function Hash(entries) {
-    var index = -1,
-        length = entries == null ? 0 : entries.length;
-
-    this.clear();
-    while (++index < length) {
-      var entry = entries[index];
-      this.set(entry[0], entry[1]);
-    }
-  }
-
-  /**
-   * Removes all key-value entries from the hash.
-   *
-   * @private
-   * @name clear
-   * @memberOf Hash
-   */
-  function hashClear() {
-    this.__data__ = nativeCreate ? nativeCreate(null) : {};
-    this.size = 0;
-  }
-
-  /**
-   * Removes `key` and its value from the hash.
-   *
-   * @private
-   * @name delete
-   * @memberOf Hash
-   * @param {Object} hash The hash to modify.
-   * @param {string} key The key of the value to remove.
-   * @returns {boolean} Returns `true` if the entry was removed, else `false`.
-   */
-  function hashDelete(key) {
-    var result = this.has(key) && delete this.__data__[key];
-    this.size -= result ? 1 : 0;
-    return result;
-  }
-
-  /**
-   * Gets the hash value for `key`.
-   *
-   * @private
-   * @name get
-   * @memberOf Hash
-   * @param {string} key The key of the value to get.
-   * @returns {*} Returns the entry value.
-   */
-  function hashGet(key) {
-    var data = this.__data__;
-    if (nativeCreate) {
-      var result = data[key];
-      return result === HASH_UNDEFINED ? undefined : result;
-    }
-    return hasOwnProperty.call(data, key) ? data[key] : undefined;
-  }
-
-  /**
-   * Checks if a hash value for `key` exists.
-   *
-   * @private
-   * @name has
-   * @memberOf Hash
-   * @param {string} key The key of the entry to check.
-   * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
-   */
-  function hashHas(key) {
-    var data = this.__data__;
-    return nativeCreate ? (data[key] !== undefined) : hasOwnProperty.call(data, key);
-  }
-
-  /**
-   * Sets the hash `key` to `value`.
-   *
-   * @private
-   * @name set
-   * @memberOf Hash
-   * @param {string} key The key of the value to set.
-   * @param {*} value The value to set.
-   * @returns {Object} Returns the hash instance.
-   */
-  function hashSet(key, value) {
-    var data = this.__data__;
-    this.size += this.has(key) ? 0 : 1;
-    data[key] = (nativeCreate && value === undefined) ? HASH_UNDEFINED : value;
-    return this;
-  }
-
-  // Add methods to `Hash`.
-  Hash.prototype.clear = hashClear;
-  Hash.prototype['delete'] = hashDelete;
-  Hash.prototype.get = hashGet;
-  Hash.prototype.has = hashHas;
-  Hash.prototype.set = hashSet;
-
-  /**
-   * Creates an list cache object.
-   *
-   * @private
-   * @constructor
-   * @param {Array} [entries] The key-value pairs to cache.
-   */
-  function ListCache(entries) {
-    var index = -1,
-        length = entries == null ? 0 : entries.length;
-
-    this.clear();
-    while (++index < length) {
-      var entry = entries[index];
-      this.set(entry[0], entry[1]);
-    }
-  }
-
-  /**
-   * Removes all key-value entries from the list cache.
-   *
-   * @private
-   * @name clear
-   * @memberOf ListCache
-   */
-  function listCacheClear() {
-    this.__data__ = [];
-    this.size = 0;
-  }
-
-  /**
-   * Removes `key` and its value from the list cache.
-   *
-   * @private
-   * @name delete
-   * @memberOf ListCache
-   * @param {string} key The key of the value to remove.
-   * @returns {boolean} Returns `true` if the entry was removed, else `false`.
-   */
-  function listCacheDelete(key) {
-    var data = this.__data__,
-        index = assocIndexOf(data, key);
-
-    if (index < 0) {
-      return false;
-    }
-    var lastIndex = data.length - 1;
-    if (index == lastIndex) {
-      data.pop();
-    } else {
-      splice.call(data, index, 1);
-    }
-    --this.size;
-    return true;
-  }
-
-  /**
-   * Gets the list cache value for `key`.
-   *
-   * @private
-   * @name get
-   * @memberOf ListCache
-   * @param {string} key The key of the value to get.
-   * @returns {*} Returns the entry value.
-   */
-  function listCacheGet(key) {
-    var data = this.__data__,
-        index = assocIndexOf(data, key);
-
-    return index < 0 ? undefined : data[index][1];
-  }
-
-  /**
-   * Checks if a list cache value for `key` exists.
-   *
-   * @private
-   * @name has
-   * @memberOf ListCache
-   * @param {string} key The key of the entry to check.
-   * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
-   */
-  function listCacheHas(key) {
-    return assocIndexOf(this.__data__, key) > -1;
-  }
-
-  /**
-   * Sets the list cache `key` to `value`.
-   *
-   * @private
-   * @name set
-   * @memberOf ListCache
-   * @param {string} key The key of the value to set.
-   * @param {*} value The value to set.
-   * @returns {Object} Returns the list cache instance.
-   */
-  function listCacheSet(key, value) {
-    var data = this.__data__,
-        index = assocIndexOf(data, key);
-
-    if (index < 0) {
-      ++this.size;
-      data.push([key, value]);
-    } else {
-      data[index][1] = value;
-    }
-    return this;
-  }
-
-  // Add methods to `ListCache`.
-  ListCache.prototype.clear = listCacheClear;
-  ListCache.prototype['delete'] = listCacheDelete;
-  ListCache.prototype.get = listCacheGet;
-  ListCache.prototype.has = listCacheHas;
-  ListCache.prototype.set = listCacheSet;
-
-  /**
-   * Creates a map cache object to store key-value pairs.
-   *
-   * @private
-   * @constructor
-   * @param {Array} [entries] The key-value pairs to cache.
-   */
-  function MapCache(entries) {
-    var index = -1,
-        length = entries == null ? 0 : entries.length;
-
-    this.clear();
-    while (++index < length) {
-      var entry = entries[index];
-      this.set(entry[0], entry[1]);
-    }
-  }
-
-  /**
-   * Removes all key-value entries from the map.
-   *
-   * @private
-   * @name clear
-   * @memberOf MapCache
-   */
-  function mapCacheClear() {
-    this.size = 0;
-    this.__data__ = {
-      'hash': new Hash,
-      'map': new (Map || ListCache),
-      'string': new Hash
-    };
-  }
-
-  /**
-   * Removes `key` and its value from the map.
-   *
-   * @private
-   * @name delete
-   * @memberOf MapCache
-   * @param {string} key The key of the value to remove.
-   * @returns {boolean} Returns `true` if the entry was removed, else `false`.
-   */
-  function mapCacheDelete(key) {
-    var result = getMapData(this, key)['delete'](key);
-    this.size -= result ? 1 : 0;
-    return result;
-  }
-
-  /**
-   * Gets the map value for `key`.
-   *
-   * @private
-   * @name get
-   * @memberOf MapCache
-   * @param {string} key The key of the value to get.
-   * @returns {*} Returns the entry value.
-   */
-  function mapCacheGet(key) {
-    return getMapData(this, key).get(key);
-  }
-
-  /**
-   * Checks if a map value for `key` exists.
-   *
-   * @private
-   * @name has
-   * @memberOf MapCache
-   * @param {string} key The key of the entry to check.
-   * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
-   */
-  function mapCacheHas(key) {
-    return getMapData(this, key).has(key);
-  }
-
-  /**
-   * Sets the map `key` to `value`.
-   *
-   * @private
-   * @name set
-   * @memberOf MapCache
-   * @param {string} key The key of the value to set.
-   * @param {*} value The value to set.
-   * @returns {Object} Returns the map cache instance.
-   */
-  function mapCacheSet(key, value) {
-    var data = getMapData(this, key),
-        size = data.size;
-
-    data.set(key, value);
-    this.size += data.size == size ? 0 : 1;
-    return this;
-  }
-
-  // Add methods to `MapCache`.
-  MapCache.prototype.clear = mapCacheClear;
-  MapCache.prototype['delete'] = mapCacheDelete;
-  MapCache.prototype.get = mapCacheGet;
-  MapCache.prototype.has = mapCacheHas;
-  MapCache.prototype.set = mapCacheSet;
-
-  /**
-   *
-   * Creates an array cache object to store unique values.
-   *
-   * @private
-   * @constructor
-   * @param {Array} [values] The values to cache.
-   */
-  function SetCache(values) {
-    var index = -1,
-        length = values == null ? 0 : values.length;
-
-    this.__data__ = new MapCache;
-    while (++index < length) {
-      this.add(values[index]);
-    }
-  }
-
-  /**
-   * Adds `value` to the array cache.
-   *
-   * @private
-   * @name add
-   * @memberOf SetCache
-   * @alias push
-   * @param {*} value The value to cache.
-   * @returns {Object} Returns the cache instance.
-   */
-  function setCacheAdd(value) {
-    this.__data__.set(value, HASH_UNDEFINED);
-    return this;
-  }
-
-  /**
-   * Checks if `value` is in the array cache.
-   *
-   * @private
-   * @name has
-   * @memberOf SetCache
-   * @param {*} value The value to search for.
-   * @returns {number} Returns `true` if `value` is found, else `false`.
-   */
-  function setCacheHas(value) {
-    return this.__data__.has(value);
-  }
-
-  // Add methods to `SetCache`.
-  SetCache.prototype.add = SetCache.prototype.push = setCacheAdd;
-  SetCache.prototype.has = setCacheHas;
-
-  /**
-   * Creates a stack cache object to store key-value pairs.
-   *
-   * @private
-   * @constructor
-   * @param {Array} [entries] The key-value pairs to cache.
-   */
-  function Stack(entries) {
-    var data = this.__data__ = new ListCache(entries);
-    this.size = data.size;
-  }
-
-  /**
-   * Removes all key-value entries from the stack.
-   *
-   * @private
-   * @name clear
-   * @memberOf Stack
-   */
-  function stackClear() {
-    this.__data__ = new ListCache;
-    this.size = 0;
-  }
-
-  /**
-   * Removes `key` and its value from the stack.
-   *
-   * @private
-   * @name delete
-   * @memberOf Stack
-   * @param {string} key The key of the value to remove.
-   * @returns {boolean} Returns `true` if the entry was removed, else `false`.
-   */
-  function stackDelete(key) {
-    var data = this.__data__,
-        result = data['delete'](key);
-
-    this.size = data.size;
-    return result;
-  }
-
-  /**
-   * Gets the stack value for `key`.
-   *
-   * @private
-   * @name get
-   * @memberOf Stack
-   * @param {string} key The key of the value to get.
-   * @returns {*} Returns the entry value.
-   */
-  function stackGet(key) {
-    return this.__data__.get(key);
-  }
-
-  /**
-   * Checks if a stack value for `key` exists.
-   *
-   * @private
-   * @name has
-   * @memberOf Stack
-   * @param {string} key The key of the entry to check.
-   * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
-   */
-  function stackHas(key) {
-    return this.__data__.has(key);
-  }
-
-  /**
-   * Sets the stack `key` to `value`.
-   *
-   * @private
-   * @name set
-   * @memberOf Stack
-   * @param {string} key The key of the value to set.
-   * @param {*} value The value to set.
-   * @returns {Object} Returns the stack cache instance.
-   */
-  function stackSet(key, value) {
-    var data = this.__data__;
-    if (data instanceof ListCache) {
-      var pairs = data.__data__;
-      if (!Map || (pairs.length < LARGE_ARRAY_SIZE - 1)) {
-        pairs.push([key, value]);
-        this.size = ++data.size;
-        return this;
-      }
-      data = this.__data__ = new MapCache(pairs);
-    }
-    data.set(key, value);
-    this.size = data.size;
-    return this;
-  }
-
-  // Add methods to `Stack`.
-  Stack.prototype.clear = stackClear;
-  Stack.prototype['delete'] = stackDelete;
-  Stack.prototype.get = stackGet;
-  Stack.prototype.has = stackHas;
-  Stack.prototype.set = stackSet;
-
-  /**
-   * Creates an array of the enumerable property names of the array-like `value`.
-   *
-   * @private
-   * @param {*} value The value to query.
-   * @param {boolean} inherited Specify returning inherited property names.
-   * @returns {Array} Returns the array of property names.
-   */
-  function arrayLikeKeys(value, inherited) {
-    var isArr = isArray(value),
-        isArg = !isArr && isArguments(value),
-        isBuff = !isArr && !isArg && isBuffer(value),
-        isType = !isArr && !isArg && !isBuff && isTypedArray(value),
-        skipIndexes = isArr || isArg || isBuff || isType,
-        result = skipIndexes ? baseTimes(value.length, String) : [],
-        length = result.length;
-
-    for (var key in value) {
-      if ((inherited || hasOwnProperty.call(value, key)) &&
-          !(skipIndexes && (
-             // Safari 9 has enumerable `arguments.length` in strict mode.
-             key == 'length' ||
-             // Node.js 0.10 has enumerable non-index properties on buffers.
-             (isBuff && (key == 'offset' || key == 'parent')) ||
-             // PhantomJS 2 has enumerable non-index properties on typed arrays.
-             (isType && (key == 'buffer' || key == 'byteLength' || key == 'byteOffset')) ||
-             // Skip index properties.
-             isIndex(key, length)
-          ))) {
-        result.push(key);
-      }
-    }
-    return result;
-  }
-
-  /**
-   * Gets the index at which the `key` is found in `array` of key-value pairs.
-   *
-   * @private
-   * @param {Array} array The array to inspect.
-   * @param {*} key The key to search for.
-   * @returns {number} Returns the index of the matched value, else `-1`.
-   */
-  function assocIndexOf(array, key) {
-    var length = array.length;
-    while (length--) {
-      if (eq(array[length][0], key)) {
-        return length;
-      }
-    }
-    return -1;
-  }
-
-  /**
-   * The base implementation of `getAllKeys` and `getAllKeysIn` which uses
-   * `keysFunc` and `symbolsFunc` to get the enumerable property names and
-   * symbols of `object`.
-   *
-   * @private
-   * @param {Object} object The object to query.
-   * @param {Function} keysFunc The function to get the keys of `object`.
-   * @param {Function} symbolsFunc The function to get the symbols of `object`.
-   * @returns {Array} Returns the array of property names and symbols.
-   */
-  function baseGetAllKeys(object, keysFunc, symbolsFunc) {
-    var result = keysFunc(object);
-    return isArray(object) ? result : arrayPush(result, symbolsFunc(object));
-  }
-
-  /**
-   * The base implementation of `getTag` without fallbacks for buggy environments.
-   *
-   * @private
-   * @param {*} value The value to query.
-   * @returns {string} Returns the `toStringTag`.
-   */
-  function baseGetTag(value) {
-    if (value == null) {
-      return value === undefined ? undefinedTag : nullTag;
-    }
-    return (symToStringTag && symToStringTag in Object(value))
-      ? getRawTag(value)
-      : objectToString(value);
-  }
-
-  /**
-   * The base implementation of `_.isArguments`.
-   *
-   * @private
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is an `arguments` object,
-   */
-  function baseIsArguments(value) {
-    return isObjectLike(value) && baseGetTag(value) == argsTag;
-  }
-
-  /**
-   * The base implementation of `_.isEqual` which supports partial comparisons
-   * and tracks traversed objects.
-   *
-   * @private
-   * @param {*} value The value to compare.
-   * @param {*} other The other value to compare.
-   * @param {boolean} bitmask The bitmask flags.
-   *  1 - Unordered comparison
-   *  2 - Partial comparison
-   * @param {Function} [customizer] The function to customize comparisons.
-   * @param {Object} [stack] Tracks traversed `value` and `other` objects.
-   * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
-   */
-  function baseIsEqual(value, other, bitmask, customizer, stack) {
-    if (value === other) {
-      return true;
-    }
-    if (value == null || other == null || (!isObjectLike(value) && !isObjectLike(other))) {
-      return value !== value && other !== other;
-    }
-    return baseIsEqualDeep(value, other, bitmask, customizer, baseIsEqual, stack);
-  }
-
-  /**
-   * A specialized version of `baseIsEqual` for arrays and objects which performs
-   * deep comparisons and tracks traversed objects enabling objects with circular
-   * references to be compared.
-   *
-   * @private
-   * @param {Object} object The object to compare.
-   * @param {Object} other The other object to compare.
-   * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
-   * @param {Function} customizer The function to customize comparisons.
-   * @param {Function} equalFunc The function to determine equivalents of values.
-   * @param {Object} [stack] Tracks traversed `object` and `other` objects.
-   * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
-   */
-  function baseIsEqualDeep(object, other, bitmask, customizer, equalFunc, stack) {
-    var objIsArr = isArray(object),
-        othIsArr = isArray(other),
-        objTag = objIsArr ? arrayTag : getTag(object),
-        othTag = othIsArr ? arrayTag : getTag(other);
-
-    objTag = objTag == argsTag ? objectTag : objTag;
-    othTag = othTag == argsTag ? objectTag : othTag;
-
-    var objIsObj = objTag == objectTag,
-        othIsObj = othTag == objectTag,
-        isSameTag = objTag == othTag;
-
-    if (isSameTag && isBuffer(object)) {
-      if (!isBuffer(other)) {
-        return false;
-      }
-      objIsArr = true;
-      objIsObj = false;
-    }
-    if (isSameTag && !objIsObj) {
-      stack || (stack = new Stack);
-      return (objIsArr || isTypedArray(object))
-        ? equalArrays(object, other, bitmask, customizer, equalFunc, stack)
-        : equalByTag(object, other, objTag, bitmask, customizer, equalFunc, stack);
-    }
-    if (!(bitmask & COMPARE_PARTIAL_FLAG)) {
-      var objIsWrapped = objIsObj && hasOwnProperty.call(object, '__wrapped__'),
-          othIsWrapped = othIsObj && hasOwnProperty.call(other, '__wrapped__');
-
-      if (objIsWrapped || othIsWrapped) {
-        var objUnwrapped = objIsWrapped ? object.value() : object,
-            othUnwrapped = othIsWrapped ? other.value() : other;
-
-        stack || (stack = new Stack);
-        return equalFunc(objUnwrapped, othUnwrapped, bitmask, customizer, stack);
-      }
-    }
-    if (!isSameTag) {
-      return false;
-    }
-    stack || (stack = new Stack);
-    return equalObjects(object, other, bitmask, customizer, equalFunc, stack);
-  }
-
-  /**
-   * The base implementation of `_.isNative` without bad shim checks.
-   *
-   * @private
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is a native function,
-   *  else `false`.
-   */
-  function baseIsNative(value) {
-    if (!isObject(value) || isMasked(value)) {
-      return false;
-    }
-    var pattern = isFunction(value) ? reIsNative : reIsHostCtor;
-    return pattern.test(toSource(value));
-  }
-
-  /**
-   * The base implementation of `_.isTypedArray` without Node.js optimizations.
-   *
-   * @private
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is a typed array, else `false`.
-   */
-  function baseIsTypedArray(value) {
-    return isObjectLike(value) &&
-      isLength(value.length) && !!typedArrayTags[baseGetTag(value)];
-  }
-
-  /**
-   * The base implementation of `_.keys` which doesn't treat sparse arrays as dense.
-   *
-   * @private
-   * @param {Object} object The object to query.
-   * @returns {Array} Returns the array of property names.
-   */
-  function baseKeys(object) {
-    if (!isPrototype(object)) {
-      return nativeKeys(object);
-    }
-    var result = [];
-    for (var key in Object(object)) {
-      if (hasOwnProperty.call(object, key) && key != 'constructor') {
-        result.push(key);
-      }
-    }
-    return result;
-  }
-
-  /**
-   * A specialized version of `baseIsEqualDeep` for arrays with support for
-   * partial deep comparisons.
-   *
-   * @private
-   * @param {Array} array The array to compare.
-   * @param {Array} other The other array to compare.
-   * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
-   * @param {Function} customizer The function to customize comparisons.
-   * @param {Function} equalFunc The function to determine equivalents of values.
-   * @param {Object} stack Tracks traversed `array` and `other` objects.
-   * @returns {boolean} Returns `true` if the arrays are equivalent, else `false`.
-   */
-  function equalArrays(array, other, bitmask, customizer, equalFunc, stack) {
-    var isPartial = bitmask & COMPARE_PARTIAL_FLAG,
-        arrLength = array.length,
-        othLength = other.length;
-
-    if (arrLength != othLength && !(isPartial && othLength > arrLength)) {
-      return false;
-    }
-    // Assume cyclic values are equal.
-    var stacked = stack.get(array);
-    if (stacked && stack.get(other)) {
-      return stacked == other;
-    }
-    var index = -1,
-        result = true,
-        seen = (bitmask & COMPARE_UNORDERED_FLAG) ? new SetCache : undefined;
-
-    stack.set(array, other);
-    stack.set(other, array);
-
-    // Ignore non-index properties.
-    while (++index < arrLength) {
-      var arrValue = array[index],
-          othValue = other[index];
-
-      if (customizer) {
-        var compared = isPartial
-          ? customizer(othValue, arrValue, index, other, array, stack)
-          : customizer(arrValue, othValue, index, array, other, stack);
-      }
-      if (compared !== undefined) {
-        if (compared) {
-          continue;
-        }
-        result = false;
-        break;
-      }
-      // Recursively compare arrays (susceptible to call stack limits).
-      if (seen) {
-        if (!arraySome(other, function(othValue, othIndex) {
-              if (!cacheHas(seen, othIndex) &&
-                  (arrValue === othValue || equalFunc(arrValue, othValue, bitmask, customizer, stack))) {
-                return seen.push(othIndex);
-              }
-            })) {
-          result = false;
-          break;
-        }
-      } else if (!(
-            arrValue === othValue ||
-              equalFunc(arrValue, othValue, bitmask, customizer, stack)
-          )) {
-        result = false;
-        break;
-      }
-    }
-    stack['delete'](array);
-    stack['delete'](other);
-    return result;
-  }
-
-  /**
-   * A specialized version of `baseIsEqualDeep` for comparing objects of
-   * the same `toStringTag`.
-   *
-   * **Note:** This function only supports comparing values with tags of
-   * `Boolean`, `Date`, `Error`, `Number`, `RegExp`, or `String`.
-   *
-   * @private
-   * @param {Object} object The object to compare.
-   * @param {Object} other The other object to compare.
-   * @param {string} tag The `toStringTag` of the objects to compare.
-   * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
-   * @param {Function} customizer The function to customize comparisons.
-   * @param {Function} equalFunc The function to determine equivalents of values.
-   * @param {Object} stack Tracks traversed `object` and `other` objects.
-   * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
-   */
-  function equalByTag(object, other, tag, bitmask, customizer, equalFunc, stack) {
-    switch (tag) {
-      case dataViewTag:
-        if ((object.byteLength != other.byteLength) ||
-            (object.byteOffset != other.byteOffset)) {
-          return false;
-        }
-        object = object.buffer;
-        other = other.buffer;
-
-      case arrayBufferTag:
-        if ((object.byteLength != other.byteLength) ||
-            !equalFunc(new Uint8Array(object), new Uint8Array(other))) {
-          return false;
-        }
-        return true;
-
-      case boolTag:
-      case dateTag:
-      case numberTag:
-        // Coerce booleans to `1` or `0` and dates to milliseconds.
-        // Invalid dates are coerced to `NaN`.
-        return eq(+object, +other);
-
-      case errorTag:
-        return object.name == other.name && object.message == other.message;
-
-      case regexpTag:
-      case stringTag:
-        // Coerce regexes to strings and treat strings, primitives and objects,
-        // as equal. See http://www.ecma-international.org/ecma-262/7.0/#sec-regexp.prototype.tostring
-        // for more details.
-        return object == (other + '');
-
-      case mapTag:
-        var convert = mapToArray;
-
-      case setTag:
-        var isPartial = bitmask & COMPARE_PARTIAL_FLAG;
-        convert || (convert = setToArray);
-
-        if (object.size != other.size && !isPartial) {
-          return false;
-        }
-        // Assume cyclic values are equal.
-        var stacked = stack.get(object);
-        if (stacked) {
-          return stacked == other;
-        }
-        bitmask |= COMPARE_UNORDERED_FLAG;
-
-        // Recursively compare objects (susceptible to call stack limits).
-        stack.set(object, other);
-        var result = equalArrays(convert(object), convert(other), bitmask, customizer, equalFunc, stack);
-        stack['delete'](object);
-        return result;
-
-      case symbolTag:
-        if (symbolValueOf) {
-          return symbolValueOf.call(object) == symbolValueOf.call(other);
-        }
-    }
-    return false;
-  }
-
-  /**
-   * A specialized version of `baseIsEqualDeep` for objects with support for
-   * partial deep comparisons.
-   *
-   * @private
-   * @param {Object} object The object to compare.
-   * @param {Object} other The other object to compare.
-   * @param {number} bitmask The bitmask flags. See `baseIsEqual` for more details.
-   * @param {Function} customizer The function to customize comparisons.
-   * @param {Function} equalFunc The function to determine equivalents of values.
-   * @param {Object} stack Tracks traversed `object` and `other` objects.
-   * @returns {boolean} Returns `true` if the objects are equivalent, else `false`.
-   */
-  function equalObjects(object, other, bitmask, customizer, equalFunc, stack) {
-    var isPartial = bitmask & COMPARE_PARTIAL_FLAG,
-        objProps = getAllKeys(object),
-        objLength = objProps.length,
-        othProps = getAllKeys(other),
-        othLength = othProps.length;
-
-    if (objLength != othLength && !isPartial) {
-      return false;
-    }
-    var index = objLength;
-    while (index--) {
-      var key = objProps[index];
-      if (!(isPartial ? key in other : hasOwnProperty.call(other, key))) {
-        return false;
-      }
-    }
-    // Assume cyclic values are equal.
-    var stacked = stack.get(object);
-    if (stacked && stack.get(other)) {
-      return stacked == other;
-    }
-    var result = true;
-    stack.set(object, other);
-    stack.set(other, object);
-
-    var skipCtor = isPartial;
-    while (++index < objLength) {
-      key = objProps[index];
-      var objValue = object[key],
-          othValue = other[key];
-
-      if (customizer) {
-        var compared = isPartial
-          ? customizer(othValue, objValue, key, other, object, stack)
-          : customizer(objValue, othValue, key, object, other, stack);
-      }
-      // Recursively compare objects (susceptible to call stack limits).
-      if (!(compared === undefined
-            ? (objValue === othValue || equalFunc(objValue, othValue, bitmask, customizer, stack))
-            : compared
-          )) {
-        result = false;
-        break;
-      }
-      skipCtor || (skipCtor = key == 'constructor');
-    }
-    if (result && !skipCtor) {
-      var objCtor = object.constructor,
-          othCtor = other.constructor;
-
-      // Non `Object` object instances with different constructors are not equal.
-      if (objCtor != othCtor &&
-          ('constructor' in object && 'constructor' in other) &&
-          !(typeof objCtor == 'function' && objCtor instanceof objCtor &&
-            typeof othCtor == 'function' && othCtor instanceof othCtor)) {
-        result = false;
-      }
-    }
-    stack['delete'](object);
-    stack['delete'](other);
-    return result;
-  }
-
-  /**
-   * Creates an array of own enumerable property names and symbols of `object`.
-   *
-   * @private
-   * @param {Object} object The object to query.
-   * @returns {Array} Returns the array of property names and symbols.
-   */
-  function getAllKeys(object) {
-    return baseGetAllKeys(object, keys, getSymbols);
-  }
-
-  /**
-   * Gets the data for `map`.
-   *
-   * @private
-   * @param {Object} map The map to query.
-   * @param {string} key The reference key.
-   * @returns {*} Returns the map data.
-   */
-  function getMapData(map, key) {
-    var data = map.__data__;
-    return isKeyable(key)
-      ? data[typeof key == 'string' ? 'string' : 'hash']
-      : data.map;
-  }
-
-  /**
-   * Gets the native function at `key` of `object`.
-   *
-   * @private
-   * @param {Object} object The object to query.
-   * @param {string} key The key of the method to get.
-   * @returns {*} Returns the function if it's native, else `undefined`.
-   */
-  function getNative(object, key) {
-    var value = getValue(object, key);
-    return baseIsNative(value) ? value : undefined;
-  }
-
-  /**
-   * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
-   *
-   * @private
-   * @param {*} value The value to query.
-   * @returns {string} Returns the raw `toStringTag`.
-   */
-  function getRawTag(value) {
-    var isOwn = hasOwnProperty.call(value, symToStringTag),
-        tag = value[symToStringTag];
-
-    try {
-      value[symToStringTag] = undefined;
-      var unmasked = true;
-    } catch (e) {}
-
-    var result = nativeObjectToString.call(value);
-    if (unmasked) {
-      if (isOwn) {
-        value[symToStringTag] = tag;
-      } else {
-        delete value[symToStringTag];
-      }
-    }
-    return result;
-  }
-
-  /**
-   * Creates an array of the own enumerable symbols of `object`.
-   *
-   * @private
-   * @param {Object} object The object to query.
-   * @returns {Array} Returns the array of symbols.
-   */
-  var getSymbols = !nativeGetSymbols ? stubArray : function(object) {
-    if (object == null) {
-      return [];
-    }
-    object = Object(object);
-    return arrayFilter(nativeGetSymbols(object), function(symbol) {
-      return propertyIsEnumerable.call(object, symbol);
-    });
-  };
-
-  /**
-   * Gets the `toStringTag` of `value`.
-   *
-   * @private
-   * @param {*} value The value to query.
-   * @returns {string} Returns the `toStringTag`.
-   */
-  var getTag = baseGetTag;
-
-  // Fallback for data views, maps, sets, and weak maps in IE 11 and promises in Node.js < 6.
-  if ((DataView && getTag(new DataView(new ArrayBuffer(1))) != dataViewTag) ||
-      (Map && getTag(new Map) != mapTag) ||
-      (Promise && getTag(Promise.resolve()) != promiseTag) ||
-      (Set && getTag(new Set) != setTag) ||
-      (WeakMap && getTag(new WeakMap) != weakMapTag)) {
-    getTag = function(value) {
-      var result = baseGetTag(value),
-          Ctor = result == objectTag ? value.constructor : undefined,
-          ctorString = Ctor ? toSource(Ctor) : '';
-
-      if (ctorString) {
-        switch (ctorString) {
-          case dataViewCtorString: return dataViewTag;
-          case mapCtorString: return mapTag;
-          case promiseCtorString: return promiseTag;
-          case setCtorString: return setTag;
-          case weakMapCtorString: return weakMapTag;
-        }
-      }
-      return result;
-    };
-  }
-
-  /**
-   * Checks if `value` is a valid array-like index.
-   *
-   * @private
-   * @param {*} value The value to check.
-   * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
-   * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
-   */
-  function isIndex(value, length) {
-    length = length == null ? MAX_SAFE_INTEGER : length;
-    return !!length &&
-      (typeof value == 'number' || reIsUint.test(value)) &&
-      (value > -1 && value % 1 == 0 && value < length);
-  }
-
-  /**
-   * Checks if `value` is suitable for use as unique object key.
-   *
-   * @private
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
-   */
-  function isKeyable(value) {
-    var type = typeof value;
-    return (type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean')
-      ? (value !== '__proto__')
-      : (value === null);
-  }
-
-  /**
-   * Checks if `func` has its source masked.
-   *
-   * @private
-   * @param {Function} func The function to check.
-   * @returns {boolean} Returns `true` if `func` is masked, else `false`.
-   */
-  function isMasked(func) {
-    return !!maskSrcKey && (maskSrcKey in func);
-  }
-
-  /**
-   * Checks if `value` is likely a prototype object.
-   *
-   * @private
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is a prototype, else `false`.
-   */
-  function isPrototype(value) {
-    var Ctor = value && value.constructor,
-        proto = (typeof Ctor == 'function' && Ctor.prototype) || objectProto;
-
-    return value === proto;
-  }
-
-  /**
-   * Converts `value` to a string using `Object.prototype.toString`.
-   *
-   * @private
-   * @param {*} value The value to convert.
-   * @returns {string} Returns the converted string.
-   */
-  function objectToString(value) {
-    return nativeObjectToString.call(value);
-  }
-
-  /**
-   * Converts `func` to its source code.
-   *
-   * @private
-   * @param {Function} func The function to convert.
-   * @returns {string} Returns the source code.
-   */
-  function toSource(func) {
-    if (func != null) {
-      try {
-        return funcToString.call(func);
-      } catch (e) {}
-      try {
-        return (func + '');
-      } catch (e) {}
-    }
-    return '';
-  }
-
-  /**
-   * Performs a
-   * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
-   * comparison between two values to determine if they are equivalent.
-   *
-   * @static
-   * @memberOf _
-   * @since 4.0.0
-   * @category Lang
-   * @param {*} value The value to compare.
-   * @param {*} other The other value to compare.
-   * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
-   * @example
-   *
-   * var object = { 'a': 1 };
-   * var other = { 'a': 1 };
-   *
-   * _.eq(object, object);
-   * // => true
-   *
-   * _.eq(object, other);
-   * // => false
-   *
-   * _.eq('a', 'a');
-   * // => true
-   *
-   * _.eq('a', Object('a'));
-   * // => false
-   *
-   * _.eq(NaN, NaN);
-   * // => true
-   */
-  function eq(value, other) {
-    return value === other || (value !== value && other !== other);
-  }
-
-  /**
-   * Checks if `value` is likely an `arguments` object.
-   *
-   * @static
-   * @memberOf _
-   * @since 0.1.0
-   * @category Lang
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is an `arguments` object,
-   *  else `false`.
-   * @example
-   *
-   * _.isArguments(function() { return arguments; }());
-   * // => true
-   *
-   * _.isArguments([1, 2, 3]);
-   * // => false
-   */
-  var isArguments = baseIsArguments(function() { return arguments; }()) ? baseIsArguments : function(value) {
-    return isObjectLike(value) && hasOwnProperty.call(value, 'callee') &&
-      !propertyIsEnumerable.call(value, 'callee');
-  };
-
-  /**
-   * Checks if `value` is classified as an `Array` object.
-   *
-   * @static
-   * @memberOf _
-   * @since 0.1.0
-   * @category Lang
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is an array, else `false`.
-   * @example
-   *
-   * _.isArray([1, 2, 3]);
-   * // => true
-   *
-   * _.isArray(document.body.children);
-   * // => false
-   *
-   * _.isArray('abc');
-   * // => false
-   *
-   * _.isArray(_.noop);
-   * // => false
-   */
-  var isArray = Array.isArray;
-
-  /**
-   * Checks if `value` is array-like. A value is considered array-like if it's
-   * not a function and has a `value.length` that's an integer greater than or
-   * equal to `0` and less than or equal to `Number.MAX_SAFE_INTEGER`.
-   *
-   * @static
-   * @memberOf _
-   * @since 4.0.0
-   * @category Lang
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
-   * @example
-   *
-   * _.isArrayLike([1, 2, 3]);
-   * // => true
-   *
-   * _.isArrayLike(document.body.children);
-   * // => true
-   *
-   * _.isArrayLike('abc');
-   * // => true
-   *
-   * _.isArrayLike(_.noop);
-   * // => false
-   */
-  function isArrayLike(value) {
-    return value != null && isLength(value.length) && !isFunction(value);
-  }
-
-  /**
-   * Checks if `value` is a buffer.
-   *
-   * @static
-   * @memberOf _
-   * @since 4.3.0
-   * @category Lang
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is a buffer, else `false`.
-   * @example
-   *
-   * _.isBuffer(new Buffer(2));
-   * // => true
-   *
-   * _.isBuffer(new Uint8Array(2));
-   * // => false
-   */
-  var isBuffer = nativeIsBuffer || stubFalse;
-
-  /**
-   * Performs a deep comparison between two values to determine if they are
-   * equivalent.
-   *
-   * **Note:** This method supports comparing arrays, array buffers, booleans,
-   * date objects, error objects, maps, numbers, `Object` objects, regexes,
-   * sets, strings, symbols, and typed arrays. `Object` objects are compared
-   * by their own, not inherited, enumerable properties. Functions and DOM
-   * nodes are compared by strict equality, i.e. `===`.
-   *
-   * @static
-   * @memberOf _
-   * @since 0.1.0
-   * @category Lang
-   * @param {*} value The value to compare.
-   * @param {*} other The other value to compare.
-   * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
-   * @example
-   *
-   * var object = { 'a': 1 };
-   * var other = { 'a': 1 };
-   *
-   * _.isEqual(object, other);
-   * // => true
-   *
-   * object === other;
-   * // => false
-   */
-  function isEqual(value, other) {
-    return baseIsEqual(value, other);
-  }
-
-  /**
-   * Checks if `value` is classified as a `Function` object.
-   *
-   * @static
-   * @memberOf _
-   * @since 0.1.0
-   * @category Lang
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is a function, else `false`.
-   * @example
-   *
-   * _.isFunction(_);
-   * // => true
-   *
-   * _.isFunction(/abc/);
-   * // => false
-   */
-  function isFunction(value) {
-    if (!isObject(value)) {
-      return false;
-    }
-    // The use of `Object#toString` avoids issues with the `typeof` operator
-    // in Safari 9 which returns 'object' for typed arrays and other constructors.
-    var tag = baseGetTag(value);
-    return tag == funcTag || tag == genTag || tag == asyncTag || tag == proxyTag;
-  }
-
-  /**
-   * Checks if `value` is a valid array-like length.
-   *
-   * **Note:** This method is loosely based on
-   * [`ToLength`](http://ecma-international.org/ecma-262/7.0/#sec-tolength).
-   *
-   * @static
-   * @memberOf _
-   * @since 4.0.0
-   * @category Lang
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
-   * @example
-   *
-   * _.isLength(3);
-   * // => true
-   *
-   * _.isLength(Number.MIN_VALUE);
-   * // => false
-   *
-   * _.isLength(Infinity);
-   * // => false
-   *
-   * _.isLength('3');
-   * // => false
-   */
-  function isLength(value) {
-    return typeof value == 'number' &&
-      value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
-  }
-
-  /**
-   * Checks if `value` is the
-   * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
-   * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
-   *
-   * @static
-   * @memberOf _
-   * @since 0.1.0
-   * @category Lang
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is an object, else `false`.
-   * @example
-   *
-   * _.isObject({});
-   * // => true
-   *
-   * _.isObject([1, 2, 3]);
-   * // => true
-   *
-   * _.isObject(_.noop);
-   * // => true
-   *
-   * _.isObject(null);
-   * // => false
-   */
-  function isObject(value) {
-    var type = typeof value;
-    return value != null && (type == 'object' || type == 'function');
-  }
-
-  /**
-   * Checks if `value` is object-like. A value is object-like if it's not `null`
-   * and has a `typeof` result of "object".
-   *
-   * @static
-   * @memberOf _
-   * @since 4.0.0
-   * @category Lang
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
-   * @example
-   *
-   * _.isObjectLike({});
-   * // => true
-   *
-   * _.isObjectLike([1, 2, 3]);
-   * // => true
-   *
-   * _.isObjectLike(_.noop);
-   * // => false
-   *
-   * _.isObjectLike(null);
-   * // => false
-   */
-  function isObjectLike(value) {
-    return value != null && typeof value == 'object';
-  }
-
-  /**
-   * Checks if `value` is classified as a typed array.
-   *
-   * @static
-   * @memberOf _
-   * @since 3.0.0
-   * @category Lang
-   * @param {*} value The value to check.
-   * @returns {boolean} Returns `true` if `value` is a typed array, else `false`.
-   * @example
-   *
-   * _.isTypedArray(new Uint8Array);
-   * // => true
-   *
-   * _.isTypedArray([]);
-   * // => false
-   */
-  var isTypedArray = nodeIsTypedArray ? baseUnary(nodeIsTypedArray) : baseIsTypedArray;
-
-  /**
-   * Creates an array of the own enumerable property names of `object`.
-   *
-   * **Note:** Non-object values are coerced to objects. See the
-   * [ES spec](http://ecma-international.org/ecma-262/7.0/#sec-object.keys)
-   * for more details.
-   *
-   * @static
-   * @since 0.1.0
-   * @memberOf _
-   * @category Object
-   * @param {Object} object The object to query.
-   * @returns {Array} Returns the array of property names.
-   * @example
-   *
-   * function Foo() {
-   *   this.a = 1;
-   *   this.b = 2;
-   * }
-   *
-   * Foo.prototype.c = 3;
-   *
-   * _.keys(new Foo);
-   * // => ['a', 'b'] (iteration order is not guaranteed)
-   *
-   * _.keys('hi');
-   * // => ['0', '1']
-   */
-  function keys(object) {
-    return isArrayLike(object) ? arrayLikeKeys(object) : baseKeys(object);
-  }
-
-  /**
-   * This method returns a new empty array.
-   *
-   * @static
-   * @memberOf _
-   * @since 4.13.0
-   * @category Util
-   * @returns {Array} Returns the new empty array.
-   * @example
-   *
-   * var arrays = _.times(2, _.stubArray);
-   *
-   * console.log(arrays);
-   * // => [[], []]
-   *
-   * console.log(arrays[0] === arrays[1]);
-   * // => false
-   */
-  function stubArray() {
-    return [];
-  }
-
-  /**
-   * This method returns `false`.
-   *
-   * @static
-   * @memberOf _
-   * @since 4.13.0
-   * @category Util
-   * @returns {boolean} Returns `false`.
-   * @example
-   *
-   * _.times(2, _.stubFalse);
-   * // => [false, false]
-   */
-  function stubFalse() {
-    return false;
-  }
-
-  module.exports = isEqual;
-  });
-
-  /**
-   * Calculates the Logistic Regression probability for the
-   * given values based on the given model parameters.
-   * @param { map } values map of the values
-   * @param { map } weights map of the weights
-   * @param { number } intercept the model intercept
-   */
-
-  function getProbability(values, weights, intercept) {
-    var check = lodash_isequal(values.keys(), weights.keys());
-    if (!check) throw Error('values and weights are not equal.');
-    var logOdds = intercept;
-    values.keys().forEach(function (variable) {
-      logOdds += values.get(variable) * weights.get(variable);
-    });
-    var odds = Math.exp(logOdds);
-    var prob = odds / (1 + odds);
-    return prob;
-  }
-
-  // moves a variable value across a defined threshold.
-  // This info (and a good/bad/neutral colour) will be
-  // picked up by the marker draw function to add the info text.
-
-  var info = [{
-    variable: 'alcohol',
-    operator: '>',
-    threshold: 13,
-    info: ['our model likes alcohol!'],
-    infoColour: state.bottleColour.good.stop1
-  }, {
-    variable: 'volatile_acidity',
-    operator: '>',
-    threshold: 0.9,
-    info: ['careful, your wine might', 'get too acid-reach'],
-    infoColour: state.bottleColour.bad.stop1
-  }, {
-    variable: 'sulphates',
-    operator: '<',
-    threshold: 0.5,
-    info: [''],
-    infoColour: state.bottleColour.bad.stop1
-  }, {
-    variable: 'density',
-    operator: '',
-    threshold: null,
-    info: [''],
-    infoColour: ''
-  }, {
-    variable: 'citric_acid',
-    operator: '>',
-    threshold: 0.35,
-    info: [''],
-    infoColour: state.bottleColour.good.stop1
-  }, {
-    variable: 'chlorides',
-    operator: '>',
-    threshold: 0.1,
-    info: ["don't oversalt it"],
-    infoColour: state.bottleColour.bad.stop1
-  }, {
-    variable: 'total_sulfur_dioxide',
-    operator: '',
-    threshold: null,
-    info: [''],
-    infoColour: ''
-  }, {
-    variable: 'fixed_acidity',
-    operator: '>',
-    threshold: 8.5,
-    info: [''],
-    infoColour: state.bottleColour.bad.stop1
-  }, {
-    variable: 'ph',
-    operator: '',
-    threshold: null,
-    info: [''],
-    infoColour: ''
-  }, {
-    variable: 'residual_sugar',
-    operator: '>',
-    threshold: 3.8,
-    info: ['getting on the sweater', 'side for a red wine now'],
-    infoColour: '#777'
-  }, {
-    variable: 'free_sulfur_dioxide',
-    operator: '',
-    threshold: null,
-    info: [''],
-    infoColour: ''
-  }];
-  var infoMap = map(info, function (d) {
-    return d.variable;
-  });
-
-  function getConditional(value, operator, threshold) {
-    if (operator === '' || !operator) return false;
-    if (operator === '>') return value > threshold;
-    if (operator === '<') return value < threshold;
-  }
-  /**
-   * Return info for that variable  based on the given value.
-   * @param { string } variable property at question
-   * @param { number } value the current value
-   */
-
-
-  function setPropertyInfo(variable, value) {
-    state.modelBottle.info = [''];
-    state.modelBottle.infoColour = '';
-    var current = infoMap.get(variable);
-    var conditional = getConditional(value, current.operator, current.threshold);
-
-    if (conditional) {
-      state.modelBottle.info = current.info;
-      state.modelBottle.infoColour = current.infoColour;
-    }
-  }
-
-  /* eslint-disable no-nested-ternary */
-
-  var margin$1 = {
-    top: 20,
-    right: 20,
-    bottom: 30,
-    left: 20
-  }; // Function to compute density
-
-  function kernelDensityEstimator(kernel, X) {
-    return function (V) {
-      return X.map(function (x) {
-        return [x, mean(V, function (v) {
-          return kernel(x - v);
-        })];
-      });
-    };
-  }
-
-  function kernelEpanechnikov(k) {
-    return function (v) {
-      return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
-    };
-  } // Control build function.
-
-
-  function buildControl(datapoint) {
-    // Get the datum's values.
-    var variable = datapoint.key;
-    var value = datapoint.value; // Identify # of decimals to show.
-
-    var valueRange = state.model.ranges.get(variable);
-    var rangeDelta = valueRange[1] - valueRange[0];
-    var decimals = rangeDelta > 0.09 ? 2 : 3; // Set up.
-
-    var sel = select(this);
-    sel.select('svg').remove(); // No join mechanics here - let's be deterministic.
-
-    var svg = sel.append('svg').attr('class', 'control');
-    var rs = st.svg(svg.node()); // SVG is defined as 100% width/height in CSS.
-
-    var width = parseInt(svg.style('width'), 10) - margin$1.left - margin$1.right;
-    var height = parseInt(svg.style('height'), 10) - margin$1.top - margin$1.bottom; // Clip path for the marker.
-
-    var clippy = svg.append('defs').append('clipPath').attr('id', "clippy-".concat(variable)).append('path'); // The chart g.
-
-    var g = svg.append('g').attr('transform', "translate(".concat(margin$1.left, ", ").concat(margin$1.top, ")")); // x Scale.
-
-    var xScale = linear$1().domain(state.model.ranges.get(variable)).range([0, width]); // Label.
-
-    var labelText = variable === 'ph' ? 'pH' : prettyLabel(variable);
-    g.append('text').attr('x', width).attr('y', -margin$1.top / 2).attr('dy', '0.35em').attr('text-anchor', 'end').style('font-family', 'Signika').style('font-size', 12).text(labelText); // Axis.
-
-    g.append('line').attr('y1', height).attr('x2', width).attr('y2', height).style('stroke-width', 1).style('stroke', '#000'); // Density data.
-
-    var k = (state.model.ranges.get(variable)[1] - state.model.ranges.get(variable)[0]) * 0.05;
-    var kde = kernelDensityEstimator(kernelEpanechnikov(k), xScale.ticks(40));
-    var density = kde(state.stats.data.map(function (d) {
-      return d[variable];
-    })); // Add a start and an end point at x = 0 to the mix.
-
-    density.unshift([density[0][0], 0]);
-    density.push([density[density.length - 1][0], 0]); // y Scale.
-
-    var yScale = linear$1().domain([0, max(density.map(function (d) {
-      return d[1];
-    }))]).range([height, 0]); // Line generator.
-
-    var lineGen = line().curve(curveBasis).x(function (d) {
-      return xScale(d[0]);
-    }).y(function (d) {
-      return yScale(d[1]);
-    }); // Get density path.
-
-    var densityPath = lineGen(density); // Density chart.
-
-    var fill = rs.path(densityPath, {
-      fill: '#555',
-      stroke: 'rgba(0, 0, 0, 0.7)'
-    });
-    g.node().appendChild(fill);
-    g.select('path').attr('class', "density ".concat(variable)); // Clip path data.
-
-    clippy.attr('d', densityPath); // Position data for the drag subjects.
-
-    var position = {
-      x: xScale(value),
-      y: height,
-      width: 30,
-      height: height + margin$1.bottom
-    }; // Marker.
-
-    g.append('line').datum(position).attr('x1', function (d) {
-      return d.x;
-    }).attr('y1', function (d) {
-      return d.y;
-    }).attr('x2', function (d) {
-      return d.x;
-    }).attr('y2', 0).attr('class', 'marker').attr('clip-path', "url(#clippy-".concat(variable, ")")).style('stroke-width', 1).style('stroke', 'black'); // Handle.
-
-    g.append('circle').datum(position).attr('cx', function (d) {
-      return d.x;
-    }).attr('cy', function (d) {
-      return d.y;
-    }).attr('r', 5).attr('class', 'handle').style('fill', '#000'); // Number.
-
-    g.append('text').datum(position).attr('x', function (d) {
-      return d.x;
-    }).attr('y', function (d) {
-      return d.y;
-    }).attr('class', 'label').attr('dy', '0.7em').attr('text-anchor', 'middle').attr('dominant-baseline', 'hanging').style('font-family', 'Signika').style('font-size', 12).text(value.toFixed(decimals)); // Drag handler.
-
-    function handleDrag(datum) {
-      // Clamp the x value.
-      var x = event.x > width ? width : event.x < 0 ? 0 : event.x; // Update the data.
-
-      value = xScale.invert(x);
-      state.model.values.set(variable, value);
-      state.model.probability = getProbability(state.model.values, state.model.weights, state.model.intercept); // Operate the bottle wave on change.
-
-      decayWave();
-      state.bottleWave.lift = state.model.probability; // Update DOM.
-
-      var dragrect = select(this);
-      var circle = select(this.parentNode).select('circle.handle');
-      var marker = select(this.parentNode).select('line.marker');
-      var label = select(this.parentNode).select('text.label');
-      dragrect.attr('x', function () {
-        datum.x = x;
-        return datum.x - datum.width / 2;
-      });
-      circle.attr('cx', datum.x = x);
-      marker.attr('x1', datum.x = x).attr('x2', datum.x = x);
-      label.attr('x', datum.x = x).text(value.toFixed(decimals)); // Add some wine making tips to the canvas indirectly.
-
-      setPropertyInfo(variable, value);
-    } // Drag rectangle.
-
-
-    g.append('rect').datum(position).attr('x', function (d) {
-      return d.x - d.width / 2;
-    }).attr('y', 0).attr('width', function (d) {
-      return d.width;
-    }).attr('height', function (d) {
-      return d.height;
-    }).style('opacity', 0) // can't see it - no no.
-    .call(drag().on('drag', handleDrag));
-  }
-
-  function buildModelControls() {
-    select('#model-app').style('height', "".concat(state.height, "px")); // Sort the controls by their variable importance.
-
-    var order = state.varImp.data.map(function (d) {
-      return d.variable;
-    });
-    var controlData = state.model.values.entries();
-    controlData.sort(function (a, b) {
-      return order.indexOf(a.key) - order.indexOf(b.key);
-    }); // Mount the app.
-
-    select('#model-app-wrap').selectAll('.model-value-control').data(controlData).join('div').attr('class', 'model-value-control').each(buildControl);
-  }
-  //    Hence the minimum would be 0.5% of the width.
-  //    However, we give it a little leeway here with 0.475
-
   /**
    * Draws a path at a certain offset of its full length.
    * Can nicely be used to animate a path.
@@ -27139,6 +27068,10 @@
       endElement: 'center',
       endContainer: "top+=".concat(offset, "px")
     };
+  }
+
+  function lerp(a, b, t) {
+    return a * (1 - t) + b * t;
   } // Set ScrollTrigger defaults.
 
 
@@ -27206,7 +27139,6 @@
     // Get a transform for each animal based on its getBBox dimensions.
 
     state.animals.data.forEach(function (animal) {
-      // debugger;
       state.transform[animal.name] = getTransform(state.animals[animal.name], animal.fit);
     }); // Update the dataset transform.
 
@@ -27300,6 +27232,7 @@
       id: 'bottleWave'
     });
     ScrollTrigger.create({
+      // The initial transition is done via tween...
       animation: state.tween.lolliChart,
       trigger: '.section-5',
       start: start,
@@ -27307,27 +27240,70 @@
       id: 'lolliChart'
     });
     ScrollTrigger.create({
-      animation: state.tween.lolliUpdate1,
+      // ...all others lolli transitions are done manually to have
+      // better access to the possibly changed  slider values.
       trigger: '.section-6',
       start: start,
       end: end,
-      id: 'lolliUpdate1'
+      id: 'lolliUpdate1',
+      onUpdate: function onUpdate(_ref) {
+        var progress = _ref.progress;
+        // Lines.
+        state.lolli.keys.forEach(function (d) {
+          var a = state.lolli.data[d].values[1];
+          var b = state.lolli.data[d].values[2];
+          var current = lerp(a, b, progress);
+          state.lolli.data[d].value = current;
+        });
+        renderLolliChart();
+      }
     });
     ScrollTrigger.create({
-      animation: state.tween.lolliUpdate2,
       trigger: '.section-7',
       start: start,
       end: end,
-      id: 'lolliUpdate2'
+      id: 'lolliUpdate2',
+      onUpdate: function onUpdate(_ref2) {
+        var progress = _ref2.progress;
+        // Lines.
+        state.lolli.keys.forEach(function (d) {
+          var a = state.lolli.data[d].values[2];
+          var b = state.lolli.data[d].values[3];
+          var current = lerp(a, b, progress);
+          state.lolli.data[d].value = current;
+        });
+        renderLolliChart();
+      }
     });
     ScrollTrigger.create({
-      animation: state.tween.lolliUpdate3,
       trigger: '.section-8',
       start: start,
       end: end,
       id: 'lolliUpdate3',
+      onUpdate: function onUpdate(_ref3) {
+        var progress = _ref3.progress;
+        // Circle radius.
+        var startRadius = state.lolli.radiusTarget;
+        var endRadius = 0;
+        var currentRadius = lerp(startRadius, endRadius, progress); // Lines.
+
+        state.lolli.keys.forEach(function (d) {
+          var startValue = state.lolli.data[d].values[3];
+          var endValue = state.lolli.data[d].values[4];
+          var currentValue = lerp(startValue, endValue, progress);
+          state.lolli.data[d].value = currentValue;
+          state.lolli.data[d].radius = currentRadius;
+        }); // Quality text.
+
+        var quality = state.lolli.data.quality;
+        var startOffset = 0;
+        var endOffset = quality.text.length;
+        var currentOffset = lerp(startOffset, endOffset, progress);
+        quality.text.offset = currentOffset;
+        renderLolliChart();
+      },
       onEnterBack: function onEnterBack() {
-        return clear(state.ctx.blackBox);
+        clear(state.ctx.blackBox);
       }
     }); // 2 items.
 
@@ -27729,14 +27705,12 @@
     setVisualStructure();
     updateTransforms();
     buildModelControls();
+    setupLolliSlider();
     tweenWineScape();
     tweenGlassBottle();
     tweenBottleText();
     tweenBottleWave();
     tweenLolliChart();
-    tweenLolliUpdate1();
-    tweenLolliUpdate2();
-    tweenLolliUpdate3();
     tweenBlackBox();
     tweenCleanup();
     tweenBottleEmpty();
@@ -28594,7 +28568,7 @@
 
   var part1Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"section section-0 empty\">");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<h1>How to describe a wine?</h1>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-1\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Before we dive into our conceptual model, let's note that \"wine quality\" is a highly imprecise term and can mean many things depending on the context it's used in and the criteria with which it was measured.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    A casual wine drinker defines wine quality different from a wine expert and might even judge the same wine differently when drunk at different occasions. Low-quality expensive wines might be better than cheap wines deemed good. A wine region might be interested to keep a base standard of quality for its wines, it loosely defines on regular tastings of sample wines.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Hence, a quality predicting model is unlikely to rank every wine out there on a universally approved quality scale. Reality is too complex, contexts are too different, taste is too subjective and — as a sense — not fully understood to capture such perfection mathematically.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section no-trigger\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    So, assuming we wanted to predict a wine's quality, we first need to define exactly what we mean by \"quality\" &mdash; the <span class=\"highlight\">output</span> of our prediction model.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Equally important, we would need <span class=\"highlight\">model inputs</span> in the form of measurable information about the wine we can use to build a prediction with.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-2\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    These inputs could be as abstract as the shape of the wine bottle, which, might not be linked heavily to any concept of quality but can indeed tell us about the <a href=\"https://www.wsetglobal.com/knowledge-centre/blog/2019/june/13/the-definitive-guide-to-wine-bottle-shapes-and-sizes/\">wine's region</a> at least.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-3\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Information about the brand, the vintage and the varietal might be better predictors of taste-related quality. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    In case you know your wines, this label information can be enough for you to get an idea of the wine's quality prior to tasting it, so we might also be able to teach a model about labels.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-4\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We could also try to describe the very liquid and decompose it into measurable, <span class=\"highlight\">physiochemical properties</span> like for example alcohol, sugars, acids, etc.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }});
 
-  var part2Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<h1>A conceptual model</h1>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-5\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Using such physiochemical components as our inputs, we could boldly assume these properties are associated with our output &mdash; wine quality &mdash; meaning a certain composition of these properties associates with a high-quality wine (however we define quality in detail)");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-6\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    while a different configuration of properties associates with a lower quality wine.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-7\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We might hope to find a combination that yields the highest possible quality, but what actually matters for the model is to establish reliable relationships within the data");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-8\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    so it can &mdash; in our case &mdash; <span class=\"highlight\">express wine quality as a function of its properties</span> entirely.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-9\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We would have a <span class=\"highlight\">mathematical model</span> that takes a wine's properties as input");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-10\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    and returns some sort of estimate as to whether this wine is leaning towards being good or not so good. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section no-trigger\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Inside this black box, the model reduces relationships between individual data columns to an equation &mdash; our model equations.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We would possibly want to reduce our wine problem to something like this:");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <div class=\"image-wrap\">");t.b("\n" + i);t.b("    <img src=\"../../static/equation@2x.png\" alt=\"wine quality equation\">");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("    This is a rather simple envelope’s backside, but in essence it’s an equation that relates some inputs to an output. In our case it relates the configuration of the wine's components to its quality.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We have the inputs weighted by some input-specific factor which tells the model how much impact the respective property has on the output. The greater the weights → the more impact they have. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-11\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    The benefit of this equation is that we can take it with us and throw any combination of wine properties at it in order to get an estimate about its quality &mdash; as per its specific definition &mdash; without knowing anything about it prior.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    But how does the model get these weights? How does it learn which property drives quality to what degree?");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    This is where we need to take our model by the hand and teach it.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }});
+  var part2Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<h1>A conceptual model</h1>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-5\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Using such physiochemical components as our inputs, we could boldly assume these properties are associated with our output &mdash; wine quality &mdash; meaning a certain composition of these properties associates with a high-quality wine (however we define quality in detail)");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-6\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    while a different configuration of properties associates with a lower quality wine.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-7\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We might hope to find a combination that yields the highest possible quality, but what actually matters for the model is to establish reliable relationships within the data");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <div id=\"slider-tool\">");t.b("\n" + i);t.b("    <input type=\"range\" class=\"lolli-slider\" id=\"slider-alcohol\" name=\"alcohol\" min=\"0\" max=\"1\" step=\"0.01\"/>");t.b("\n" + i);t.b("    <label for=\"slider-alcohol\">Alcohol</label>");t.b("\n" + i);t.b("    <input type=\"range\" class=\"lolli-slider\" id=\"slider-acids\" name=\"acids\" min=\"0\" max=\"1\" step=\"0.01\"/>");t.b("\n" + i);t.b("    <label for=\"slider-acids\">Acids</label>");t.b("\n" + i);t.b("    <input type=\"range\" class=\"lolli-slider\" id=\"slider-sugars\" name=\"sugars\" min=\"0\" max=\"1\" step=\"0.01\"/>");t.b("\n" + i);t.b("    <label for=\"slider-sugars\">Sugars</label>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-8\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    so it can &mdash; in our case &mdash; <span class=\"highlight\">express wine quality as a function of its properties</span> entirely.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-9\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We would have a <span class=\"highlight\">mathematical model</span> that takes a wine's properties as input");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-10\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    and returns some sort of estimate as to whether this wine is leaning towards being good or not so good. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section no-trigger\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Inside this black box, the model reduces relationships between individual data columns to an equation &mdash; our model equations.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We would possibly want to reduce our wine problem to something like this:");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <div class=\"image-wrap\">");t.b("\n" + i);t.b("    <img src=\"../../static/equation@2x.png\" alt=\"wine quality equation\">");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("    This is a rather simple envelope’s backside, but in essence it’s an equation that relates some inputs to an output. In our case it relates the configuration of the wine's components to its quality.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We have the inputs weighted by some input-specific factor which tells the model how much impact the respective property has on the output. The greater the weights → the more impact they have. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-11\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    The benefit of this equation is that we can take it with us and throw any combination of wine properties at it in order to get an estimate about its quality &mdash; as per its specific definition &mdash; without knowing anything about it prior.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    But how does the model get these weights? How does it learn which property drives quality to what degree?");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    This is where we need to take our model by the hand and teach it.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }});
 
   var part3Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<h1>Learning by example</h1>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-12\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We want it to learn how to tell a good wine from a less good wine; how to predict &mdash; in this case <span class=\"highlight\">classify</span> &mdash; each wine. But the model doesn't have our senses. It can't see, taste, or feel a wine, and we can’t be there for it in the future, to pre-taste each wine. We need to teach it to recognise a good wine by example, so it can stand on its own data columns.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("     This process is called <a href=\"https://www.analyticsvidhya.com/blog/2020/04/supervised-learning-unsupervised-learning/\" target=\"_blank\">supervised learning</a> and we all know its powers from our own childhood. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-13\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Think back to the days when you learned your animal names. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    You were probably just sitting in a proudly self-concocted puddle of peas, mash and apple juice leafing through a picture book of animal drawings, while your father tried to teach you what a sloth looks like.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-14\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Any of these shapes could have been a sloth,");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-15\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    but your father calmly supervised your learning,");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-16\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    by labelling the non-sloths");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-17\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    and celebrating the actual sloths!");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-18\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    And even though not every sloth looks the same,");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-19\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    after many examples, you learned the basic features that make up a sloth. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-20\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Now, although you sometimes weren't sure whether that thing you looked at was a sloth indeed &mdash; possibly because the picture book was a bit rubbish &mdash; you learned to give it a good guess at least. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    You scanned the configuration of lines and shapes that made up the animal and gauged how likely it is for this thing to be a sloth.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    That's exactly what a mathematical model does, too: ");t.b("\n" + i);t.b("    <ol>");t.b("\n" + i);t.b("      <li>you give it <span class=\"highlight\">examples</span> (many at best) </li>");t.b("\n" + i);t.b("      <li>you <span class=\"highlight\">label</span> them with what you want your model to learn </li>");t.b("\n" + i);t.b("      <li>and let it detect <span class=\"highlight\">patterns</span>...</li>");t.b("\n" + i);t.b("      <li>that help your concluding  <span class=\"highlight\">classification</span>.</li>");t.b("\n" + i);t.b("    </ol>");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-21\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    So &mdash; moving back to our wine example...");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-22\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    we're interested in classifying wines into");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-23\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    ...high-quality");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-24\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    ...and low-quality wines.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    But whatever we do, a single bottle won’t be enough.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-25\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Just like a single animal drawing won't teach a child what a sloth is, a model needs as many wines as we can get hold of.");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("    Let's get some...");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-26\">");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-27\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Each wine in this dataset is labelled as either a high or a low-quality wine. This is the dataset we train the model with, our <a href=\"https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data\" target=\"_blank\">training set</a>. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Training sets are omniscient. They have all model input variables as well as the model output variable &mdash; Quality in our case. After we trained the model it shouldn't need these labels anymore and we can test it on a dataset without any labels &mdash; a <a href=\"https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data\" target=\"_blank\">test set</a>.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-28\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    In a next step of the analysis, the dataset splits into the Quality groups and the algorithm would identify how features differ for each group and how they correlate with the output variable. How, for example, higher quality wines might have a higher alcohol level than lower quality wines. Or how lower amounts of sulphur dioxides might increase quality, or whatever relationships the model uncovers in your data.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Lastly it would formulate these results in a weighted model equation.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section no-trigger\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    This is the process in broad, conceptual terms. To build an actual model, we need a real, sizeable dataset with labelled data!");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }});
 
@@ -28751,7 +28725,7 @@
     // objects as below. But to iterate through them in the canvas draw function
     // we need at least the names in an array like here:
 
-    state.lolli.values = Object.keys(state.lolli.data); // Get the blackbox pathdata.
+    state.lolli.keys = Object.keys(state.lolli.data); // Get the blackbox pathdata.
 
     state.blackBox.box = getPathData(blackBox);
     state.blackBox.model = getPathData(textModel);
