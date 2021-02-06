@@ -30385,7 +30385,7 @@
     state.lolli.data = {
       alcohol: {
         value: 0,
-        values: [0, 0.6, 0.3, 0.8, 0],
+        values: [0, 0.6, 0.3, 0.5, 0],
         radius: 0,
         text: lolliTextPaths[0],
         offset: {
@@ -30395,7 +30395,7 @@
       },
       acids: {
         value: 0,
-        values: [0, 0.3, 0.7, 0.2, 0],
+        values: [0, 0.3, 0.7, 0.5, 0],
         radius: 0,
         text: lolliTextPaths[1],
         offset: {
@@ -30405,7 +30405,7 @@
       },
       sugars: {
         value: 0,
-        values: [0, 0.7, 0.6, 0.4, 0],
+        values: [0, 0.7, 0.6, 0.5, 0],
         radius: 0,
         text: lolliTextPaths[2],
         offset: {
@@ -30415,7 +30415,7 @@
       },
       quality: {
         value: 0,
-        values: [0, 0.5, 0.3, 0.9, 0],
+        values: [0, 0.93, 0.43, 0.82, 0],
         radius: 0,
         text: lolliTextPaths[3],
         offset: {
