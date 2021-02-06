@@ -296,11 +296,11 @@ svg.absolute {
         .main-section .image-wrap img {
           max-width: 60%; } }
 
-.sloth-wrap {
+#sloth-wrap {
   width: 100%;
   display: flex;
-  justify-content: center;
-  align-items: center; }
+  flex-direction: column;
+  justify-content: center; }
 
 span#sloth-reveal {
   opacity: 0;
@@ -313,6 +313,23 @@ span#sloth-reveal-delay {
 span#sloth-reveal.show,
 span#sloth-reveal-delay.show {
   opacity: 1; }
+
+button.sloth-button {
+  max-width: 250px;
+  padding: 1rem 1rem;
+  margin: 0.25rem 1rem;
+  background: rgba(247, 245, 222, 0);
+  outline: none;
+  border: solid 2px #41403e;
+  border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+  box-shadow: 10px 10px 15px -5px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: all 0.3s ease; }
+  button.sloth-button:hover {
+    box-shadow: 2px 8px 4px -5px rgba(0, 0, 0, 0.3);
+    background: #f3f3e9; }
+  button.sloth-button.clicked {
+    background: #f3f3e9; }
 
 a {
   position: relative;

@@ -1,4 +1,4 @@
-import { select } from 'd3-selection';
+import { select, selectAll } from 'd3-selection';
 import { MorphSVGPlugin } from 'gsap/MorphSVGPlugin';
 import state from '../app/state';
 import sloth from '../../static/animal-sloth-2b';
@@ -11,10 +11,13 @@ function clicked() {
 
   select('#sloth-reveal').classed('show', true);
   select('#sloth-reveal-delay').classed('show', true);
+
+  selectAll('.sloth-button').classed('clicked', false);
+  select(this).classed('clicked', true);
 }
 
 function slothReveal() {
-  select('.sloth-button').on('mousedown', clicked);
+  selectAll('.sloth-button').on('mousedown', clicked);
 }
 
 export default slothReveal;
