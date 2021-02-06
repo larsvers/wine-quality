@@ -28866,15 +28866,9 @@
       start: '10px top',
       id: 'intro',
       onEnter: function onEnter() {
-        gsapWithCSS$1.to('#title-image', {
-          boxShadow: '0px 2px 10px #ccc'
-        });
         tweenIntroIn();
       },
       onLeaveBack: function onLeaveBack() {
-        gsapWithCSS$1.to('#title-image', {
-          boxShadow: '0px 0px 0px #ccc'
-        });
         tweenIntroOut();
       }
     });

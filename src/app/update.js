@@ -211,11 +211,9 @@ function setScrollBase() {
     start: '10px top',
     id: 'intro',
     onEnter() {
-      gsap.to('#title-image', { boxShadow: '0px 2px 10px #ccc' });
       tweenIntroIn();
     },
     onLeaveBack() {
-      gsap.to('#title-image', { boxShadow: '0px 0px 0px #ccc' });
       tweenIntroOut();
     },
   });
