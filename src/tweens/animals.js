@@ -12,7 +12,7 @@ const animalPaths = [
   { id: '#animalSloth1', name: 'animalSloth1' },
   { id: '#animalWhale', name: 'animalWhale' },
   { id: '#animalBird', name: 'animalBird' },
-  { id: '#animalSloth2', name: 'animalSloth2' },
+  { id: '#animalSloth2a', name: 'animalSloth2a' },
   { id: '#bottle-path', name: 'bottle' },
 ];
 
@@ -112,4 +112,4 @@ function tweenAnimals() {
 }
 
 export default tweenAnimals;
-export { animalPaths };
+export { animalPaths, renderAnimals };

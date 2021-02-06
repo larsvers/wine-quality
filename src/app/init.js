@@ -40,8 +40,9 @@ import animalCroc from '../../static/animal-crocodile';
 import animalGiraffe from '../../static/animal-giraffe';
 import animalPig from '../../static/animal-pig';
 import animalSloth1 from '../../static/animal-sloth-1';
-import animalSloth2 from '../../static/animal-sloth-2';
+import animalSloth2a from '../../static/animal-sloth-2a';
 import animalWhale from '../../static/animal-whale';
+import slothReveal from '../slothreveal/slothreveal';
 
 // Dataset paths
 import dataset00Grid from '../../static/dataset-00-grid';
@@ -267,7 +268,7 @@ function prepareVisuals(
     { name: 'animalSloth1', path: animalSloth1, fit: { width: 0.5, height: 0 } },
     { name: 'animalWhale', path: animalWhale, fit: { width: 0.5, height: 0 } },
     { name: 'animalBird', path: animalBird, fit: { width: 0.5, height: 0 } },
-    { name: 'animalSloth2', path: animalSloth2, fit: { width: 0, height: 0.9 } },
+    { name: 'animalSloth2a', path: animalSloth2a, fit: { width: 0, height: 0.7 } },
   ];
 
   // Add the paths to the DOM.
@@ -382,6 +383,9 @@ function buildStory(logoSvg) {
     .join('section')
     .attr('class', d => `main-section ${d.id}`)
     .html(d => d.html);
+
+  // Set up the sloth button interaction.
+  slothReveal();
 
   // Add model base.
   // needs to come at the bitter end to stop at top and become scrollable.

@@ -10978,6 +10978,1696 @@
 
   gsap.registerPlugin(CSSPlugin);
 
+  /*!
+   * paths 3.4.0
+   * https://greensock.com
+   *
+   * Copyright 2008-2020, GreenSock. All rights reserved.
+   * Subject to the terms at https://greensock.com/standard-license or for
+   * Club GreenSock members, the agreement issued with that membership.
+   * @author: Jack Doyle, jack@greensock.com
+  */
+
+  /* eslint-disable */
+  var _svgPathExp = /[achlmqstvz]|(-?\d*\.?\d*(?:e[\-+]?\d+)?)[0-9]/ig,
+      _numbersExp = /(?:(-)?\d*\.?\d*(?:e[\-+]?\d+)?)[0-9]/ig,
+      _scientific = /[\+\-]?\d*\.?\d+e[\+\-]?\d+/ig,
+      _selectorExp = /(^[#\.][a-z]|[a-y][a-z])/i,
+      _DEG2RAD$1 = Math.PI / 180,
+      _sin$1 = Math.sin,
+      _cos$1 = Math.cos,
+      _abs = Math.abs,
+      _sqrt$1 = Math.sqrt,
+      _isString$1 = function _isString(value) {
+    return typeof value === "string";
+  },
+      _isNumber$1 = function _isNumber(value) {
+    return typeof value === "number";
+  },
+      _roundingNum = 1e5,
+      //if progress lands on 1, the % will make it 0 which is why we || 1, but not if it's negative because it makes more sense for motion to end at 0 in that case.
+  _round$1 = function _round(value) {
+    return Math.round(value * _roundingNum) / _roundingNum || 0;
+  };
+  /* TERMINOLOGY
+   - RawPath - an array of arrays, one for each Segment. A single RawPath could have multiple "M" commands, defining Segments (paths aren't always connected).
+   - Segment - an array containing a sequence of Cubic Bezier coordinates in alternating x, y, x, y format. Starting anchor, then control point 1, control point 2, and ending anchor, then the next control point 1, control point 2, anchor, etc. Uses less memory than an array with a bunch of {x, y} points.
+   - Bezier - a single cubic Bezier with a starting anchor, two control points, and an ending anchor.
+   - the variable "t" is typically the position along an individual Bezier path (time) and it's NOT linear, meaning it could accelerate/decelerate based on the control points whereas the "p" or "progress" value is linearly mapped to the whole path, so it shouldn't really accelerate/decelerate based on control points. So a progress of 0.2 would be almost exactly 20% along the path. "t" is ONLY in an individual Bezier piece.
+   */
+  //accepts basic selector text, a path instance, a RawPath instance, or a Segment and returns a RawPath (makes it easy to homogenize things). If an element or selector text is passed in, it'll also cache the value so that if it's queried again, it'll just take the path data from there instead of parsing it all over again (as long as the path data itself hasn't changed - it'll check).
+
+
+  function getRawPath(value) {
+    value = _isString$1(value) && _selectorExp.test(value) ? document.querySelector(value) || value : value;
+    var e = value.getAttribute ? value : 0,
+        rawPath;
+
+    if (e && (value = value.getAttribute("d"))) {
+      //implements caching
+      if (!e._gsPath) {
+        e._gsPath = {};
+      }
+
+      rawPath = e._gsPath[value];
+      return rawPath && !rawPath._dirty ? rawPath : e._gsPath[value] = stringToRawPath(value);
+    }
+
+    return !value ? console.warn("Expecting a <path> element or an SVG path data string") : _isString$1(value) ? stringToRawPath(value) : _isNumber$1(value[0]) ? [value] : value;
+  } //copies a RawPath WITHOUT the length meta data (for speed)
+  function reverseSegment(segment) {
+    var i = 0,
+        y;
+    segment.reverse(); //this will invert the order y, x, y, x so we must flip it back.
+
+    for (; i < segment.length; i += 2) {
+      y = segment[i];
+      segment[i] = segment[i + 1];
+      segment[i + 1] = y;
+    }
+
+    segment.reversed = !segment.reversed;
+  }
+
+  var _createPath = function _createPath(e, ignore) {
+    var path = document.createElementNS("http://www.w3.org/2000/svg", "path"),
+        attr = [].slice.call(e.attributes),
+        i = attr.length,
+        name;
+    ignore = "," + ignore + ",";
+
+    while (--i > -1) {
+      name = attr[i].nodeName.toLowerCase(); //in Microsoft Edge, if you don't set the attribute with a lowercase name, it doesn't render correctly! Super weird.
+
+      if (ignore.indexOf("," + name + ",") < 0) {
+        path.setAttributeNS(null, name, attr[i].nodeValue);
+      }
+    }
+
+    return path;
+  },
+      _typeAttrs = {
+    rect: "rx,ry,x,y,width,height",
+    circle: "r,cx,cy",
+    ellipse: "rx,ry,cx,cy",
+    line: "x1,x2,y1,y2"
+  },
+      _attrToObj = function _attrToObj(e, attrs) {
+    var props = attrs ? attrs.split(",") : [],
+        obj = {},
+        i = props.length;
+
+    while (--i > -1) {
+      obj[props[i]] = +e.getAttribute(props[i]) || 0;
+    }
+
+    return obj;
+  }; //converts an SVG shape like <circle>, <rect>, <polygon>, <polyline>, <ellipse>, etc. to a <path>, swapping it in and copying the attributes to match.
+
+
+  function convertToPath(element, swap) {
+    var type = element.tagName.toLowerCase(),
+        circ = 0.552284749831,
+        data,
+        x,
+        y,
+        r,
+        ry,
+        path,
+        rcirc,
+        rycirc,
+        points,
+        w,
+        h,
+        x2,
+        x3,
+        x4,
+        x5,
+        x6,
+        y2,
+        y3,
+        y4,
+        y5,
+        y6,
+        attr;
+
+    if (type === "path" || !element.getBBox) {
+      return element;
+    }
+
+    path = _createPath(element, "x,y,width,height,cx,cy,rx,ry,r,x1,x2,y1,y2,points");
+    attr = _attrToObj(element, _typeAttrs[type]);
+
+    if (type === "rect") {
+      r = attr.rx;
+      ry = attr.ry || r;
+      x = attr.x;
+      y = attr.y;
+      w = attr.width - r * 2;
+      h = attr.height - ry * 2;
+
+      if (r || ry) {
+        //if there are rounded corners, render cubic beziers
+        x2 = x + r * (1 - circ);
+        x3 = x + r;
+        x4 = x3 + w;
+        x5 = x4 + r * circ;
+        x6 = x4 + r;
+        y2 = y + ry * (1 - circ);
+        y3 = y + ry;
+        y4 = y3 + h;
+        y5 = y4 + ry * circ;
+        y6 = y4 + ry;
+        data = "M" + x6 + "," + y3 + " V" + y4 + " C" + [x6, y5, x5, y6, x4, y6, x4 - (x4 - x3) / 3, y6, x3 + (x4 - x3) / 3, y6, x3, y6, x2, y6, x, y5, x, y4, x, y4 - (y4 - y3) / 3, x, y3 + (y4 - y3) / 3, x, y3, x, y2, x2, y, x3, y, x3 + (x4 - x3) / 3, y, x4 - (x4 - x3) / 3, y, x4, y, x5, y, x6, y2, x6, y3].join(",") + "z";
+      } else {
+        data = "M" + (x + w) + "," + y + " v" + h + " h" + -w + " v" + -h + " h" + w + "z";
+      }
+    } else if (type === "circle" || type === "ellipse") {
+      if (type === "circle") {
+        r = ry = attr.r;
+        rycirc = r * circ;
+      } else {
+        r = attr.rx;
+        ry = attr.ry;
+        rycirc = ry * circ;
+      }
+
+      x = attr.cx;
+      y = attr.cy;
+      rcirc = r * circ;
+      data = "M" + (x + r) + "," + y + " C" + [x + r, y + rycirc, x + rcirc, y + ry, x, y + ry, x - rcirc, y + ry, x - r, y + rycirc, x - r, y, x - r, y - rycirc, x - rcirc, y - ry, x, y - ry, x + rcirc, y - ry, x + r, y - rycirc, x + r, y].join(",") + "z";
+    } else if (type === "line") {
+      data = "M" + attr.x1 + "," + attr.y1 + " L" + attr.x2 + "," + attr.y2; //previously, we just converted to "Mx,y Lx,y" but Safari has bugs that cause that not to render properly when using a stroke-dasharray that's not fully visible! Using a cubic bezier fixes that issue.
+    } else if (type === "polyline" || type === "polygon") {
+      points = (element.getAttribute("points") + "").match(_numbersExp) || [];
+      x = points.shift();
+      y = points.shift();
+      data = "M" + x + "," + y + " L" + points.join(",");
+
+      if (type === "polygon") {
+        data += "," + x + "," + y + "z";
+      }
+    }
+
+    path.setAttribute("d", rawPathToString(path._gsRawPath = stringToRawPath(data)));
+
+    if (swap && element.parentNode) {
+      element.parentNode.insertBefore(path, element);
+      element.parentNode.removeChild(element);
+    }
+
+    return path;
+  } //returns the rotation (in degrees) at a particular progress on a rawPath (the slope of the tangent)
+
+  function arcToSegment(lastX, lastY, rx, ry, angle, largeArcFlag, sweepFlag, x, y) {
+    if (lastX === x && lastY === y) {
+      return;
+    }
+
+    rx = _abs(rx);
+    ry = _abs(ry);
+
+    var angleRad = angle % 360 * _DEG2RAD$1,
+        cosAngle = _cos$1(angleRad),
+        sinAngle = _sin$1(angleRad),
+        PI = Math.PI,
+        TWOPI = PI * 2,
+        dx2 = (lastX - x) / 2,
+        dy2 = (lastY - y) / 2,
+        x1 = cosAngle * dx2 + sinAngle * dy2,
+        y1 = -sinAngle * dx2 + cosAngle * dy2,
+        x1_sq = x1 * x1,
+        y1_sq = y1 * y1,
+        radiiCheck = x1_sq / (rx * rx) + y1_sq / (ry * ry);
+
+    if (radiiCheck > 1) {
+      rx = _sqrt$1(radiiCheck) * rx;
+      ry = _sqrt$1(radiiCheck) * ry;
+    }
+
+    var rx_sq = rx * rx,
+        ry_sq = ry * ry,
+        sq = (rx_sq * ry_sq - rx_sq * y1_sq - ry_sq * x1_sq) / (rx_sq * y1_sq + ry_sq * x1_sq);
+
+    if (sq < 0) {
+      sq = 0;
+    }
+
+    var coef = (largeArcFlag === sweepFlag ? -1 : 1) * _sqrt$1(sq),
+        cx1 = coef * (rx * y1 / ry),
+        cy1 = coef * -(ry * x1 / rx),
+        sx2 = (lastX + x) / 2,
+        sy2 = (lastY + y) / 2,
+        cx = sx2 + (cosAngle * cx1 - sinAngle * cy1),
+        cy = sy2 + (sinAngle * cx1 + cosAngle * cy1),
+        ux = (x1 - cx1) / rx,
+        uy = (y1 - cy1) / ry,
+        vx = (-x1 - cx1) / rx,
+        vy = (-y1 - cy1) / ry,
+        temp = ux * ux + uy * uy,
+        angleStart = (uy < 0 ? -1 : 1) * Math.acos(ux / _sqrt$1(temp)),
+        angleExtent = (ux * vy - uy * vx < 0 ? -1 : 1) * Math.acos((ux * vx + uy * vy) / _sqrt$1(temp * (vx * vx + vy * vy)));
+
+    isNaN(angleExtent) && (angleExtent = PI); //rare edge case. Math.cos(-1) is NaN.
+
+    if (!sweepFlag && angleExtent > 0) {
+      angleExtent -= TWOPI;
+    } else if (sweepFlag && angleExtent < 0) {
+      angleExtent += TWOPI;
+    }
+
+    angleStart %= TWOPI;
+    angleExtent %= TWOPI;
+
+    var segments = Math.ceil(_abs(angleExtent) / (TWOPI / 4)),
+        rawPath = [],
+        angleIncrement = angleExtent / segments,
+        controlLength = 4 / 3 * _sin$1(angleIncrement / 2) / (1 + _cos$1(angleIncrement / 2)),
+        ma = cosAngle * rx,
+        mb = sinAngle * rx,
+        mc = sinAngle * -ry,
+        md = cosAngle * ry,
+        i;
+
+    for (i = 0; i < segments; i++) {
+      angle = angleStart + i * angleIncrement;
+      x1 = _cos$1(angle);
+      y1 = _sin$1(angle);
+      ux = _cos$1(angle += angleIncrement);
+      uy = _sin$1(angle);
+      rawPath.push(x1 - controlLength * y1, y1 + controlLength * x1, ux + controlLength * uy, uy - controlLength * ux, ux, uy);
+    } //now transform according to the actual size of the ellipse/arc (the beziers were noramlized, between 0 and 1 on a circle).
+
+
+    for (i = 0; i < rawPath.length; i += 2) {
+      x1 = rawPath[i];
+      y1 = rawPath[i + 1];
+      rawPath[i] = x1 * ma + y1 * mc + cx;
+      rawPath[i + 1] = x1 * mb + y1 * md + cy;
+    }
+
+    rawPath[i - 2] = x; //always set the end to exactly where it's supposed to be
+
+    rawPath[i - 1] = y;
+    return rawPath;
+  } //Spits back a RawPath with absolute coordinates. Each segment starts with a "moveTo" command (x coordinate, then y) and then 2 control points (x, y, x, y), then anchor. The goal is to minimize memory and maximize speed.
+
+
+  function stringToRawPath(d) {
+    var a = (d + "").replace(_scientific, function (m) {
+      var n = +m;
+      return n < 0.0001 && n > -0.0001 ? 0 : n;
+    }).match(_svgPathExp) || [],
+        //some authoring programs spit out very small numbers in scientific notation like "1e-5", so make sure we round that down to 0 first.
+    path = [],
+        relativeX = 0,
+        relativeY = 0,
+        twoThirds = 2 / 3,
+        elements = a.length,
+        points = 0,
+        errorMessage = "ERROR: malformed path: " + d,
+        i,
+        j,
+        x,
+        y,
+        command,
+        isRelative,
+        segment,
+        startX,
+        startY,
+        difX,
+        difY,
+        beziers,
+        prevCommand,
+        flag1,
+        flag2,
+        line = function line(sx, sy, ex, ey) {
+      difX = (ex - sx) / 3;
+      difY = (ey - sy) / 3;
+      segment.push(sx + difX, sy + difY, ex - difX, ey - difY, ex, ey);
+    };
+
+    if (!d || !isNaN(a[0]) || isNaN(a[1])) {
+      console.log(errorMessage);
+      return path;
+    }
+
+    for (i = 0; i < elements; i++) {
+      prevCommand = command;
+
+      if (isNaN(a[i])) {
+        command = a[i].toUpperCase();
+        isRelative = command !== a[i]; //lower case means relative
+      } else {
+        //commands like "C" can be strung together without any new command characters between.
+        i--;
+      }
+
+      x = +a[i + 1];
+      y = +a[i + 2];
+
+      if (isRelative) {
+        x += relativeX;
+        y += relativeY;
+      }
+
+      if (!i) {
+        startX = x;
+        startY = y;
+      } // "M" (move)
+
+
+      if (command === "M") {
+        if (segment) {
+          if (segment.length < 8) {
+            //if the path data was funky and just had a M with no actual drawing anywhere, skip it.
+            path.length -= 1;
+          } else {
+            points += segment.length;
+          }
+        }
+
+        relativeX = startX = x;
+        relativeY = startY = y;
+        segment = [x, y];
+        path.push(segment);
+        i += 2;
+        command = "L"; //an "M" with more than 2 values gets interpreted as "lineTo" commands ("L").
+        // "C" (cubic bezier)
+      } else if (command === "C") {
+        if (!segment) {
+          segment = [0, 0];
+        }
+
+        if (!isRelative) {
+          relativeX = relativeY = 0;
+        } //note: "*1" is just a fast/short way to cast the value as a Number. WAAAY faster in Chrome, slightly slower in Firefox.
+
+
+        segment.push(x, y, relativeX + a[i + 3] * 1, relativeY + a[i + 4] * 1, relativeX += a[i + 5] * 1, relativeY += a[i + 6] * 1);
+        i += 6; // "S" (continuation of cubic bezier)
+      } else if (command === "S") {
+        difX = relativeX;
+        difY = relativeY;
+
+        if (prevCommand === "C" || prevCommand === "S") {
+          difX += relativeX - segment[segment.length - 4];
+          difY += relativeY - segment[segment.length - 3];
+        }
+
+        if (!isRelative) {
+          relativeX = relativeY = 0;
+        }
+
+        segment.push(difX, difY, x, y, relativeX += a[i + 3] * 1, relativeY += a[i + 4] * 1);
+        i += 4; // "Q" (quadratic bezier)
+      } else if (command === "Q") {
+        difX = relativeX + (x - relativeX) * twoThirds;
+        difY = relativeY + (y - relativeY) * twoThirds;
+
+        if (!isRelative) {
+          relativeX = relativeY = 0;
+        }
+
+        relativeX += a[i + 3] * 1;
+        relativeY += a[i + 4] * 1;
+        segment.push(difX, difY, relativeX + (x - relativeX) * twoThirds, relativeY + (y - relativeY) * twoThirds, relativeX, relativeY);
+        i += 4; // "T" (continuation of quadratic bezier)
+      } else if (command === "T") {
+        difX = relativeX - segment[segment.length - 4];
+        difY = relativeY - segment[segment.length - 3];
+        segment.push(relativeX + difX, relativeY + difY, x + (relativeX + difX * 1.5 - x) * twoThirds, y + (relativeY + difY * 1.5 - y) * twoThirds, relativeX = x, relativeY = y);
+        i += 2; // "H" (horizontal line)
+      } else if (command === "H") {
+        line(relativeX, relativeY, relativeX = x, relativeY);
+        i += 1; // "V" (vertical line)
+      } else if (command === "V") {
+        //adjust values because the first (and only one) isn't x in this case, it's y.
+        line(relativeX, relativeY, relativeX, relativeY = x + (isRelative ? relativeY - relativeX : 0));
+        i += 1; // "L" (line) or "Z" (close)
+      } else if (command === "L" || command === "Z") {
+        if (command === "Z") {
+          x = startX;
+          y = startY;
+          segment.closed = true;
+        }
+
+        if (command === "L" || _abs(relativeX - x) > 0.5 || _abs(relativeY - y) > 0.5) {
+          line(relativeX, relativeY, x, y);
+
+          if (command === "L") {
+            i += 2;
+          }
+        }
+
+        relativeX = x;
+        relativeY = y; // "A" (arc)
+      } else if (command === "A") {
+        flag1 = a[i + 4];
+        flag2 = a[i + 5];
+        difX = a[i + 6];
+        difY = a[i + 7];
+        j = 7;
+
+        if (flag1.length > 1) {
+          // for cases when the flags are merged, like "a8 8 0 018 8" (the 0 and 1 flags are WITH the x value of 8, but it could also be "a8 8 0 01-8 8" so it may include x or not)
+          if (flag1.length < 3) {
+            difY = difX;
+            difX = flag2;
+            j--;
+          } else {
+            difY = flag2;
+            difX = flag1.substr(2);
+            j -= 2;
+          }
+
+          flag2 = flag1.charAt(1);
+          flag1 = flag1.charAt(0);
+        }
+
+        beziers = arcToSegment(relativeX, relativeY, +a[i + 1], +a[i + 2], +a[i + 3], +flag1, +flag2, (isRelative ? relativeX : 0) + difX * 1, (isRelative ? relativeY : 0) + difY * 1);
+        i += j;
+
+        if (beziers) {
+          for (j = 0; j < beziers.length; j++) {
+            segment.push(beziers[j]);
+          }
+        }
+
+        relativeX = segment[segment.length - 2];
+        relativeY = segment[segment.length - 1];
+      } else {
+        console.log(errorMessage);
+      }
+    }
+
+    i = segment.length;
+
+    if (i < 6) {
+      //in case there's odd SVG like a M0,0 command at the very end.
+      path.pop();
+      i = 0;
+    } else if (segment[0] === segment[i - 2] && segment[1] === segment[i - 1]) {
+      segment.closed = true;
+    }
+
+    path.totalPoints = points + i;
+    return path;
+  } //populates the points array in alternating x/y values (like [x, y, x, y...] instead of individual point objects [{x, y}, {x, y}...] to conserve memory and stay in line with how we're handling segment arrays
+  /*
+  Takes any of the following and converts it to an all Cubic Bezier SVG data string:
+  - A <path> data string like "M0,0 L2,4 v20,15 H100"
+  - A RawPath, like [[x, y, x, y, x, y, x, y][[x, y, x, y, x, y, x, y]]
+  - A Segment, like [x, y, x, y, x, y, x, y]
+
+  Note: all numbers are rounded down to the closest 0.001 to minimize memory, maximize speed, and avoid odd numbers like 1e-13
+  */
+
+  function rawPathToString(rawPath) {
+    if (_isNumber$1(rawPath[0])) {
+      //in case a segment is passed in instead
+      rawPath = [rawPath];
+    }
+
+    var result = "",
+        l = rawPath.length,
+        sl,
+        s,
+        i,
+        segment;
+
+    for (s = 0; s < l; s++) {
+      segment = rawPath[s];
+      result += "M" + _round$1(segment[0]) + "," + _round$1(segment[1]) + " C";
+      sl = segment.length;
+
+      for (i = 2; i < sl; i++) {
+        result += _round$1(segment[i++]) + "," + _round$1(segment[i++]) + " " + _round$1(segment[i++]) + "," + _round$1(segment[i++]) + " " + _round$1(segment[i++]) + "," + _round$1(segment[i]) + " ";
+      }
+
+      if (segment.closed) {
+        result += "z";
+      }
+    }
+
+    return result;
+  }
+  /*
+  // takes a segment with coordinates [x, y, x, y, ...] and converts the control points into angles and lengths [x, y, angle, length, angle, length, x, y, angle, length, ...] so that it animates more cleanly and avoids odd breaks/kinks. For example, if you animate from 1 o'clock to 6 o'clock, it'd just go directly/linearly rather than around. So the length would be very short in the middle of the tween.
+  export function cpCoordsToAngles(segment, copy) {
+  	var result = copy ? segment.slice(0) : segment,
+  		x, y, i;
+  	for (i = 0; i < segment.length; i+=6) {
+  		x = segment[i+2] - segment[i];
+  		y = segment[i+3] - segment[i+1];
+  		result[i+2] = Math.atan2(y, x);
+  		result[i+3] = Math.sqrt(x * x + y * y);
+  		x = segment[i+6] - segment[i+4];
+  		y = segment[i+7] - segment[i+5];
+  		result[i+4] = Math.atan2(y, x);
+  		result[i+5] = Math.sqrt(x * x + y * y);
+  	}
+  	return result;
+  }
+
+  // takes a segment that was converted with cpCoordsToAngles() to have angles and lengths instead of coordinates for the control points, and converts it BACK into coordinates.
+  export function cpAnglesToCoords(segment, copy) {
+  	var result = copy ? segment.slice(0) : segment,
+  		length = segment.length,
+  		rnd = 1000,
+  		angle, l, i, j;
+  	for (i = 0; i < length; i+=6) {
+  		angle = segment[i+2];
+  		l = segment[i+3]; //length
+  		result[i+2] = (((segment[i] + Math.cos(angle) * l) * rnd) | 0) / rnd;
+  		result[i+3] = (((segment[i+1] + Math.sin(angle) * l) * rnd) | 0) / rnd;
+  		angle = segment[i+4];
+  		l = segment[i+5]; //length
+  		result[i+4] = (((segment[i+6] - Math.cos(angle) * l) * rnd) | 0) / rnd;
+  		result[i+5] = (((segment[i+7] - Math.sin(angle) * l) * rnd) | 0) / rnd;
+  	}
+  	return result;
+  }
+
+  //adds an "isSmooth" array to each segment and populates it with a boolean value indicating whether or not it's smooth (the control points have basically the same slope). For any smooth control points, it converts the coordinates into angle (x, in radians) and length (y) and puts them into the same index value in a smoothData array.
+  export function populateSmoothData(rawPath) {
+  	let j = rawPath.length,
+  		smooth, segment, x, y, x2, y2, i, l, a, a2, isSmooth, smoothData;
+  	while (--j > -1) {
+  		segment = rawPath[j];
+  		isSmooth = segment.isSmooth = segment.isSmooth || [0, 0, 0, 0];
+  		smoothData = segment.smoothData = segment.smoothData || [0, 0, 0, 0];
+  		isSmooth.length = 4;
+  		l = segment.length - 2;
+  		for (i = 6; i < l; i += 6) {
+  			x = segment[i] - segment[i - 2];
+  			y = segment[i + 1] - segment[i - 1];
+  			x2 = segment[i + 2] - segment[i];
+  			y2 = segment[i + 3] - segment[i + 1];
+  			a = _atan2(y, x);
+  			a2 = _atan2(y2, x2);
+  			smooth = (Math.abs(a - a2) < 0.09);
+  			if (smooth) {
+  				smoothData[i - 2] = a;
+  				smoothData[i + 2] = a2;
+  				smoothData[i - 1] = _sqrt(x * x + y * y);
+  				smoothData[i + 3] = _sqrt(x2 * x2 + y2 * y2);
+  			}
+  			isSmooth.push(smooth, smooth, 0, 0, smooth, smooth);
+  		}
+  		//if the first and last points are identical, check to see if there's a smooth transition. We must handle this a bit differently due to their positions in the array.
+  		if (segment[l] === segment[0] && segment[l+1] === segment[1]) {
+  			x = segment[0] - segment[l-2];
+  			y = segment[1] - segment[l-1];
+  			x2 = segment[2] - segment[0];
+  			y2 = segment[3] - segment[1];
+  			a = _atan2(y, x);
+  			a2 = _atan2(y2, x2);
+  			if (Math.abs(a - a2) < 0.09) {
+  				smoothData[l-2] = a;
+  				smoothData[2] = a2;
+  				smoothData[l-1] = _sqrt(x * x + y * y);
+  				smoothData[3] = _sqrt(x2 * x2 + y2 * y2);
+  				isSmooth[l-2] = isSmooth[l-1] = true; //don't change indexes 2 and 3 because we'll trigger everything from the END, and this will optimize file size a bit.
+  			}
+  		}
+  	}
+  	return rawPath;
+  }
+  export function pointToScreen(svgElement, point) {
+  	if (arguments.length < 2) { //by default, take the first set of coordinates in the path as the point
+  		let rawPath = getRawPath(svgElement);
+  		point = svgElement.ownerSVGElement.createSVGPoint();
+  		point.x = rawPath[0][0];
+  		point.y = rawPath[0][1];
+  	}
+  	return point.matrixTransform(svgElement.getScreenCTM());
+  }
+
+  */
+
+  /*!
+   * MorphSVGPlugin 3.4.0
+   * https://greensock.com
+   *
+   * @license Copyright 2008-2020, GreenSock. All rights reserved.
+   * Subject to the terms at https://greensock.com/standard-license or for
+   * Club GreenSock members, the agreement issued with that membership.
+   * @author: Jack Doyle, jack@greensock.com
+  */
+
+  var gsap$1,
+      _toArray,
+      _lastLinkedAnchor,
+      _coreInitted$1,
+      PluginClass,
+      _getGSAP = function _getGSAP() {
+    return gsap$1 || typeof window !== "undefined" && (gsap$1 = window.gsap) && gsap$1.registerPlugin && gsap$1;
+  },
+      _isFunction$1 = function _isFunction(value) {
+    return typeof value === "function";
+  },
+      _atan2$1 = Math.atan2,
+      _cos$2 = Math.cos,
+      _sin$2 = Math.sin,
+      _sqrt$2 = Math.sqrt,
+      _PI = Math.PI,
+      _2PI$1 = _PI * 2,
+      _angleMin = _PI * 0.3,
+      _angleMax = _PI * 0.7,
+      _bigNum$2 = 1e20,
+      _numExp$1 = /[-+=\.]*\d+[\.e\-\+]*\d*[e\-\+]*\d*/gi,
+      //finds any numbers, including ones that start with += or -=, negative numbers, and ones in scientific notation like 1e-8.
+  _selectorExp$1 = /(^[#\.][a-z]|[a-y][a-z])/gi,
+      _commands = /[achlmqstvz]/ig,
+      _log = function _log(message) {
+    return console && console.warn(message);
+  },
+      _bonusValidated = 1,
+      //<name>MorphSVGPlugin</name>
+  _getAverageXY = function _getAverageXY(segment) {
+    var l = segment.length,
+        x = 0,
+        y = 0,
+        i;
+
+    for (i = 0; i < l; i++) {
+      x += segment[i++];
+      y += segment[i];
+    }
+
+    return [x / (l / 2), y / (l / 2)];
+  },
+      _getSize = function _getSize(segment) {
+    //rough estimate of the bounding box (based solely on the anchors) of a single segment. sets "size", "centerX", and "centerY" properties on the bezier array itself, and returns the size (width * height)
+    var l = segment.length,
+        xMax = segment[0],
+        xMin = xMax,
+        yMax = segment[1],
+        yMin = yMax,
+        x,
+        y,
+        i;
+
+    for (i = 6; i < l; i += 6) {
+      x = segment[i];
+      y = segment[i + 1];
+
+      if (x > xMax) {
+        xMax = x;
+      } else if (x < xMin) {
+        xMin = x;
+      }
+
+      if (y > yMax) {
+        yMax = y;
+      } else if (y < yMin) {
+        yMin = y;
+      }
+    }
+
+    segment.centerX = (xMax + xMin) / 2;
+    segment.centerY = (yMax + yMin) / 2;
+    return segment.size = (xMax - xMin) * (yMax - yMin);
+  },
+      _getTotalSize = function _getTotalSize(rawPath, samplesPerBezier) {
+    if (samplesPerBezier === void 0) {
+      samplesPerBezier = 3;
+    }
+
+    //rough estimate of the bounding box of the entire list of Bezier segments (based solely on the anchors). sets "size", "centerX", and "centerY" properties on the bezier array itself, and returns the size (width * height)
+    var j = rawPath.length,
+        xMax = rawPath[0][0],
+        xMin = xMax,
+        yMax = rawPath[0][1],
+        yMin = yMax,
+        inc = 1 / samplesPerBezier,
+        l,
+        x,
+        y,
+        i,
+        segment,
+        k,
+        t,
+        inv,
+        x1,
+        y1,
+        x2,
+        x3,
+        x4,
+        y2,
+        y3,
+        y4;
+
+    while (--j > -1) {
+      segment = rawPath[j];
+      l = segment.length;
+
+      for (i = 6; i < l; i += 6) {
+        x1 = segment[i];
+        y1 = segment[i + 1];
+        x2 = segment[i + 2] - x1;
+        y2 = segment[i + 3] - y1;
+        x3 = segment[i + 4] - x1;
+        y3 = segment[i + 5] - y1;
+        x4 = segment[i + 6] - x1;
+        y4 = segment[i + 7] - y1;
+        k = samplesPerBezier;
+
+        while (--k > -1) {
+          t = inc * k;
+          inv = 1 - t;
+          x = (t * t * x4 + 3 * inv * (t * x3 + inv * x2)) * t + x1;
+          y = (t * t * y4 + 3 * inv * (t * y3 + inv * y2)) * t + y1;
+
+          if (x > xMax) {
+            xMax = x;
+          } else if (x < xMin) {
+            xMin = x;
+          }
+
+          if (y > yMax) {
+            yMax = y;
+          } else if (y < yMin) {
+            yMin = y;
+          }
+        }
+      }
+    }
+
+    rawPath.centerX = (xMax + xMin) / 2;
+    rawPath.centerY = (yMax + yMin) / 2;
+    rawPath.left = xMin;
+    rawPath.width = xMax - xMin;
+    rawPath.top = yMin;
+    rawPath.height = yMax - yMin;
+    return rawPath.size = (xMax - xMin) * (yMax - yMin);
+  },
+      _sortByComplexity = function _sortByComplexity(a, b) {
+    return b.length - a.length;
+  },
+      _sortBySize = function _sortBySize(a, b) {
+    var sizeA = a.size || _getSize(a),
+        sizeB = b.size || _getSize(b);
+
+    return Math.abs(sizeB - sizeA) < (sizeA + sizeB) / 20 ? b.centerX - a.centerX || b.centerY - a.centerY : sizeB - sizeA; //if the size is within 10% of each other, prioritize position from left to right, then top to bottom.
+  },
+      _offsetSegment = function _offsetSegment(segment, shapeIndex) {
+    var a = segment.slice(0),
+        l = segment.length,
+        wrap = l - 2,
+        i,
+        index;
+    shapeIndex = shapeIndex | 0;
+
+    for (i = 0; i < l; i++) {
+      index = (i + shapeIndex) % wrap;
+      segment[i++] = a[index];
+      segment[i] = a[index + 1];
+    }
+  },
+      _getTotalMovement = function _getTotalMovement(sb, eb, shapeIndex, offsetX, offsetY) {
+    var l = sb.length,
+        d = 0,
+        wrap = l - 2,
+        index,
+        i,
+        x,
+        y;
+    shapeIndex *= 6;
+
+    for (i = 0; i < l; i += 6) {
+      index = (i + shapeIndex) % wrap;
+      y = sb[index] - (eb[i] - offsetX);
+      x = sb[index + 1] - (eb[i + 1] - offsetY);
+      d += _sqrt$2(x * x + y * y);
+    }
+
+    return d;
+  },
+      _getClosestShapeIndex = function _getClosestShapeIndex(sb, eb, checkReverse) {
+    //finds the index in a closed cubic bezier array that's closest to the angle provided (angle measured from the center or average x/y).
+    var l = sb.length,
+        sCenter = _getAverageXY(sb),
+        //when comparing distances, adjust the coordinates as if the shapes are centered with each other.
+    eCenter = _getAverageXY(eb),
+        offsetX = eCenter[0] - sCenter[0],
+        offsetY = eCenter[1] - sCenter[1],
+        min = _getTotalMovement(sb, eb, 0, offsetX, offsetY),
+        minIndex = 0,
+        copy,
+        d,
+        i;
+
+    for (i = 6; i < l; i += 6) {
+      d = _getTotalMovement(sb, eb, i / 6, offsetX, offsetY);
+
+      if (d < min) {
+        min = d;
+        minIndex = i;
+      }
+    }
+
+    if (checkReverse) {
+      copy = sb.slice(0);
+      reverseSegment(copy);
+
+      for (i = 6; i < l; i += 6) {
+        d = _getTotalMovement(copy, eb, i / 6, offsetX, offsetY);
+
+        if (d < min) {
+          min = d;
+          minIndex = -i;
+        }
+      }
+    }
+
+    return minIndex / 6;
+  },
+      _getClosestAnchor = function _getClosestAnchor(rawPath, x, y) {
+    //finds the x/y of the anchor that's closest to the provided x/y coordinate (returns an array, like [x, y]). The bezier should be the top-level type that contains an array for each segment.
+    var j = rawPath.length,
+        closestDistance = _bigNum$2,
+        closestX = 0,
+        closestY = 0,
+        segment,
+        dx,
+        dy,
+        d,
+        i,
+        l;
+
+    while (--j > -1) {
+      segment = rawPath[j];
+      l = segment.length;
+
+      for (i = 0; i < l; i += 6) {
+        dx = segment[i] - x;
+        dy = segment[i + 1] - y;
+        d = _sqrt$2(dx * dx + dy * dy);
+
+        if (d < closestDistance) {
+          closestDistance = d;
+          closestX = segment[i];
+          closestY = segment[i + 1];
+        }
+      }
+    }
+
+    return [closestX, closestY];
+  },
+      _getClosestSegment = function _getClosestSegment(bezier, pool, startIndex, sortRatio, offsetX, offsetY) {
+    //matches the bezier to the closest one in a pool (array) of beziers, assuming they are in order of size and we shouldn't drop more than 20% of the size, otherwise prioritizing location (total distance to the center). Extracts the segment out of the pool array and returns it.
+    var l = pool.length,
+        index = 0,
+        minSize = Math.min(bezier.size || _getSize(bezier), pool[startIndex].size || _getSize(pool[startIndex])) * sortRatio,
+        //limit things based on a percentage of the size of either the bezier or the next element in the array, whichever is smaller.
+    min = _bigNum$2,
+        cx = bezier.centerX + offsetX,
+        cy = bezier.centerY + offsetY,
+        size,
+        i,
+        dx,
+        dy,
+        d;
+
+    for (i = startIndex; i < l; i++) {
+      size = pool[i].size || _getSize(pool[i]);
+
+      if (size < minSize) {
+        break;
+      }
+
+      dx = pool[i].centerX - cx;
+      dy = pool[i].centerY - cy;
+      d = _sqrt$2(dx * dx + dy * dy);
+
+      if (d < min) {
+        index = i;
+        min = d;
+      }
+    }
+
+    d = pool[index];
+    pool.splice(index, 1);
+    return d;
+  },
+      _subdivideSegmentQty = function _subdivideSegmentQty(segment, quantity) {
+    var tally = 0,
+        max = 0.999999,
+        l = segment.length,
+        newPointsPerSegment = quantity / ((l - 2) / 6),
+        ax,
+        ay,
+        cp1x,
+        cp1y,
+        cp2x,
+        cp2y,
+        bx,
+        by,
+        x1,
+        y1,
+        x2,
+        y2,
+        i,
+        t;
+
+    for (i = 2; i < l; i += 6) {
+      tally += newPointsPerSegment;
+
+      while (tally > max) {
+        //compare with 0.99999 instead of 1 in order to prevent rounding errors
+        ax = segment[i - 2];
+        ay = segment[i - 1];
+        cp1x = segment[i];
+        cp1y = segment[i + 1];
+        cp2x = segment[i + 2];
+        cp2y = segment[i + 3];
+        bx = segment[i + 4];
+        by = segment[i + 5];
+        t = 1 / ((Math.floor(tally) || 1) + 1); //progress along the bezier (value between 0 and 1)
+
+        x1 = ax + (cp1x - ax) * t;
+        x2 = cp1x + (cp2x - cp1x) * t;
+        x1 += (x2 - x1) * t;
+        x2 += (cp2x + (bx - cp2x) * t - x2) * t;
+        y1 = ay + (cp1y - ay) * t;
+        y2 = cp1y + (cp2y - cp1y) * t;
+        y1 += (y2 - y1) * t;
+        y2 += (cp2y + (by - cp2y) * t - y2) * t;
+        segment.splice(i, 4, ax + (cp1x - ax) * t, //first control point
+        ay + (cp1y - ay) * t, x1, //second control point
+        y1, x1 + (x2 - x1) * t, //new fabricated anchor on line
+        y1 + (y2 - y1) * t, x2, //third control point
+        y2, cp2x + (bx - cp2x) * t, //fourth control point
+        cp2y + (by - cp2y) * t);
+        i += 6;
+        l += 6;
+        tally--;
+      }
+    }
+
+    return segment;
+  },
+      _equalizeSegmentQuantity = function _equalizeSegmentQuantity(start, end, shapeIndex, map, fillSafe) {
+    //returns an array of shape indexes, 1 for each segment.
+    var dif = end.length - start.length,
+        longer = dif > 0 ? end : start,
+        shorter = dif > 0 ? start : end,
+        added = 0,
+        sortMethod = map === "complexity" ? _sortByComplexity : _sortBySize,
+        sortRatio = map === "position" ? 0 : typeof map === "number" ? map : 0.8,
+        i = shorter.length,
+        shapeIndices = typeof shapeIndex === "object" && shapeIndex.push ? shapeIndex.slice(0) : [shapeIndex],
+        reverse = shapeIndices[0] === "reverse" || shapeIndices[0] < 0,
+        log = shapeIndex === "log",
+        eb,
+        sb,
+        b,
+        x,
+        y,
+        offsetX,
+        offsetY;
+
+    if (!shorter[0]) {
+      return;
+    }
+
+    if (longer.length > 1) {
+      start.sort(sortMethod);
+      end.sort(sortMethod);
+      offsetX = longer.size || _getTotalSize(longer); //ensures centerX and centerY are defined (used below).
+
+      offsetX = shorter.size || _getTotalSize(shorter);
+      offsetX = longer.centerX - shorter.centerX;
+      offsetY = longer.centerY - shorter.centerY;
+
+      if (sortMethod === _sortBySize) {
+        for (i = 0; i < shorter.length; i++) {
+          longer.splice(i, 0, _getClosestSegment(shorter[i], longer, i, sortRatio, offsetX, offsetY));
+        }
+      }
+    }
+
+    if (dif) {
+      if (dif < 0) {
+        dif = -dif;
+      }
+
+      if (longer[0].length > shorter[0].length) {
+        //since we use shorter[0] as the one to map the origination point of any brand new fabricated segments, do any subdividing first so that there are more points to choose from (if necessary)
+        _subdivideSegmentQty(shorter[0], (longer[0].length - shorter[0].length) / 6 | 0);
+      }
+
+      i = shorter.length;
+
+      while (added < dif) {
+        x = longer[i].size || _getSize(longer[i]); //just to ensure centerX and centerY are calculated which we use on the next line.
+
+        b = _getClosestAnchor(shorter, longer[i].centerX, longer[i].centerY);
+        x = b[0];
+        y = b[1];
+        shorter[i++] = [x, y, x, y, x, y, x, y];
+        shorter.totalPoints += 8;
+        added++;
+      }
+    }
+
+    for (i = 0; i < start.length; i++) {
+      eb = end[i];
+      sb = start[i];
+      dif = eb.length - sb.length;
+
+      if (dif < 0) {
+        _subdivideSegmentQty(eb, -dif / 6 | 0);
+      } else if (dif > 0) {
+        _subdivideSegmentQty(sb, dif / 6 | 0);
+      }
+
+      if (reverse && fillSafe !== false && !sb.reversed) {
+        reverseSegment(sb);
+      }
+
+      shapeIndex = shapeIndices[i] || shapeIndices[i] === 0 ? shapeIndices[i] : "auto";
+
+      if (shapeIndex) {
+        //if start shape is closed, find the closest point to the start/end, and re-organize the bezier points accordingly so that the shape morphs in a more intuitive way.
+        if (sb.closed || Math.abs(sb[0] - sb[sb.length - 2]) < 0.5 && Math.abs(sb[1] - sb[sb.length - 1]) < 0.5) {
+          if (shapeIndex === "auto" || shapeIndex === "log") {
+            shapeIndices[i] = shapeIndex = _getClosestShapeIndex(sb, eb, !i || fillSafe === false);
+
+            if (shapeIndex < 0) {
+              reverse = true;
+              reverseSegment(sb);
+              shapeIndex = -shapeIndex;
+            }
+
+            _offsetSegment(sb, shapeIndex * 6);
+          } else if (shapeIndex !== "reverse") {
+            if (i && shapeIndex < 0) {
+              //only happens if an array is passed as shapeIndex and a negative value is defined for an index beyond 0. Very rare, but helpful sometimes.
+              reverseSegment(sb);
+            }
+
+            _offsetSegment(sb, (shapeIndex < 0 ? -shapeIndex : shapeIndex) * 6);
+          } //otherwise, if it's not a closed shape, consider reversing it if that would make the overall travel less
+
+        } else if (!reverse && (shapeIndex === "auto" && Math.abs(eb[0] - sb[0]) + Math.abs(eb[1] - sb[1]) + Math.abs(eb[eb.length - 2] - sb[sb.length - 2]) + Math.abs(eb[eb.length - 1] - sb[sb.length - 1]) > Math.abs(eb[0] - sb[sb.length - 2]) + Math.abs(eb[1] - sb[sb.length - 1]) + Math.abs(eb[eb.length - 2] - sb[0]) + Math.abs(eb[eb.length - 1] - sb[1]) || shapeIndex % 2)) {
+          reverseSegment(sb);
+          shapeIndices[i] = -1;
+          reverse = true;
+        } else if (shapeIndex === "auto") {
+          shapeIndices[i] = 0;
+        } else if (shapeIndex === "reverse") {
+          shapeIndices[i] = -1;
+        }
+
+        if (sb.closed !== eb.closed) {
+          //if one is closed and one isn't, don't close either one otherwise the tweening will look weird (but remember, the beginning and final states will honor the actual values, so this only affects the inbetween state)
+          sb.closed = eb.closed = false;
+        }
+      }
+    }
+
+    if (log) {
+      _log("shapeIndex:[" + shapeIndices.join(",") + "]");
+    }
+
+    start.shapeIndex = shapeIndices;
+    return shapeIndices;
+  },
+      _pathFilter = function _pathFilter(a, shapeIndex, map, precompile, fillSafe) {
+    var start = stringToRawPath(a[0]),
+        end = stringToRawPath(a[1]);
+
+    if (!_equalizeSegmentQuantity(start, end, shapeIndex || shapeIndex === 0 ? shapeIndex : "auto", map, fillSafe)) {
+      return; //malformed path data or null target
+    }
+
+    a[0] = rawPathToString(start);
+    a[1] = rawPathToString(end);
+
+    if (precompile === "log" || precompile === true) {
+      _log('precompile:["' + a[0] + '","' + a[1] + '"]');
+    }
+  },
+      _offsetPoints = function _offsetPoints(text, offset) {
+    if (!offset) {
+      return text;
+    }
+
+    var a = text.match(_numExp$1) || [],
+        l = a.length,
+        s = "",
+        inc,
+        i,
+        j;
+
+    if (offset === "reverse") {
+      i = l - 1;
+      inc = -2;
+    } else {
+      i = ((parseInt(offset, 10) || 0) * 2 + 1 + l * 100) % l;
+      inc = 2;
+    }
+
+    for (j = 0; j < l; j += 2) {
+      s += a[i - 1] + "," + a[i] + " ";
+      i = (i + inc) % l;
+    }
+
+    return s;
+  },
+      //adds a certain number of points while maintaining the polygon/polyline shape (so that the start/end values can have a matching quantity of points to animate). Returns the revised string.
+  _equalizePointQuantity = function _equalizePointQuantity(a, quantity) {
+    var tally = 0,
+        x = parseFloat(a[0]),
+        y = parseFloat(a[1]),
+        s = x + "," + y + " ",
+        max = 0.999999,
+        newPointsPerSegment,
+        i,
+        l,
+        j,
+        factor,
+        nextX,
+        nextY;
+    l = a.length;
+    newPointsPerSegment = quantity * 0.5 / (l * 0.5 - 1);
+
+    for (i = 0; i < l - 2; i += 2) {
+      tally += newPointsPerSegment;
+      nextX = parseFloat(a[i + 2]);
+      nextY = parseFloat(a[i + 3]);
+
+      if (tally > max) {
+        //compare with 0.99999 instead of 1 in order to prevent rounding errors
+        factor = 1 / (Math.floor(tally) + 1);
+        j = 1;
+
+        while (tally > max) {
+          s += (x + (nextX - x) * factor * j).toFixed(2) + "," + (y + (nextY - y) * factor * j).toFixed(2) + " ";
+          tally--;
+          j++;
+        }
+      }
+
+      s += nextX + "," + nextY + " ";
+      x = nextX;
+      y = nextY;
+    }
+
+    return s;
+  },
+      _pointsFilter = function _pointsFilter(a) {
+    var startNums = a[0].match(_numExp$1) || [],
+        endNums = a[1].match(_numExp$1) || [],
+        dif = endNums.length - startNums.length;
+
+    if (dif > 0) {
+      a[0] = _equalizePointQuantity(startNums, dif);
+    } else {
+      a[1] = _equalizePointQuantity(endNums, -dif);
+    }
+  },
+      _buildPointsFilter = function _buildPointsFilter(shapeIndex) {
+    return !isNaN(shapeIndex) ? function (a) {
+      _pointsFilter(a);
+
+      a[1] = _offsetPoints(a[1], parseInt(shapeIndex, 10));
+    } : _pointsFilter;
+  },
+      _parseShape = function _parseShape(shape, forcePath, target) {
+    var isString = typeof shape === "string",
+        e,
+        type;
+
+    if (!isString || _selectorExp$1.test(shape) || (shape.match(_numExp$1) || []).length < 3) {
+      e = _toArray(shape)[0];
+
+      if (e) {
+        type = (e.nodeName + "").toUpperCase();
+
+        if (forcePath && type !== "PATH") {
+          //if we were passed an element (or selector text for an element) that isn't a path, convert it.
+          e = convertToPath(e, false);
+          type = "PATH";
+        }
+
+        shape = e.getAttribute(type === "PATH" ? "d" : "points") || "";
+
+        if (e === target) {
+          //if the shape matches the target element, the user wants to revert to the original which should have been stored in the data-original attribute
+          shape = e.getAttributeNS(null, "data-original") || shape;
+        }
+      } else {
+        _log("WARNING: invalid morph to: " + shape);
+
+        shape = false;
+      }
+    }
+
+    return shape;
+  },
+      //adds an "isSmooth" array to each segment and populates it with a boolean value indicating whether or not it's smooth (the control points have basically the same slope). For any smooth control points, it converts the coordinates into angle (x, in radians) and length (y) and puts them into the same index value in a smoothData array.
+  _populateSmoothData = function _populateSmoothData(rawPath, tolerance) {
+    var j = rawPath.length,
+        limit = 0.2 * (tolerance || 1),
+        smooth,
+        segment,
+        x,
+        y,
+        x2,
+        y2,
+        i,
+        l,
+        a,
+        a2,
+        isSmooth,
+        smoothData;
+
+    while (--j > -1) {
+      segment = rawPath[j];
+      isSmooth = segment.isSmooth = segment.isSmooth || [0, 0, 0, 0];
+      smoothData = segment.smoothData = segment.smoothData || [0, 0, 0, 0];
+      isSmooth.length = 4;
+      l = segment.length - 2;
+
+      for (i = 6; i < l; i += 6) {
+        x = segment[i] - segment[i - 2];
+        y = segment[i + 1] - segment[i - 1];
+        x2 = segment[i + 2] - segment[i];
+        y2 = segment[i + 3] - segment[i + 1];
+        a = _atan2$1(y, x);
+        a2 = _atan2$1(y2, x2);
+        smooth = Math.abs(a - a2) < limit;
+
+        if (smooth) {
+          smoothData[i - 2] = a;
+          smoothData[i + 2] = a2;
+          smoothData[i - 1] = _sqrt$2(x * x + y * y);
+          smoothData[i + 3] = _sqrt$2(x2 * x2 + y2 * y2);
+        }
+
+        isSmooth.push(smooth, smooth, 0, 0, smooth, smooth);
+      } //if the first and last points are identical, check to see if there's a smooth transition. We must handle this a bit differently due to their positions in the array.
+
+
+      if (segment[l] === segment[0] && segment[l + 1] === segment[1]) {
+        x = segment[0] - segment[l - 2];
+        y = segment[1] - segment[l - 1];
+        x2 = segment[2] - segment[0];
+        y2 = segment[3] - segment[1];
+        a = _atan2$1(y, x);
+        a2 = _atan2$1(y2, x2);
+
+        if (Math.abs(a - a2) < limit) {
+          smoothData[l - 2] = a;
+          smoothData[2] = a2;
+          smoothData[l - 1] = _sqrt$2(x * x + y * y);
+          smoothData[3] = _sqrt$2(x2 * x2 + y2 * y2);
+          isSmooth[l - 2] = isSmooth[l - 1] = true; //don't change indexes 2 and 3 because we'll trigger everything from the END, and this will optimize file size a bit.
+        }
+      }
+    }
+
+    return rawPath;
+  },
+      _parseOriginFactors = function _parseOriginFactors(v) {
+    var a = v.trim().split(" "),
+        x = ~v.indexOf("left") ? 0 : ~v.indexOf("right") ? 100 : isNaN(parseFloat(a[0])) ? 50 : parseFloat(a[0]),
+        y = ~v.indexOf("top") ? 0 : ~v.indexOf("bottom") ? 100 : isNaN(parseFloat(a[1])) ? 50 : parseFloat(a[1]);
+    return {
+      x: x / 100,
+      y: y / 100
+    };
+  },
+      _shortAngle = function _shortAngle(dif) {
+    return dif !== dif % _PI ? dif + (dif < 0 ? _2PI$1 : -_2PI$1) : dif;
+  },
+      _morphMessage = "Use MorphSVGPlugin.convertToPath() to convert to a path before morphing.",
+      _tweenRotation = function _tweenRotation(start, end, i, linkedPT) {
+    var so = this._origin,
+        //starting origin
+    eo = this._eOrigin,
+        //ending origin
+    dx = start[i] - so.x,
+        dy = start[i + 1] - so.y,
+        d = _sqrt$2(dx * dx + dy * dy),
+        //length from starting origin to starting point
+    sa = _atan2$1(dy, dx),
+        angleDif,
+        _short;
+
+    dx = end[i] - eo.x;
+    dy = end[i + 1] - eo.y;
+    angleDif = _atan2$1(dy, dx) - sa;
+    _short = _shortAngle(angleDif); //in the case of control points, we ALWAYS link them to their anchor so that they don't get torn apart and rotate the opposite direction. If it's not a control point, we look at the most recently linked point as long as they're within a certain rotational range of each other.
+
+    if (!linkedPT && _lastLinkedAnchor && Math.abs(_short + _lastLinkedAnchor.ca) < _angleMin) {
+      linkedPT = _lastLinkedAnchor;
+    }
+
+    return this._anchorPT = _lastLinkedAnchor = {
+      _next: this._anchorPT,
+      t: start,
+      sa: sa,
+      //starting angle
+      ca: linkedPT && _short * linkedPT.ca < 0 && Math.abs(_short) > _angleMax ? angleDif : _short,
+      //change in angle
+      sl: d,
+      //starting length
+      cl: _sqrt$2(dx * dx + dy * dy) - d,
+      //change in length
+      i: i
+    };
+  },
+      _initCore$1 = function _initCore(required) {
+    gsap$1 = _getGSAP();
+    PluginClass = PluginClass || gsap$1 && gsap$1.plugins.morphSVG;
+
+    if (gsap$1 && PluginClass) {
+      _toArray = gsap$1.utils.toArray;
+      PluginClass.prototype._tweenRotation = _tweenRotation;
+      _coreInitted$1 = 1;
+    } else if (required) {
+      _log("Please gsap.registerPlugin(MorphSVGPlugin)");
+    }
+  };
+
+  var MorphSVGPlugin = {
+    version: "3.4.0",
+    name: "morphSVG",
+    rawVars: 1,
+    // otherwise "render" would be interpreted as a function-based value.
+    register: function register(core, Plugin) {
+      gsap$1 = core;
+      PluginClass = Plugin;
+
+      _initCore$1();
+    },
+    init: function init(target, value, tween, index, targets) {
+      _coreInitted$1 || _initCore$1(1);
+
+      if (!value) {
+        _log("invalid shape");
+
+        return false;
+      }
+
+      _isFunction$1(value) && (value = value.call(tween, index, target, targets));
+      var type, p, pt, shape, isPoly, shapeIndex, map, startSmooth, endSmooth, start, end, i, j, l, startSeg, endSeg, precompiled, sData, eData, originFactors, useRotation, offset;
+
+      if (typeof value === "string" || value.getBBox || value[0]) {
+        value = {
+          shape: value
+        };
+      } else if (typeof value === "object") {
+        // if there are any function-based values, parse them here (and make a copy of the object so we're not modifying the original)
+        type = {};
+
+        for (p in value) {
+          type[p] = _isFunction$1(value[p]) && p !== "render" ? value[p].call(tween, index, target, targets) : value[p];
+        }
+
+        value = type;
+      }
+
+      var cs = target.nodeType ? window.getComputedStyle(target) : {},
+          fill = cs.fill + "",
+          fillSafe = !(fill === "none" || (fill.match(_numExp$1) || [])[3] === "0" || cs.fillRule === "evenodd"),
+          origins = (value.origin || "50 50").split(",");
+      type = (target.nodeName + "").toUpperCase();
+      isPoly = type === "POLYLINE" || type === "POLYGON";
+
+      if (type !== "PATH" && !isPoly && !value.prop) {
+        _log("Cannot morph a <" + type + "> element. " + _morphMessage);
+
+        return false;
+      }
+
+      p = type === "PATH" ? "d" : "points";
+
+      if (!value.prop && !_isFunction$1(target.setAttribute)) {
+        return false;
+      }
+
+      shape = _parseShape(value.shape || value.d || value.points || "", p === "d", target);
+
+      if (isPoly && _commands.test(shape)) {
+        _log("A <" + type + "> cannot accept path data. " + _morphMessage);
+
+        return false;
+      }
+
+      shapeIndex = value.shapeIndex || value.shapeIndex === 0 ? value.shapeIndex : "auto";
+      map = value.map || MorphSVGPlugin.defaultMap;
+      this._prop = value.prop;
+      this._render = value.render || MorphSVGPlugin.defaultRender;
+      this._apply = "updateTarget" in value ? value.updateTarget : MorphSVGPlugin.defaultUpdateTarget;
+      this._rnd = Math.pow(10, isNaN(value.precision) ? 2 : +value.precision);
+      this._tween = tween;
+
+      if (shape) {
+        this._target = target;
+        precompiled = typeof value.precompile === "object";
+        start = this._prop ? target[this._prop] : target.getAttribute(p);
+
+        if (!this._prop && !target.getAttributeNS(null, "data-original")) {
+          target.setAttributeNS(null, "data-original", start); //record the original state in a data-original attribute so that we can revert to it later.
+        }
+
+        if (p === "d" || this._prop) {
+          start = stringToRawPath(precompiled ? value.precompile[0] : start);
+          end = stringToRawPath(precompiled ? value.precompile[1] : shape);
+
+          if (!precompiled && !_equalizeSegmentQuantity(start, end, shapeIndex, map, fillSafe)) {
+            return false; //malformed path data or null target
+          }
+
+          if (value.precompile === "log" || value.precompile === true) {
+            _log('precompile:["' + rawPathToString(start) + '","' + rawPathToString(end) + '"]');
+          }
+
+          useRotation = (value.type || MorphSVGPlugin.defaultType) !== "linear";
+
+          if (useRotation) {
+            start = _populateSmoothData(start, value.smoothTolerance);
+            end = _populateSmoothData(end, value.smoothTolerance);
+
+            if (!start.size) {
+              _getTotalSize(start); //adds top/left/width/height values
+
+            }
+
+            if (!end.size) {
+              _getTotalSize(end);
+            }
+
+            originFactors = _parseOriginFactors(origins[0]);
+            this._origin = start.origin = {
+              x: start.left + originFactors.x * start.width,
+              y: start.top + originFactors.y * start.height
+            };
+
+            if (origins[1]) {
+              originFactors = _parseOriginFactors(origins[1]);
+            }
+
+            this._eOrigin = {
+              x: end.left + originFactors.x * end.width,
+              y: end.top + originFactors.y * end.height
+            };
+          }
+
+          this._rawPath = target._gsRawPath = start;
+          j = start.length;
+
+          while (--j > -1) {
+            startSeg = start[j];
+            endSeg = end[j];
+            startSmooth = startSeg.isSmooth || [];
+            endSmooth = endSeg.isSmooth || [];
+            l = startSeg.length;
+            _lastLinkedAnchor = 0; //reset; we use _lastLinkedAnchor in the _tweenRotation() method to help make sure that close points don't get ripped apart and rotate opposite directions. Typically we want to go the shortest direction, but if the previous anchor is going a different direction, we override this logic (within certain thresholds)
+
+            for (i = 0; i < l; i += 2) {
+              if (endSeg[i] !== startSeg[i] || endSeg[i + 1] !== startSeg[i + 1]) {
+                if (useRotation) {
+                  if (startSmooth[i] && endSmooth[i]) {
+                    //if BOTH starting and ending values are smooth (meaning control points have basically the same slope), interpolate the rotation and length instead of the coordinates (this is what makes things smooth).
+                    sData = startSeg.smoothData;
+                    eData = endSeg.smoothData;
+                    offset = i + (i === l - 4 ? 7 - l : 5); //helps us accommodate wrapping (like if the end and start anchors are identical and the control points are smooth).
+
+                    this._controlPT = {
+                      _next: this._controlPT,
+                      i: i,
+                      j: j,
+                      l1s: sData[i + 1],
+                      l1c: eData[i + 1] - sData[i + 1],
+                      l2s: sData[offset],
+                      l2c: eData[offset] - sData[offset]
+                    };
+                    pt = this._tweenRotation(startSeg, endSeg, i + 2);
+
+                    this._tweenRotation(startSeg, endSeg, i, pt);
+
+                    this._tweenRotation(startSeg, endSeg, offset - 1, pt);
+
+                    i += 4;
+                  } else {
+                    this._tweenRotation(startSeg, endSeg, i);
+                  }
+                } else {
+                  pt = this.add(startSeg, i, startSeg[i], endSeg[i]);
+                  pt = this.add(startSeg, i + 1, startSeg[i + 1], endSeg[i + 1]) || pt;
+                }
+              }
+            }
+          }
+        } else {
+          pt = this.add(target, "setAttribute", target.getAttribute(p) + "", shape + "", index, targets, 0, _buildPointsFilter(shapeIndex), p);
+        }
+
+        if (useRotation) {
+          this.add(this._origin, "x", this._origin.x, this._eOrigin.x);
+          pt = this.add(this._origin, "y", this._origin.y, this._eOrigin.y);
+        }
+
+        if (pt) {
+          this._props.push("morphSVG");
+
+          pt.end = shape;
+          pt.endProp = p;
+        }
+      }
+
+      return _bonusValidated;
+    },
+    render: function render(ratio, data) {
+      var rawPath = data._rawPath,
+          controlPT = data._controlPT,
+          anchorPT = data._anchorPT,
+          rnd = data._rnd,
+          target = data._target,
+          pt = data._pt,
+          s,
+          space,
+          easeInOut,
+          segment,
+          l,
+          angle,
+          i,
+          j,
+          x,
+          y,
+          sin,
+          cos,
+          offset;
+
+      while (pt) {
+        pt.r(ratio, pt.d);
+        pt = pt._next;
+      }
+
+      if (ratio === 1 && data._apply) {
+        pt = data._pt;
+
+        while (pt) {
+          if (pt.end) {
+            if (data._prop) {
+              target[data._prop] = pt.end;
+            } else {
+              target.setAttribute(pt.endProp, pt.end); //make sure the end value is exactly as specified (in case we had to add fabricated points during the tween)
+            }
+          }
+
+          pt = pt._next;
+        }
+      } else if (rawPath) {
+        //rotationally position the anchors
+        while (anchorPT) {
+          angle = anchorPT.sa + ratio * anchorPT.ca;
+          l = anchorPT.sl + ratio * anchorPT.cl; //length
+
+          anchorPT.t[anchorPT.i] = data._origin.x + _cos$2(angle) * l;
+          anchorPT.t[anchorPT.i + 1] = data._origin.y + _sin$2(angle) * l;
+          anchorPT = anchorPT._next;
+        } //smooth out the control points
+
+
+        easeInOut = ratio < 0.5 ? 2 * ratio * ratio : (4 - 2 * ratio) * ratio - 1;
+
+        while (controlPT) {
+          i = controlPT.i;
+          segment = rawPath[controlPT.j];
+          offset = i + (i === segment.length - 4 ? 7 - segment.length : 5); //accommodates wrapping around of smooth points, like if the start and end anchors are on top of each other and their handles are smooth.
+
+          angle = _atan2$1(segment[offset] - segment[i + 1], segment[offset - 1] - segment[i]); //average the angles
+
+          sin = _sin$2(angle);
+          cos = _cos$2(angle);
+          x = segment[i + 2];
+          y = segment[i + 3];
+          l = controlPT.l1s + easeInOut * controlPT.l1c; //length
+
+          segment[i] = x - cos * l;
+          segment[i + 1] = y - sin * l;
+          l = controlPT.l2s + easeInOut * controlPT.l2c;
+          segment[offset - 1] = x + cos * l;
+          segment[offset] = y + sin * l;
+          controlPT = controlPT._next;
+        }
+
+        target._gsRawPath = rawPath;
+
+        if (data._apply) {
+          s = "";
+          space = " ";
+
+          for (j = 0; j < rawPath.length; j++) {
+            segment = rawPath[j];
+            l = segment.length;
+            s += "M" + (segment[0] * rnd | 0) / rnd + space + (segment[1] * rnd | 0) / rnd + " C";
+
+            for (i = 2; i < l; i++) {
+              //this is actually faster than just doing a join() on the array, possibly because the numbers have so many decimal places
+              s += (segment[i] * rnd | 0) / rnd + space;
+            }
+          }
+
+          if (data._prop) {
+            target[data._prop] = s;
+          } else {
+            target.setAttribute("d", s);
+          }
+        }
+      }
+
+      data._render && rawPath && data._render.call(data._tween, rawPath, target);
+    },
+    kill: function kill(property) {
+      this._pt = this._rawPath = 0;
+    },
+    getRawPath: getRawPath,
+    stringToRawPath: stringToRawPath,
+    rawPathToString: rawPathToString,
+    pathFilter: _pathFilter,
+    pointsFilter: _pointsFilter,
+    getTotalSize: _getTotalSize,
+    equalizeSegmentQuantity: _equalizeSegmentQuantity,
+    convertToPath: function convertToPath$1(targets, swap) {
+      return _toArray(targets).map(function (target) {
+        return convertToPath(target, swap !== false);
+      });
+    },
+    defaultType: "linear",
+    defaultUpdateTarget: true,
+    defaultMap: "size"
+  };
+  _getGSAP() && gsap$1.registerPlugin(MorphSVGPlugin);
+
   var gsapWithCSS = gsap.registerPlugin(CSSPlugin) || gsap, // to protect from tree shaking
   	TweenMaxWithCSS = gsapWithCSS.core.Tween;
 
@@ -10992,19 +12682,19 @@
   */
   /* eslint-disable */
 
-  let _svgPathExp = /[achlmqstvz]|(-?\d*\.?\d*(?:e[\-+]?\d+)?)[0-9]/ig,
-  	_numbersExp = /(?:(-)?\d*\.?\d*(?:e[\-+]?\d+)?)[0-9]/ig,
-  	_scientific = /[\+\-]?\d*\.?\d+e[\+\-]?\d+/ig,
-  	_selectorExp = /(^[#\.][a-z]|[a-y][a-z])/i,
-  	_DEG2RAD$1 = Math.PI / 180,
-  	_sin$1 = Math.sin,
-  	_cos$1 = Math.cos,
-  	_abs = Math.abs,
-  	_sqrt$1 = Math.sqrt,
-  	_isString$1 = value => typeof(value) === "string",
-  	_isNumber$1 = value => typeof(value) === "number",
-  	_roundingNum = 1e5,
-  	_round$1 = value => (Math.round(value * _roundingNum) / _roundingNum) || 0;
+  let _svgPathExp$1 = /[achlmqstvz]|(-?\d*\.?\d*(?:e[\-+]?\d+)?)[0-9]/ig,
+  	_numbersExp$1 = /(?:(-)?\d*\.?\d*(?:e[\-+]?\d+)?)[0-9]/ig,
+  	_scientific$1 = /[\+\-]?\d*\.?\d+e[\+\-]?\d+/ig,
+  	_selectorExp$2 = /(^[#\.][a-z]|[a-y][a-z])/i,
+  	_DEG2RAD$2 = Math.PI / 180,
+  	_sin$3 = Math.sin,
+  	_cos$3 = Math.cos,
+  	_abs$1 = Math.abs,
+  	_sqrt$3 = Math.sqrt,
+  	_isString$2 = value => typeof(value) === "string",
+  	_isNumber$2 = value => typeof(value) === "number",
+  	_roundingNum$1 = 1e5,
+  	_round$2 = value => (Math.round(value * _roundingNum$1) / _roundingNum$1) || 0;
 
   /* TERMINOLOGY
    - RawPath - an array of arrays, one for each Segment. A single RawPath could have multiple "M" commands, defining Segments (paths aren't always connected).
@@ -11014,8 +12704,8 @@
    */
 
   //accepts basic selector text, a path instance, a RawPath instance, or a Segment and returns a RawPath (makes it easy to homogenize things). If an element or selector text is passed in, it'll also cache the value so that if it's queried again, it'll just take the path data from there instead of parsing it all over again (as long as the path data itself hasn't changed - it'll check).
-  function getRawPath(value) {
-  	value = (_isString$1(value) && _selectorExp.test(value)) ? document.querySelector(value) || value : value;
+  function getRawPath$1(value) {
+  	value = (_isString$2(value) && _selectorExp$2.test(value)) ? document.querySelector(value) || value : value;
   	let e = value.getAttribute ? value : 0,
   		rawPath;
   	if (e && (value = value.getAttribute("d"))) {
@@ -11024,12 +12714,12 @@
   			e._gsPath = {};
   		}
   		rawPath = e._gsPath[value];
-  		return (rawPath && !rawPath._dirty) ? rawPath : (e._gsPath[value] = stringToRawPath(value));
+  		return (rawPath && !rawPath._dirty) ? rawPath : (e._gsPath[value] = stringToRawPath$1(value));
   	}
-  	return !value ? console.warn("Expecting a <path> element or an SVG path data string") : _isString$1(value) ? stringToRawPath(value) : (_isNumber$1(value[0])) ? [value] : value;
+  	return !value ? console.warn("Expecting a <path> element or an SVG path data string") : _isString$2(value) ? stringToRawPath$1(value) : (_isNumber$2(value[0])) ? [value] : value;
   }
 
-  function reverseSegment(segment) {
+  function reverseSegment$1(segment) {
   	let i = 0,
   		y;
   	segment.reverse(); //this will invert the order y, x, y, x so we must flip it back.
@@ -11043,7 +12733,7 @@
 
 
 
-  let _createPath = (e, ignore) => {
+  let _createPath$1 = (e, ignore) => {
   		let path = document.createElementNS("http://www.w3.org/2000/svg", "path"),
   			attr = [].slice.call(e.attributes),
   			i = attr.length,
@@ -11057,13 +12747,13 @@
   		}
   		return path;
   	},
-  	_typeAttrs = {
+  	_typeAttrs$1 = {
   		rect:"rx,ry,x,y,width,height",
   		circle:"r,cx,cy",
   		ellipse:"rx,ry,cx,cy",
   		line:"x1,x2,y1,y2"
   	},
-  	_attrToObj = (e, attrs) => {
+  	_attrToObj$1 = (e, attrs) => {
   		let props = attrs ? attrs.split(",") : [],
   			obj = {},
   			i = props.length;
@@ -11074,15 +12764,15 @@
   	};
 
   //converts an SVG shape like <circle>, <rect>, <polygon>, <polyline>, <ellipse>, etc. to a <path>, swapping it in and copying the attributes to match.
-  function convertToPath(element, swap) {
+  function convertToPath$1(element, swap) {
   	let type = element.tagName.toLowerCase(),
   		circ = 0.552284749831,
   		data, x, y, r, ry, path, rcirc, rycirc, points, w, h, x2, x3, x4, x5, x6, y2, y3, y4, y5, y6, attr;
   	if (type === "path" || !element.getBBox) {
   		return element;
   	}
-  	path = _createPath(element, "x,y,width,height,cx,cy,rx,ry,r,x1,x2,y1,y2,points");
-  	attr = _attrToObj(element, _typeAttrs[type]);
+  	path = _createPath$1(element, "x,y,width,height,cx,cy,rx,ry,r,x1,x2,y1,y2,points");
+  	attr = _attrToObj$1(element, _typeAttrs$1[type]);
   	if (type === "rect") {
   		r = attr.rx;
   		ry = attr.ry || r;
@@ -11122,7 +12812,7 @@
   	} else if (type === "line") {
   		data = "M" + attr.x1 + "," + attr.y1 + " L" + attr.x2 + "," + attr.y2; //previously, we just converted to "Mx,y Lx,y" but Safari has bugs that cause that not to render properly when using a stroke-dasharray that's not fully visible! Using a cubic bezier fixes that issue.
   	} else if (type === "polyline" || type === "polygon") {
-  		points = (element.getAttribute("points") + "").match(_numbersExp) || [];
+  		points = (element.getAttribute("points") + "").match(_numbersExp$1) || [];
   		x = points.shift();
   		y = points.shift();
   		data = "M" + x + "," + y + " L" + points.join(",");
@@ -11130,7 +12820,7 @@
   			data += "," + x + "," + y + "z";
   		}
   	}
-  	path.setAttribute("d", rawPathToString(path._gsRawPath = stringToRawPath(data)));
+  	path.setAttribute("d", rawPathToString$1(path._gsRawPath = stringToRawPath$1(data)));
   	if (swap && element.parentNode) {
   		element.parentNode.insertBefore(path, element);
   		element.parentNode.removeChild(element);
@@ -11141,15 +12831,15 @@
 
 
   // translates SVG arc data into a segment (cubic beziers). Angle is in degrees.
-  function arcToSegment(lastX, lastY, rx, ry, angle, largeArcFlag, sweepFlag, x, y) {
+  function arcToSegment$1(lastX, lastY, rx, ry, angle, largeArcFlag, sweepFlag, x, y) {
   	if (lastX === x && lastY === y) {
   		return;
   	}
-  	rx = _abs(rx);
-  	ry = _abs(ry);
-  	let angleRad = (angle % 360) * _DEG2RAD$1,
-  		cosAngle = _cos$1(angleRad),
-  		sinAngle = _sin$1(angleRad),
+  	rx = _abs$1(rx);
+  	ry = _abs$1(ry);
+  	let angleRad = (angle % 360) * _DEG2RAD$2,
+  		cosAngle = _cos$3(angleRad),
+  		sinAngle = _sin$3(angleRad),
   		PI = Math.PI,
   		TWOPI = PI * 2,
   		dx2 = (lastX - x) / 2,
@@ -11160,8 +12850,8 @@
   		y1_sq = y1 * y1,
   		radiiCheck = x1_sq / (rx * rx) + y1_sq / (ry * ry);
   	if (radiiCheck > 1) {
-  		rx = _sqrt$1(radiiCheck) * rx;
-  		ry = _sqrt$1(radiiCheck) * ry;
+  		rx = _sqrt$3(radiiCheck) * rx;
+  		ry = _sqrt$3(radiiCheck) * ry;
   	}
   	let rx_sq = rx * rx,
   		ry_sq = ry * ry,
@@ -11169,7 +12859,7 @@
   	if (sq < 0) {
   		sq = 0;
   	}
-  	let coef = ((largeArcFlag === sweepFlag) ? -1 : 1) * _sqrt$1(sq),
+  	let coef = ((largeArcFlag === sweepFlag) ? -1 : 1) * _sqrt$3(sq),
   		cx1 = coef * ((rx * y1) / ry),
   		cy1 = coef * -((ry * x1) / rx),
   		sx2 = (lastX + x) / 2,
@@ -11181,8 +12871,8 @@
   		vx = (-x1 - cx1) / rx,
   		vy = (-y1 - cy1) / ry,
   		temp = ux * ux + uy * uy,
-  		angleStart = ((uy < 0) ? -1 : 1) * Math.acos(ux / _sqrt$1(temp)),
-  		angleExtent = ((ux * vy - uy * vx < 0) ? -1 : 1) * Math.acos((ux * vx + uy * vy) / _sqrt$1(temp * (vx * vx + vy * vy)));
+  		angleStart = ((uy < 0) ? -1 : 1) * Math.acos(ux / _sqrt$3(temp)),
+  		angleExtent = ((ux * vy - uy * vx < 0) ? -1 : 1) * Math.acos((ux * vx + uy * vy) / _sqrt$3(temp * (vx * vx + vy * vy)));
   	isNaN(angleExtent) && (angleExtent = PI); //rare edge case. Math.cos(-1) is NaN.
   	if (!sweepFlag && angleExtent > 0) {
   		angleExtent -= TWOPI;
@@ -11191,10 +12881,10 @@
   	}
   	angleStart %= TWOPI;
   	angleExtent %= TWOPI;
-  	let segments = Math.ceil(_abs(angleExtent) / (TWOPI / 4)),
+  	let segments = Math.ceil(_abs$1(angleExtent) / (TWOPI / 4)),
   		rawPath = [],
   		angleIncrement = angleExtent / segments,
-  		controlLength = 4 / 3 * _sin$1(angleIncrement / 2) / (1 + _cos$1(angleIncrement / 2)),
+  		controlLength = 4 / 3 * _sin$3(angleIncrement / 2) / (1 + _cos$3(angleIncrement / 2)),
   		ma = cosAngle * rx,
   		mb = sinAngle * rx,
   		mc = sinAngle * -ry,
@@ -11202,10 +12892,10 @@
   		i;
   	for (i = 0; i < segments; i++) {
   		angle = angleStart + i * angleIncrement;
-  		x1 = _cos$1(angle);
-  		y1 = _sin$1(angle);
-  		ux = _cos$1(angle += angleIncrement);
-  		uy = _sin$1(angle);
+  		x1 = _cos$3(angle);
+  		y1 = _sin$3(angle);
+  		ux = _cos$3(angle += angleIncrement);
+  		uy = _sin$3(angle);
   		rawPath.push(x1 - controlLength * y1, y1 + controlLength * x1, ux + controlLength * uy, uy - controlLength * ux, ux, uy);
   	}
   	//now transform according to the actual size of the ellipse/arc (the beziers were noramlized, between 0 and 1 on a circle).
@@ -11221,8 +12911,8 @@
   }
 
   //Spits back a RawPath with absolute coordinates. Each segment starts with a "moveTo" command (x coordinate, then y) and then 2 control points (x, y, x, y), then anchor. The goal is to minimize memory and maximize speed.
-  function stringToRawPath(d) {
-  	let a = (d + "").replace(_scientific, m => { let n = +m; return (n < 0.0001 && n > -0.0001) ? 0 : n; }).match(_svgPathExp) || [], //some authoring programs spit out very small numbers in scientific notation like "1e-5", so make sure we round that down to 0 first.
+  function stringToRawPath$1(d) {
+  	let a = (d + "").replace(_scientific$1, m => { let n = +m; return (n < 0.0001 && n > -0.0001) ? 0 : n; }).match(_svgPathExp$1) || [], //some authoring programs spit out very small numbers in scientific notation like "1e-5", so make sure we round that down to 0 first.
   		path = [],
   		relativeX = 0,
   		relativeY = 0,
@@ -11338,7 +13028,7 @@
   				y = startY;
   				segment.closed = true;
   			}
-  			if (command === "L" || _abs(relativeX - x) > 0.5 || _abs(relativeY - y) > 0.5) {
+  			if (command === "L" || _abs$1(relativeX - x) > 0.5 || _abs$1(relativeY - y) > 0.5) {
   				line(relativeX, relativeY, x, y);
   				if (command === "L") {
   					i += 2;
@@ -11367,7 +13057,7 @@
   				flag2 = flag1.charAt(1);
   				flag1 = flag1.charAt(0);
   			}
-  			beziers = arcToSegment(relativeX, relativeY, +a[i+1], +a[i+2], +a[i+3], +flag1, +flag2, (isRelative ? relativeX : 0) + difX*1, (isRelative ? relativeY : 0) + difY*1);
+  			beziers = arcToSegment$1(relativeX, relativeY, +a[i+1], +a[i+2], +a[i+3], +flag1, +flag2, (isRelative ? relativeX : 0) + difX*1, (isRelative ? relativeY : 0) + difY*1);
   			i += j;
   			if (beziers) {
   				for (j = 0; j < beziers.length; j++) {
@@ -11400,8 +13090,8 @@
 
   Note: all numbers are rounded down to the closest 0.001 to minimize memory, maximize speed, and avoid odd numbers like 1e-13
   */
-  function rawPathToString(rawPath) {
-  	if (_isNumber$1(rawPath[0])) { //in case a segment is passed in instead
+  function rawPathToString$1(rawPath) {
+  	if (_isNumber$2(rawPath[0])) { //in case a segment is passed in instead
   		rawPath = [rawPath];
   	}
   	let result = "",
@@ -11409,10 +13099,10 @@
   		sl, s, i, segment;
   	for (s = 0; s < l; s++) {
   		segment = rawPath[s];
-  		result += "M" + _round$1(segment[0]) + "," + _round$1(segment[1]) + " C";
+  		result += "M" + _round$2(segment[0]) + "," + _round$2(segment[1]) + " C";
   		sl = segment.length;
   		for (i = 2; i < sl; i++) {
-  			result += _round$1(segment[i++]) + "," + _round$1(segment[i++]) + " " + _round$1(segment[i++]) + "," + _round$1(segment[i++]) + " " + _round$1(segment[i++]) + "," + _round$1(segment[i]) + " ";
+  			result += _round$2(segment[i++]) + "," + _round$2(segment[i++]) + " " + _round$2(segment[i++]) + "," + _round$2(segment[i++]) + " " + _round$2(segment[i++]) + "," + _round$2(segment[i]) + " ";
   		}
   		if (segment.closed) {
   			result += "z";
@@ -11525,24 +13215,24 @@
    * @author: Jack Doyle, jack@greensock.com
   */
 
-  let gsap$1, _toArray, _lastLinkedAnchor, _coreInitted$1, PluginClass,
-  	_getGSAP = () => gsap$1 || (typeof(window) !== "undefined" && (gsap$1 = window.gsap) && gsap$1.registerPlugin && gsap$1),
-  	_isFunction$1 = value => typeof(value) === "function",
-  	_atan2$1 = Math.atan2,
-  	_cos$2 = Math.cos,
-  	_sin$2 = Math.sin,
-  	_sqrt$2 = Math.sqrt,
-  	_PI = Math.PI,
-  	_2PI$1 = _PI * 2,
-  	_angleMin = _PI * 0.3,
-  	_angleMax = _PI * 0.7,
-  	_bigNum$2 = 1e20,
-  	_numExp$1 = /[-+=\.]*\d+[\.e\-\+]*\d*[e\-\+]*\d*/gi, //finds any numbers, including ones that start with += or -=, negative numbers, and ones in scientific notation like 1e-8.
-  	_selectorExp$1 = /(^[#\.][a-z]|[a-y][a-z])/gi,
-  	_commands = /[achlmqstvz]/ig,
-  	_log = message => console && console.warn(message),
-  	_bonusValidated = 1, //<name>MorphSVGPlugin</name>
-  	_getAverageXY = segment => {
+  let gsap$2, _toArray$1, _lastLinkedAnchor$1, _coreInitted$2, PluginClass$1,
+  	_getGSAP$1 = () => gsap$2 || (typeof(window) !== "undefined" && (gsap$2 = window.gsap) && gsap$2.registerPlugin && gsap$2),
+  	_isFunction$2 = value => typeof(value) === "function",
+  	_atan2$2 = Math.atan2,
+  	_cos$4 = Math.cos,
+  	_sin$4 = Math.sin,
+  	_sqrt$4 = Math.sqrt,
+  	_PI$1 = Math.PI,
+  	_2PI$2 = _PI$1 * 2,
+  	_angleMin$1 = _PI$1 * 0.3,
+  	_angleMax$1 = _PI$1 * 0.7,
+  	_bigNum$3 = 1e20,
+  	_numExp$2 = /[-+=\.]*\d+[\.e\-\+]*\d*[e\-\+]*\d*/gi, //finds any numbers, including ones that start with += or -=, negative numbers, and ones in scientific notation like 1e-8.
+  	_selectorExp$3 = /(^[#\.][a-z]|[a-y][a-z])/gi,
+  	_commands$1 = /[achlmqstvz]/ig,
+  	_log$1 = message => console && console.warn(message),
+  	_bonusValidated$1 = 1, //<name>MorphSVGPlugin</name>
+  	_getAverageXY$1 = segment => {
   		let l = segment.length,
   			x = 0,
   			y = 0,
@@ -11553,7 +13243,7 @@
   		}
   		return [x / (l / 2), y / (l / 2)];
   	},
-  	_getSize = segment => { //rough estimate of the bounding box (based solely on the anchors) of a single segment. sets "size", "centerX", and "centerY" properties on the bezier array itself, and returns the size (width * height)
+  	_getSize$1 = segment => { //rough estimate of the bounding box (based solely on the anchors) of a single segment. sets "size", "centerX", and "centerY" properties on the bezier array itself, and returns the size (width * height)
   		let l = segment.length,
   			xMax = segment[0],
   			xMin = xMax,
@@ -11578,7 +13268,7 @@
   		segment.centerY = (yMax + yMin) / 2;
   		return (segment.size = (xMax - xMin) * (yMax - yMin));
   	},
-  	_getTotalSize = (rawPath, samplesPerBezier = 3) => { //rough estimate of the bounding box of the entire list of Bezier segments (based solely on the anchors). sets "size", "centerX", and "centerY" properties on the bezier array itself, and returns the size (width * height)
+  	_getTotalSize$1 = (rawPath, samplesPerBezier = 3) => { //rough estimate of the bounding box of the entire list of Bezier segments (based solely on the anchors). sets "size", "centerX", and "centerY" properties on the bezier array itself, and returns the size (width * height)
   		let j = rawPath.length,
   			xMax = rawPath[0][0],
   			xMin = xMax,
@@ -11625,13 +13315,13 @@
   		rawPath.height = (yMax - yMin);
   		return (rawPath.size = (xMax - xMin) * (yMax - yMin));
   	},
-  	_sortByComplexity = (a, b) => b.length - a.length,
-  	_sortBySize = (a, b) => {
-  		let sizeA = a.size || _getSize(a),
-  			sizeB = b.size || _getSize(b);
+  	_sortByComplexity$1 = (a, b) => b.length - a.length,
+  	_sortBySize$1 = (a, b) => {
+  		let sizeA = a.size || _getSize$1(a),
+  			sizeB = b.size || _getSize$1(b);
   		return (Math.abs(sizeB - sizeA) < (sizeA + sizeB) / 20) ? (b.centerX - a.centerX) || (b.centerY - a.centerY) : sizeB - sizeA; //if the size is within 10% of each other, prioritize position from left to right, then top to bottom.
   	},
-  	_offsetSegment = (segment, shapeIndex) => {
+  	_offsetSegment$1 = (segment, shapeIndex) => {
   		let a = segment.slice(0),
   			l = segment.length,
   			wrap = l - 2,
@@ -11643,7 +13333,7 @@
   			segment[i] = a[index+1];
   		}
   	},
-  	_getTotalMovement = (sb, eb, shapeIndex, offsetX, offsetY) => {
+  	_getTotalMovement$1 = (sb, eb, shapeIndex, offsetX, offsetY) => {
   		let l = sb.length,
   			d = 0,
   			wrap = l - 2,
@@ -11653,21 +13343,21 @@
   			index = (i + shapeIndex) % wrap;
   			y = sb[index] - (eb[i] - offsetX);
   			x = sb[index+1] - (eb[i+1] - offsetY);
-  			d += _sqrt$2(x * x + y * y);
+  			d += _sqrt$4(x * x + y * y);
   		}
   		return d;
   	},
-  	_getClosestShapeIndex = (sb, eb, checkReverse) => { //finds the index in a closed cubic bezier array that's closest to the angle provided (angle measured from the center or average x/y).
+  	_getClosestShapeIndex$1 = (sb, eb, checkReverse) => { //finds the index in a closed cubic bezier array that's closest to the angle provided (angle measured from the center or average x/y).
   		let l = sb.length,
-  			sCenter = _getAverageXY(sb), //when comparing distances, adjust the coordinates as if the shapes are centered with each other.
-  			eCenter = _getAverageXY(eb),
+  			sCenter = _getAverageXY$1(sb), //when comparing distances, adjust the coordinates as if the shapes are centered with each other.
+  			eCenter = _getAverageXY$1(eb),
   			offsetX = eCenter[0] - sCenter[0],
   			offsetY = eCenter[1] - sCenter[1],
-  			min = _getTotalMovement(sb, eb, 0, offsetX, offsetY),
+  			min = _getTotalMovement$1(sb, eb, 0, offsetX, offsetY),
   			minIndex = 0,
   			copy, d, i;
   		for (i = 6; i < l; i += 6) {
-  			d = _getTotalMovement(sb, eb, i / 6, offsetX, offsetY);
+  			d = _getTotalMovement$1(sb, eb, i / 6, offsetX, offsetY);
   			if (d < min) {
   				min = d;
   				minIndex = i;
@@ -11675,9 +13365,9 @@
   		}
   		if (checkReverse) {
   			copy = sb.slice(0);
-  			reverseSegment(copy);
+  			reverseSegment$1(copy);
   			for (i = 6; i < l; i += 6) {
-  				d = _getTotalMovement(copy, eb, i / 6, offsetX, offsetY);
+  				d = _getTotalMovement$1(copy, eb, i / 6, offsetX, offsetY);
   				if (d < min) {
   					min = d;
   					minIndex = -i;
@@ -11686,9 +13376,9 @@
   		}
   		return minIndex / 6;
   	},
-  	_getClosestAnchor = (rawPath, x, y) => { //finds the x/y of the anchor that's closest to the provided x/y coordinate (returns an array, like [x, y]). The bezier should be the top-level type that contains an array for each segment.
+  	_getClosestAnchor$1 = (rawPath, x, y) => { //finds the x/y of the anchor that's closest to the provided x/y coordinate (returns an array, like [x, y]). The bezier should be the top-level type that contains an array for each segment.
   		let j = rawPath.length,
-  			closestDistance = _bigNum$2,
+  			closestDistance = _bigNum$3,
   			closestX = 0,
   			closestY = 0,
   			segment, dx, dy, d, i, l;
@@ -11698,7 +13388,7 @@
   			for (i = 0; i < l; i += 6) {
   				dx = segment[i] - x;
   				dy = segment[i+1] - y;
-  				d = _sqrt$2(dx * dx + dy * dy);
+  				d = _sqrt$4(dx * dx + dy * dy);
   				if (d < closestDistance) {
   					closestDistance = d;
   					closestX = segment[i];
@@ -11708,22 +13398,22 @@
   		}
   		return [closestX, closestY];
   	},
-  	_getClosestSegment = (bezier, pool, startIndex, sortRatio, offsetX, offsetY) => { //matches the bezier to the closest one in a pool (array) of beziers, assuming they are in order of size and we shouldn't drop more than 20% of the size, otherwise prioritizing location (total distance to the center). Extracts the segment out of the pool array and returns it.
+  	_getClosestSegment$1 = (bezier, pool, startIndex, sortRatio, offsetX, offsetY) => { //matches the bezier to the closest one in a pool (array) of beziers, assuming they are in order of size and we shouldn't drop more than 20% of the size, otherwise prioritizing location (total distance to the center). Extracts the segment out of the pool array and returns it.
   		let l = pool.length,
   			index = 0,
-  			minSize = Math.min(bezier.size || _getSize(bezier), pool[startIndex].size || _getSize(pool[startIndex])) * sortRatio, //limit things based on a percentage of the size of either the bezier or the next element in the array, whichever is smaller.
-  			min = _bigNum$2,
+  			minSize = Math.min(bezier.size || _getSize$1(bezier), pool[startIndex].size || _getSize$1(pool[startIndex])) * sortRatio, //limit things based on a percentage of the size of either the bezier or the next element in the array, whichever is smaller.
+  			min = _bigNum$3,
   			cx = bezier.centerX + offsetX,
   			cy = bezier.centerY + offsetY,
   			size, i, dx, dy, d;
   		for (i = startIndex; i < l; i++) {
-  			size = pool[i].size || _getSize(pool[i]);
+  			size = pool[i].size || _getSize$1(pool[i]);
   			if (size < minSize) {
   				break;
   			}
   			dx = pool[i].centerX - cx;
   			dy = pool[i].centerY - cy;
-  			d = _sqrt$2(dx * dx + dy * dy);
+  			d = _sqrt$4(dx * dx + dy * dy);
   			if (d < min) {
   				index = i;
   				min = d;
@@ -11733,7 +13423,7 @@
   		pool.splice(index, 1);
   		return d;
   	},
-  	_subdivideSegmentQty = (segment, quantity) => {
+  	_subdivideSegmentQty$1 = (segment, quantity) => {
   		let tally = 0,
   			max = 0.999999,
   			l = segment.length,
@@ -11779,12 +13469,12 @@
   		}
   		return segment;
   	},
-  	_equalizeSegmentQuantity = (start, end, shapeIndex, map, fillSafe) => { //returns an array of shape indexes, 1 for each segment.
+  	_equalizeSegmentQuantity$1 = (start, end, shapeIndex, map, fillSafe) => { //returns an array of shape indexes, 1 for each segment.
   		let dif = end.length - start.length,
   			longer = dif > 0 ? end : start,
   			shorter = dif > 0 ? start : end,
   			added = 0,
-  			sortMethod = (map === "complexity") ? _sortByComplexity : _sortBySize,
+  			sortMethod = (map === "complexity") ? _sortByComplexity$1 : _sortBySize$1,
   			sortRatio = (map === "position") ? 0 : (typeof(map) === "number") ? map : 0.8,
   			i = shorter.length,
   			shapeIndices = (typeof(shapeIndex) === "object" && shapeIndex.push) ? shapeIndex.slice(0) : [shapeIndex],
@@ -11797,13 +13487,13 @@
   		if (longer.length > 1) {
   			start.sort(sortMethod);
   			end.sort(sortMethod);
-  			offsetX = longer.size || _getTotalSize(longer); //ensures centerX and centerY are defined (used below).
-  			offsetX = shorter.size || _getTotalSize(shorter);
+  			offsetX = longer.size || _getTotalSize$1(longer); //ensures centerX and centerY are defined (used below).
+  			offsetX = shorter.size || _getTotalSize$1(shorter);
   			offsetX = longer.centerX - shorter.centerX;
   			offsetY = longer.centerY - shorter.centerY;
-  			if (sortMethod === _sortBySize) {
+  			if (sortMethod === _sortBySize$1) {
   				for (i = 0; i < shorter.length; i++) {
-  					longer.splice(i, 0, _getClosestSegment(shorter[i], longer, i, sortRatio, offsetX, offsetY));
+  					longer.splice(i, 0, _getClosestSegment$1(shorter[i], longer, i, sortRatio, offsetX, offsetY));
   				}
   			}
   		}
@@ -11812,12 +13502,12 @@
   				dif = -dif;
   			}
   			if (longer[0].length > shorter[0].length) { //since we use shorter[0] as the one to map the origination point of any brand new fabricated segments, do any subdividing first so that there are more points to choose from (if necessary)
-  				_subdivideSegmentQty(shorter[0], ((longer[0].length - shorter[0].length)/6) | 0);
+  				_subdivideSegmentQty$1(shorter[0], ((longer[0].length - shorter[0].length)/6) | 0);
   			}
   			i = shorter.length;
   			while (added < dif) {
-  				x = longer[i].size || _getSize(longer[i]); //just to ensure centerX and centerY are calculated which we use on the next line.
-  				b = _getClosestAnchor(shorter, longer[i].centerX, longer[i].centerY);
+  				x = longer[i].size || _getSize$1(longer[i]); //just to ensure centerX and centerY are calculated which we use on the next line.
+  				b = _getClosestAnchor$1(shorter, longer[i].centerX, longer[i].centerY);
   				x = b[0];
   				y = b[1];
   				shorter[i++] = [x, y, x, y, x, y, x, y];
@@ -11830,35 +13520,35 @@
   			sb = start[i];
   			dif = eb.length - sb.length;
   			if (dif < 0) {
-  				_subdivideSegmentQty(eb, (-dif/6) | 0);
+  				_subdivideSegmentQty$1(eb, (-dif/6) | 0);
   			} else if (dif > 0) {
-  				_subdivideSegmentQty(sb, (dif/6) | 0);
+  				_subdivideSegmentQty$1(sb, (dif/6) | 0);
   			}
   			if (reverse && fillSafe !== false && !sb.reversed) {
-  				reverseSegment(sb);
+  				reverseSegment$1(sb);
   			}
   			shapeIndex = (shapeIndices[i] || shapeIndices[i] === 0) ? shapeIndices[i] : "auto";
   			if (shapeIndex) {
   				//if start shape is closed, find the closest point to the start/end, and re-organize the bezier points accordingly so that the shape morphs in a more intuitive way.
   				if (sb.closed || (Math.abs(sb[0] - sb[sb.length - 2]) < 0.5 && Math.abs(sb[1] - sb[sb.length - 1]) < 0.5)) {
   					if (shapeIndex === "auto" || shapeIndex === "log") {
-  						shapeIndices[i] = shapeIndex = _getClosestShapeIndex(sb, eb, (!i || fillSafe === false));
+  						shapeIndices[i] = shapeIndex = _getClosestShapeIndex$1(sb, eb, (!i || fillSafe === false));
   						if (shapeIndex < 0) {
   							reverse = true;
-  							reverseSegment(sb);
+  							reverseSegment$1(sb);
   							shapeIndex = -shapeIndex;
   						}
-  						_offsetSegment(sb, shapeIndex * 6);
+  						_offsetSegment$1(sb, shapeIndex * 6);
 
   					} else if (shapeIndex !== "reverse") {
   						if (i && shapeIndex < 0) { //only happens if an array is passed as shapeIndex and a negative value is defined for an index beyond 0. Very rare, but helpful sometimes.
-  							reverseSegment(sb);
+  							reverseSegment$1(sb);
   						}
-  						_offsetSegment(sb, (shapeIndex < 0 ? -shapeIndex : shapeIndex) * 6);
+  						_offsetSegment$1(sb, (shapeIndex < 0 ? -shapeIndex : shapeIndex) * 6);
   					}
   					//otherwise, if it's not a closed shape, consider reversing it if that would make the overall travel less
   				} else if (!reverse && (shapeIndex === "auto" && (Math.abs(eb[0] - sb[0]) + Math.abs(eb[1] - sb[1]) + Math.abs(eb[eb.length - 2] - sb[sb.length - 2]) + Math.abs(eb[eb.length - 1] - sb[sb.length - 1]) > Math.abs(eb[0] - sb[sb.length - 2]) + Math.abs(eb[1] - sb[sb.length - 1]) + Math.abs(eb[eb.length - 2] - sb[0]) + Math.abs(eb[eb.length - 1] - sb[1])) || (shapeIndex % 2))) {
-  					reverseSegment(sb);
+  					reverseSegment$1(sb);
   					shapeIndices[i] = -1;
   					reverse = true;
   				} else if (shapeIndex === "auto") {
@@ -11872,28 +13562,28 @@
   			}
   		}
   		if (log) {
-  			_log("shapeIndex:[" + shapeIndices.join(",") + "]");
+  			_log$1("shapeIndex:[" + shapeIndices.join(",") + "]");
   		}
   		start.shapeIndex = shapeIndices;
   		return shapeIndices;
   	},
-  	_pathFilter = (a, shapeIndex, map, precompile, fillSafe) => {
-  		let start = stringToRawPath(a[0]),
-  			end = stringToRawPath(a[1]);
-  		if (!_equalizeSegmentQuantity(start, end, (shapeIndex || shapeIndex === 0) ? shapeIndex : "auto", map, fillSafe)) {
+  	_pathFilter$1 = (a, shapeIndex, map, precompile, fillSafe) => {
+  		let start = stringToRawPath$1(a[0]),
+  			end = stringToRawPath$1(a[1]);
+  		if (!_equalizeSegmentQuantity$1(start, end, (shapeIndex || shapeIndex === 0) ? shapeIndex : "auto", map, fillSafe)) {
   			return; //malformed path data or null target
   		}
-  		a[0] = rawPathToString(start);
-  		a[1] = rawPathToString(end);
+  		a[0] = rawPathToString$1(start);
+  		a[1] = rawPathToString$1(end);
   		if (precompile === "log" || precompile === true) {
-  			_log('precompile:["' + a[0] + '","' + a[1] + '"]');
+  			_log$1('precompile:["' + a[0] + '","' + a[1] + '"]');
   		}
   	},
-  	_offsetPoints = (text, offset) => {
+  	_offsetPoints$1 = (text, offset) => {
   		if (!offset) {
   			return text;
   		}
-  		let a = text.match(_numExp$1) || [],
+  		let a = text.match(_numExp$2) || [],
   			l = a.length,
   			s = "",
   			inc, i, j;
@@ -11911,7 +13601,7 @@
   		return s;
   	},
   	//adds a certain number of points while maintaining the polygon/polyline shape (so that the start/end values can have a matching quantity of points to animate). Returns the revised string.
-  	_equalizePointQuantity = (a, quantity) => {
+  	_equalizePointQuantity$1 = (a, quantity) => {
   		let tally = 0,
   			x = parseFloat(a[0]),
   			y = parseFloat(a[1]),
@@ -11939,29 +13629,29 @@
   		}
   		return s;
   	},
-  	_pointsFilter = a => {
-  		let startNums = a[0].match(_numExp$1) || [],
-  			endNums = a[1].match(_numExp$1) || [],
+  	_pointsFilter$1 = a => {
+  		let startNums = a[0].match(_numExp$2) || [],
+  			endNums = a[1].match(_numExp$2) || [],
   			dif = endNums.length - startNums.length;
   		if (dif > 0) {
-  			a[0] = _equalizePointQuantity(startNums, dif);
+  			a[0] = _equalizePointQuantity$1(startNums, dif);
   		} else {
-  			a[1] = _equalizePointQuantity(endNums, -dif);
+  			a[1] = _equalizePointQuantity$1(endNums, -dif);
   		}
   	},
-  	_buildPointsFilter = shapeIndex => !isNaN(shapeIndex) ? a => {
-  			_pointsFilter(a);
-  			a[1] = _offsetPoints(a[1], parseInt(shapeIndex, 10));
-  		} : _pointsFilter,
-  	_parseShape = (shape, forcePath, target) => {
+  	_buildPointsFilter$1 = shapeIndex => !isNaN(shapeIndex) ? a => {
+  			_pointsFilter$1(a);
+  			a[1] = _offsetPoints$1(a[1], parseInt(shapeIndex, 10));
+  		} : _pointsFilter$1,
+  	_parseShape$1 = (shape, forcePath, target) => {
   		let isString = typeof(shape) === "string",
   			e, type;
-  		if (!isString || _selectorExp$1.test(shape) || (shape.match(_numExp$1) || []).length < 3) {
-  			e = _toArray(shape)[0];
+  		if (!isString || _selectorExp$3.test(shape) || (shape.match(_numExp$2) || []).length < 3) {
+  			e = _toArray$1(shape)[0];
   			if (e) {
   				type = (e.nodeName + "").toUpperCase();
   				if (forcePath && type !== "PATH") { //if we were passed an element (or selector text for an element) that isn't a path, convert it.
-  					e = convertToPath(e, false);
+  					e = convertToPath$1(e, false);
   					type = "PATH";
   				}
   				shape = e.getAttribute(type === "PATH" ? "d" : "points") || "";
@@ -11969,14 +13659,14 @@
   					shape = e.getAttributeNS(null, "data-original") || shape;
   				}
   			} else {
-  				_log("WARNING: invalid morph to: " + shape);
+  				_log$1("WARNING: invalid morph to: " + shape);
   				shape = false;
   			}
   		}
   		return shape;
   	},
   	//adds an "isSmooth" array to each segment and populates it with a boolean value indicating whether or not it's smooth (the control points have basically the same slope). For any smooth control points, it converts the coordinates into angle (x, in radians) and length (y) and puts them into the same index value in a smoothData array.
-  	_populateSmoothData = (rawPath, tolerance) => {
+  	_populateSmoothData$1 = (rawPath, tolerance) => {
   		let j = rawPath.length,
   			limit = 0.2 * (tolerance || 1),
   			smooth, segment, x, y, x2, y2, i, l, a, a2, isSmooth, smoothData;
@@ -11991,14 +13681,14 @@
   				y = segment[i + 1] - segment[i - 1];
   				x2 = segment[i + 2] - segment[i];
   				y2 = segment[i + 3] - segment[i + 1];
-  				a = _atan2$1(y, x);
-  				a2 = _atan2$1(y2, x2);
+  				a = _atan2$2(y, x);
+  				a2 = _atan2$2(y2, x2);
   				smooth = (Math.abs(a - a2) < limit);
   				if (smooth) {
   					smoothData[i - 2] = a;
   					smoothData[i + 2] = a2;
-  					smoothData[i - 1] = _sqrt$2(x * x + y * y);
-  					smoothData[i + 3] = _sqrt$2(x2 * x2 + y2 * y2);
+  					smoothData[i - 1] = _sqrt$4(x * x + y * y);
+  					smoothData[i + 3] = _sqrt$4(x2 * x2 + y2 * y2);
   				}
   				isSmooth.push(smooth, smooth, 0, 0, smooth, smooth);
   			}
@@ -12008,116 +13698,116 @@
   				y = segment[1] - segment[l-1];
   				x2 = segment[2] - segment[0];
   				y2 = segment[3] - segment[1];
-  				a = _atan2$1(y, x);
-  				a2 = _atan2$1(y2, x2);
+  				a = _atan2$2(y, x);
+  				a2 = _atan2$2(y2, x2);
   				if (Math.abs(a - a2) < limit) {
   					smoothData[l-2] = a;
   					smoothData[2] = a2;
-  					smoothData[l-1] = _sqrt$2(x * x + y * y);
-  					smoothData[3] = _sqrt$2(x2 * x2 + y2 * y2);
+  					smoothData[l-1] = _sqrt$4(x * x + y * y);
+  					smoothData[3] = _sqrt$4(x2 * x2 + y2 * y2);
   					isSmooth[l-2] = isSmooth[l-1] = true; //don't change indexes 2 and 3 because we'll trigger everything from the END, and this will optimize file size a bit.
   				}
   			}
   		}
   		return rawPath;
   	},
-  	_parseOriginFactors = v => {
+  	_parseOriginFactors$1 = v => {
   		let a = v.trim().split(" "),
   			x = ~v.indexOf("left") ? 0 : ~v.indexOf("right") ? 100 : isNaN(parseFloat(a[0])) ? 50 : parseFloat(a[0]),
   			y = ~v.indexOf("top") ? 0 : ~v.indexOf("bottom") ? 100 : isNaN(parseFloat(a[1])) ? 50 : parseFloat(a[1]);
   		return {x:x / 100, y:y / 100};
   	},
-  	_shortAngle = dif => (dif !== dif % _PI) ? dif + ((dif < 0) ? _2PI$1 : -_2PI$1) : dif,
-  	_morphMessage = "Use MorphSVGPlugin.convertToPath() to convert to a path before morphing.",
-  	_tweenRotation = function(start, end, i, linkedPT) {
+  	_shortAngle$1 = dif => (dif !== dif % _PI$1) ? dif + ((dif < 0) ? _2PI$2 : -_2PI$2) : dif,
+  	_morphMessage$1 = "Use MorphSVGPlugin.convertToPath() to convert to a path before morphing.",
+  	_tweenRotation$1 = function(start, end, i, linkedPT) {
   		let so = this._origin,              //starting origin
   			eo = this._eOrigin,             //ending origin
   			dx = start[i] - so.x,
   			dy = start[i+1] - so.y,
-  			d = _sqrt$2(dx * dx + dy * dy),   //length from starting origin to starting point
-  			sa = _atan2$1(dy, dx),
+  			d = _sqrt$4(dx * dx + dy * dy),   //length from starting origin to starting point
+  			sa = _atan2$2(dy, dx),
   			angleDif, short;
   		dx = end[i] - eo.x;
   		dy = end[i+1] - eo.y;
-  		angleDif = _atan2$1(dy, dx) - sa;
-  		short = _shortAngle(angleDif);
+  		angleDif = _atan2$2(dy, dx) - sa;
+  		short = _shortAngle$1(angleDif);
   		//in the case of control points, we ALWAYS link them to their anchor so that they don't get torn apart and rotate the opposite direction. If it's not a control point, we look at the most recently linked point as long as they're within a certain rotational range of each other.
-  		if (!linkedPT && _lastLinkedAnchor && Math.abs(short + _lastLinkedAnchor.ca) < _angleMin) {
-  			linkedPT = _lastLinkedAnchor;
+  		if (!linkedPT && _lastLinkedAnchor$1 && Math.abs(short + _lastLinkedAnchor$1.ca) < _angleMin$1) {
+  			linkedPT = _lastLinkedAnchor$1;
   		}
-  		return (this._anchorPT = _lastLinkedAnchor = {
+  		return (this._anchorPT = _lastLinkedAnchor$1 = {
   			_next:this._anchorPT,
   			t:start,
   			sa:sa,                              //starting angle
-  			ca:(linkedPT && short * linkedPT.ca < 0 && Math.abs(short) > _angleMax) ? angleDif : short,  //change in angle
+  			ca:(linkedPT && short * linkedPT.ca < 0 && Math.abs(short) > _angleMax$1) ? angleDif : short,  //change in angle
   			sl:d,                               //starting length
-  			cl:_sqrt$2(dx * dx + dy * dy) - d,    //change in length
+  			cl:_sqrt$4(dx * dx + dy * dy) - d,    //change in length
   			i:i
   		});
   	},
-  	_initCore$1 = required => {
-  		gsap$1 = _getGSAP();
-  		PluginClass = PluginClass || (gsap$1 && gsap$1.plugins.morphSVG);
-  		if (gsap$1 && PluginClass) {
-  			_toArray = gsap$1.utils.toArray;
-  			PluginClass.prototype._tweenRotation = _tweenRotation;
-  			_coreInitted$1 = 1;
+  	_initCore$2 = required => {
+  		gsap$2 = _getGSAP$1();
+  		PluginClass$1 = PluginClass$1 || (gsap$2 && gsap$2.plugins.morphSVG);
+  		if (gsap$2 && PluginClass$1) {
+  			_toArray$1 = gsap$2.utils.toArray;
+  			PluginClass$1.prototype._tweenRotation = _tweenRotation$1;
+  			_coreInitted$2 = 1;
   		} else if (required) {
-  			_log("Please gsap.registerPlugin(MorphSVGPlugin)");
+  			_log$1("Please gsap.registerPlugin(MorphSVGPlugin)");
   		}
   	};
 
 
-  const MorphSVGPlugin = {
+  const MorphSVGPlugin$1 = {
   	version: "3.4.0",
   	name: "morphSVG",
   	rawVars: 1, // otherwise "render" would be interpreted as a function-based value.
   	register(core, Plugin) {
-  		gsap$1 = core;
-  		PluginClass = Plugin;
-  		_initCore$1();
+  		gsap$2 = core;
+  		PluginClass$1 = Plugin;
+  		_initCore$2();
   	},
   	init(target, value, tween, index, targets) {
-  		_coreInitted$1 || _initCore$1(1);
+  		_coreInitted$2 || _initCore$2(1);
   		if (!value) {
-  			_log("invalid shape");
+  			_log$1("invalid shape");
   			return false;
   		}
-  		_isFunction$1(value) && (value = value.call(tween, index, target, targets));
+  		_isFunction$2(value) && (value = value.call(tween, index, target, targets));
   		let type, p, pt, shape, isPoly, shapeIndex, map, startSmooth, endSmooth, start, end, i, j, l, startSeg, endSeg, precompiled, sData, eData, originFactors, useRotation, offset;
   		if (typeof(value) === "string" || value.getBBox || value[0]) {
   			value = {shape:value};
   		} else if (typeof(value) === "object") { // if there are any function-based values, parse them here (and make a copy of the object so we're not modifying the original)
   			type = {};
   			for (p in value) {
-  				type[p] = _isFunction$1(value[p]) && p !== "render" ? value[p].call(tween, index, target, targets) : value[p];
+  				type[p] = _isFunction$2(value[p]) && p !== "render" ? value[p].call(tween, index, target, targets) : value[p];
   			}
   			value = type;
   		}
   		let cs = target.nodeType ? window.getComputedStyle(target) : {},
   			fill = cs.fill + "",
-  			fillSafe = !(fill === "none" || (fill.match(_numExp$1) || [])[3] === "0" || cs.fillRule === "evenodd"),
+  			fillSafe = !(fill === "none" || (fill.match(_numExp$2) || [])[3] === "0" || cs.fillRule === "evenodd"),
   			origins = (value.origin || "50 50").split(",");
   		type = (target.nodeName + "").toUpperCase();
   		isPoly = (type === "POLYLINE" || type === "POLYGON");
   		if (type !== "PATH" && !isPoly && !value.prop) {
-  			_log("Cannot morph a <" + type + "> element. " + _morphMessage);
+  			_log$1("Cannot morph a <" + type + "> element. " + _morphMessage$1);
   			return false;
   		}
   		p = (type === "PATH") ? "d" : "points";
-  		if (!value.prop && !_isFunction$1(target.setAttribute)) {
+  		if (!value.prop && !_isFunction$2(target.setAttribute)) {
   			return false;
   		}
-  		shape = _parseShape(value.shape || value.d || value.points || "", (p === "d"), target);
-  		if (isPoly && _commands.test(shape)) {
-  			_log("A <" + type + "> cannot accept path data. " + _morphMessage);
+  		shape = _parseShape$1(value.shape || value.d || value.points || "", (p === "d"), target);
+  		if (isPoly && _commands$1.test(shape)) {
+  			_log$1("A <" + type + "> cannot accept path data. " + _morphMessage$1);
   			return false;
   		}
   		shapeIndex = (value.shapeIndex || value.shapeIndex === 0) ? value.shapeIndex : "auto";
-  		map = value.map || MorphSVGPlugin.defaultMap;
+  		map = value.map || MorphSVGPlugin$1.defaultMap;
   		this._prop = value.prop;
-  		this._render = value.render || MorphSVGPlugin.defaultRender;
-  		this._apply = ("updateTarget" in value) ? value.updateTarget : MorphSVGPlugin.defaultUpdateTarget;
+  		this._render = value.render || MorphSVGPlugin$1.defaultRender;
+  		this._apply = ("updateTarget" in value) ? value.updateTarget : MorphSVGPlugin$1.defaultUpdateTarget;
   		this._rnd = Math.pow(10, isNaN(value.precision) ? 2 : +value.precision);
   		this._tween = tween;
   		if (shape) {
@@ -12128,28 +13818,28 @@
   				target.setAttributeNS(null, "data-original", start); //record the original state in a data-original attribute so that we can revert to it later.
   			}
   			if (p === "d" || this._prop) {
-  				start = stringToRawPath(precompiled ? value.precompile[0] : start);
-  				end = stringToRawPath(precompiled ? value.precompile[1] : shape);
-  				if (!precompiled && !_equalizeSegmentQuantity(start, end, shapeIndex, map, fillSafe)) {
+  				start = stringToRawPath$1(precompiled ? value.precompile[0] : start);
+  				end = stringToRawPath$1(precompiled ? value.precompile[1] : shape);
+  				if (!precompiled && !_equalizeSegmentQuantity$1(start, end, shapeIndex, map, fillSafe)) {
   					return false; //malformed path data or null target
   				}
   				if (value.precompile === "log" || value.precompile === true) {
-  					_log('precompile:["' + rawPathToString(start) + '","' + rawPathToString(end) + '"]');
+  					_log$1('precompile:["' + rawPathToString$1(start) + '","' + rawPathToString$1(end) + '"]');
   				}
-  				useRotation = (value.type || MorphSVGPlugin.defaultType) !== "linear";
+  				useRotation = (value.type || MorphSVGPlugin$1.defaultType) !== "linear";
   				if (useRotation) {
-  					start = _populateSmoothData(start, value.smoothTolerance);
-  					end = _populateSmoothData(end, value.smoothTolerance);
+  					start = _populateSmoothData$1(start, value.smoothTolerance);
+  					end = _populateSmoothData$1(end, value.smoothTolerance);
   					if (!start.size) {
-  						_getTotalSize(start); //adds top/left/width/height values
+  						_getTotalSize$1(start); //adds top/left/width/height values
   					}
   					if (!end.size) {
-  						_getTotalSize(end);
+  						_getTotalSize$1(end);
   					}
-  					originFactors = _parseOriginFactors(origins[0]);
+  					originFactors = _parseOriginFactors$1(origins[0]);
   					this._origin = start.origin = {x:start.left + originFactors.x * start.width, y:start.top + originFactors.y * start.height};
   					if (origins[1]) {
-  						originFactors = _parseOriginFactors(origins[1]);
+  						originFactors = _parseOriginFactors$1(origins[1]);
   					}
   					this._eOrigin = {x:end.left + originFactors.x * end.width, y:end.top + originFactors.y * end.height};
   				}
@@ -12163,7 +13853,7 @@
   					startSmooth = startSeg.isSmooth || [];
   					endSmooth = endSeg.isSmooth || [];
   					l = startSeg.length;
-  					_lastLinkedAnchor = 0; //reset; we use _lastLinkedAnchor in the _tweenRotation() method to help make sure that close points don't get ripped apart and rotate opposite directions. Typically we want to go the shortest direction, but if the previous anchor is going a different direction, we override this logic (within certain thresholds)
+  					_lastLinkedAnchor$1 = 0; //reset; we use _lastLinkedAnchor in the _tweenRotation() method to help make sure that close points don't get ripped apart and rotate opposite directions. Typically we want to go the shortest direction, but if the previous anchor is going a different direction, we override this logic (within certain thresholds)
   					for (i = 0; i < l; i+=2) {
   						if (endSeg[i] !== startSeg[i] || endSeg[i+1] !== startSeg[i+1]) {
   							if (useRotation) {
@@ -12187,7 +13877,7 @@
   					}
   				}
   			} else {
-  				pt = this.add(target, "setAttribute", target.getAttribute(p) + "", shape + "", index, targets, 0, _buildPointsFilter(shapeIndex), p);
+  				pt = this.add(target, "setAttribute", target.getAttribute(p) + "", shape + "", index, targets, 0, _buildPointsFilter$1(shapeIndex), p);
   			}
 
   			if (useRotation) {
@@ -12201,7 +13891,7 @@
   				pt.endProp = p;
   			}
   		}
-  		return _bonusValidated;
+  		return _bonusValidated$1;
   	},
 
   	render(ratio, data) {
@@ -12234,8 +13924,8 @@
   			while (anchorPT) {
   				angle = anchorPT.sa + ratio * anchorPT.ca;
   				l = anchorPT.sl + ratio * anchorPT.cl;    //length
-  				anchorPT.t[anchorPT.i] = data._origin.x + _cos$2(angle) * l;
-  				anchorPT.t[anchorPT.i + 1] = data._origin.y + _sin$2(angle) * l;
+  				anchorPT.t[anchorPT.i] = data._origin.x + _cos$4(angle) * l;
+  				anchorPT.t[anchorPT.i + 1] = data._origin.y + _sin$4(angle) * l;
   				anchorPT = anchorPT._next;
   			}
 
@@ -12245,9 +13935,9 @@
   				i = controlPT.i;
   				segment = rawPath[controlPT.j];
   				offset = i + ((i === segment.length - 4) ? 7 - segment.length : 5); //accommodates wrapping around of smooth points, like if the start and end anchors are on top of each other and their handles are smooth.
-  				angle = _atan2$1(segment[offset] - segment[i+1], segment[offset-1] - segment[i]); //average the angles
-  				sin = _sin$2(angle);
-  				cos = _cos$2(angle);
+  				angle = _atan2$2(segment[offset] - segment[i+1], segment[offset-1] - segment[i]); //average the angles
+  				sin = _sin$4(angle);
+  				cos = _cos$4(angle);
   				x = segment[i+2];
   				y = segment[i+3];
   				l = controlPT.l1s + easeInOut * controlPT.l1c;    //length
@@ -12284,20 +13974,20 @@
   	kill(property) {
   		this._pt = this._rawPath = 0;
   	},
-  	getRawPath: getRawPath,
-  	stringToRawPath: stringToRawPath,
-  	rawPathToString: rawPathToString,
-  	pathFilter: _pathFilter,
-  	pointsFilter: _pointsFilter,
-  	getTotalSize: _getTotalSize,
-  	equalizeSegmentQuantity: _equalizeSegmentQuantity,
-  	convertToPath: (targets, swap) => _toArray(targets).map(target => convertToPath(target, swap !== false)),
+  	getRawPath: getRawPath$1,
+  	stringToRawPath: stringToRawPath$1,
+  	rawPathToString: rawPathToString$1,
+  	pathFilter: _pathFilter$1,
+  	pointsFilter: _pointsFilter$1,
+  	getTotalSize: _getTotalSize$1,
+  	equalizeSegmentQuantity: _equalizeSegmentQuantity$1,
+  	convertToPath: (targets, swap) => _toArray$1(targets).map(target => convertToPath$1(target, swap !== false)),
   	defaultType: "linear",
   	defaultUpdateTarget: true,
   	defaultMap: "size"
   };
 
-  _getGSAP() && gsap$1.registerPlugin(MorphSVGPlugin);
+  _getGSAP$1() && gsap$2.registerPlugin(MorphSVGPlugin$1);
 
   /*!
    * DrawSVGPlugin 3.4.0
@@ -12311,19 +14001,19 @@
   /* eslint-disable */
 
 
-  let gsap$2, _toArray$1, _win$2, _isEdge, _coreInitted$2,
+  let gsap$3, _toArray$2, _win$2, _isEdge, _coreInitted$3,
   	_windowExists$2 = () => typeof(window) !== "undefined",
-  	_getGSAP$1 = () => gsap$2 || (_windowExists$2() && (gsap$2 = window.gsap) && gsap$2.registerPlugin && gsap$2),
-  	_numExp$2 = /[-+=\.]*\d+[\.e\-\+]*\d*[e\-\+]*\d*/gi, //finds any numbers, including ones that start with += or -=, negative numbers, and ones in scientific notation like 1e-8.
+  	_getGSAP$2 = () => gsap$3 || (_windowExists$2() && (gsap$3 = window.gsap) && gsap$3.registerPlugin && gsap$3),
+  	_numExp$3 = /[-+=\.]*\d+[\.e\-\+]*\d*[e\-\+]*\d*/gi, //finds any numbers, including ones that start with += or -=, negative numbers, and ones in scientific notation like 1e-8.
   	_types = {rect:["width","height"], circle:["r","r"], ellipse:["rx","ry"], line:["x2","y2"]},
-  	_round$2 = value => Math.round(value * 10000) / 10000,
+  	_round$3 = value => Math.round(value * 10000) / 10000,
   	_parseNum = value => parseFloat(value || 0),
   	_getAttributeAsNumber = (target, attr) => _parseNum(target.getAttribute(attr)),
-  	_sqrt$3 = Math.sqrt,
-  	_getDistance = (x1, y1, x2, y2, scaleX, scaleY) => _sqrt$3(((_parseNum(x2) - _parseNum(x1)) * scaleX) ** 2 + ((_parseNum(y2) - _parseNum(y1)) * scaleY) ** 2),
+  	_sqrt$5 = Math.sqrt,
+  	_getDistance = (x1, y1, x2, y2, scaleX, scaleY) => _sqrt$5(((_parseNum(x2) - _parseNum(x1)) * scaleX) ** 2 + ((_parseNum(y2) - _parseNum(y1)) * scaleY) ** 2),
   	_warn$1 = message => console.warn(message),
   	_hasNonScalingStroke = target => target.getAttribute("vector-effect") === "non-scaling-stroke",
-  	_bonusValidated$1 = 1, //<name>DrawSVGPlugin</name>
+  	_bonusValidated$2 = 1, //<name>DrawSVGPlugin</name>
   	//accepts values like "100%" or "20% 80%" or "20 50" and parses it into an absolute start and end position on the line/stroke based on its length. Returns an an array with the start and end values, like [0, 243]
   	_parse = (value, length, defaultStart) => {
   		let i = value.indexOf(" "),
@@ -12340,7 +14030,7 @@
   		return (s > e) ? [e, s] : [s, e];
   	},
   	_getLength = target => {
-  		target = _toArray$1(target)[0];
+  		target = _toArray$2(target)[0];
   		if (!target) {
   			return 0;
   		}
@@ -12351,8 +14041,8 @@
   			length, bbox, points, prevPoint, i, rx, ry;
   		if (_hasNonScalingStroke(target)) { //non-scaling-stroke basically scales the shape and then strokes it at the screen-level (after transforms), thus we need to adjust the length accordingly.
   			scaleY = target.getScreenCTM();
-  			scaleX = _sqrt$3(scaleY.a * scaleY.a + scaleY.b * scaleY.b);
-  			scaleY = _sqrt$3(scaleY.d * scaleY.d + scaleY.c * scaleY.c);
+  			scaleX = _sqrt$5(scaleY.a * scaleY.a + scaleY.b * scaleY.b);
+  			scaleY = _sqrt$5(scaleY.d * scaleY.d + scaleY.c * scaleY.c);
   		}
   		try { //IE bug: calling <path>.getTotalLength() locks the repaint area of the stroke to whatever its current dimensions are on that frame/tick. To work around that, we must call getBBox() to force IE to recalculate things.
   			bbox = target.getBBox(); //solely for fixing bug in IE - we don't actually use the bbox.
@@ -12389,7 +14079,7 @@
   		} else if (type === "line") {
   			length = _getDistance(x, y, x + width, y + height, scaleX, scaleY);
   		} else if (type === "polyline" || type === "polygon") {
-  			points = target.getAttribute("points").match(_numExp$2) || [];
+  			points = target.getAttribute("points").match(_numExp$3) || [];
   			if (type === "polygon") {
   				points.push(points[0], points[1]);
   			}
@@ -12400,12 +14090,12 @@
   		} else if (type === "circle" || type === "ellipse") {
   			rx = (width / 2) * scaleX;
   			ry = (height / 2) * scaleY;
-  			length = Math.PI * ( 3 * (rx + ry) - _sqrt$3((3 * rx + ry) * (rx + 3 * ry)) );
+  			length = Math.PI * ( 3 * (rx + ry) - _sqrt$5((3 * rx + ry) * (rx + 3 * ry)) );
   		}
   		return length || 0;
   	},
   	_getPosition = (target, length) => {
-  		target = _toArray$1(target)[0];
+  		target = _toArray$2(target)[0];
   		if (!target) {
   			return [0, 0];
   		}
@@ -12425,11 +14115,11 @@
   		}
   		return [Math.max(0, -offset), Math.max(0, dash - offset)];
   	},
-  	_initCore$2 = () => {
+  	_initCore$3 = () => {
   		if (_windowExists$2()) {
   			_win$2 = window;
-  			_coreInitted$2 = gsap$2 = _getGSAP$1();
-  			_toArray$1 = gsap$2.utils.toArray;
+  			_coreInitted$3 = gsap$3 = _getGSAP$2();
+  			_toArray$2 = gsap$3.utils.toArray;
   			_isEdge = (((_win$2.navigator || {}).userAgent || "").indexOf("Edge") !== -1); //Microsoft Edge has a bug that causes it not to redraw the path correctly if the stroke-linecap is anything other than "butt" (like "round") and it doesn't match the stroke-linejoin. A way to trigger it is to change the stroke-miterlimit, so we'll only do that if/when we have to (to maximize performance)
   		}
   	};
@@ -12439,15 +14129,15 @@
   	version:"3.4.0",
   	name:"drawSVG",
   	register(core) {
-  		gsap$2 = core;
-  		_initCore$2();
+  		gsap$3 = core;
+  		_initCore$3();
   	},
   	init(target, value, tween, index, targets) {
   		if (!target.getBBox) {
   			return false;
   		}
-  		if (!_coreInitted$2) {
-  			_initCore$2();
+  		if (!_coreInitted$3) {
+  			_initCore$3();
   		}
   		let length = _getLength(target) + 1,
   			start, end, overage, cs;
@@ -12462,17 +14152,17 @@
   		}
   		start = _getPosition(target, length);
   		end = _parse(value, length, start[0]);
-  		this._length = _round$2(length + 10);
+  		this._length = _round$3(length + 10);
   		if (start[0] === 0 && end[0] === 0) {
   			overage = Math.max(0.00001, end[1] - length); //allow people to go past the end, like values of 105% because for some paths, Firefox doesn't return an accurate getTotalLength(), so it could end up coming up short.
-  			this._dash = _round$2(length + overage);
-  			this._offset = _round$2(length - start[1] + overage);
-  			this._offsetPT = this.add(this, "_offset", this._offset, _round$2(length - end[1] + overage));
+  			this._dash = _round$3(length + overage);
+  			this._offset = _round$3(length - start[1] + overage);
+  			this._offsetPT = this.add(this, "_offset", this._offset, _round$3(length - end[1] + overage));
   		} else {
-  			this._dash = _round$2(start[1] - start[0]) || 0.000001; //some browsers render artifacts if dash is 0, so we use a very small number in that case.
-  			this._offset = _round$2(-start[0]);
-  			this._dashPT = this.add(this, "_dash", this._dash, _round$2(end[1] - end[0]) || 0.00001);
-  			this._offsetPT = this.add(this, "_offset", this._offset, _round$2(-end[0]));
+  			this._dash = _round$3(start[1] - start[0]) || 0.000001; //some browsers render artifacts if dash is 0, so we use a very small number in that case.
+  			this._offset = _round$3(-start[0]);
+  			this._dashPT = this.add(this, "_dash", this._dash, _round$3(end[1] - end[0]) || 0.00001);
+  			this._offsetPT = this.add(this, "_offset", this._offset, _round$3(-end[0]));
   		}
   		if (_isEdge) { //to work around a bug in Microsoft Edge, animate the stroke-miterlimit by 0.0001 just to trigger the repaint (unnecessary if it's "round" and stroke-linejoin is also "round"). Imperceptible, relatively high-performance, and effective. Another option was to set the "d" <path> attribute to its current value on every tick, but that seems like it'd be much less performant.
   			cs = _win$2.getComputedStyle(target);
@@ -12483,7 +14173,7 @@
   		}
   		this._live = (_hasNonScalingStroke(target) || ~((value + "").indexOf("live")));
   		this._props.push("drawSVG");
-  		return _bonusValidated$1;
+  		return _bonusValidated$2;
   	},
   	render(ratio, data) {
   		let pt = data._pt,
@@ -12528,7 +14218,7 @@
   	getPosition: _getPosition
   };
 
-  _getGSAP$1() && gsap$2.registerPlugin(DrawSVGPlugin);
+  _getGSAP$2() && gsap$3.registerPlugin(DrawSVGPlugin);
 
   /*!
    * matrix 3.4.0
@@ -12835,23 +14525,23 @@
    * @author: Jack Doyle, jack@greensock.com
    */
 
-  let gsap$3, _win$4, _doc$3, _docElement$2, _body$1, _tempDiv$1, _placeholderDiv, _coreInitted$3, _checkPrefix, _toArray$2, _supportsPassive, _isTouchDevice, _touchEventLookup, _dragCount, _isMultiTouching, _isAndroid, InertiaPlugin, _defaultCursor, _supportsPointer,
+  let gsap$4, _win$4, _doc$3, _docElement$2, _body$1, _tempDiv$1, _placeholderDiv, _coreInitted$4, _checkPrefix, _toArray$3, _supportsPassive, _isTouchDevice, _touchEventLookup, _dragCount, _isMultiTouching, _isAndroid, InertiaPlugin, _defaultCursor, _supportsPointer,
   	_windowExists$3 = () => typeof(window) !== "undefined",
-  	_getGSAP$2 = () => gsap$3 || (_windowExists$3() && (gsap$3 = window.gsap) && gsap$3.registerPlugin && gsap$3),
-  	_isFunction$2 = value => typeof(value) === "function",
+  	_getGSAP$3 = () => gsap$4 || (_windowExists$3() && (gsap$4 = window.gsap) && gsap$4.registerPlugin && gsap$4),
+  	_isFunction$3 = value => typeof(value) === "function",
   	_isObject$1 = value => typeof(value) === "object",
   	_isUndefined$1 = value => typeof(value) === "undefined",
   	_emptyFunc$1 = () => false,
   	_transformProp$2 = "transform",
   	_transformOriginProp$2 = "transformOrigin",
-  	_round$3 = value => Math.round(value * 10000) / 10000,
+  	_round$4 = value => Math.round(value * 10000) / 10000,
   	_isArray$1 = Array.isArray,
   	_createElement$1 = (type, ns) => {
   		let e = _doc$3.createElementNS ? _doc$3.createElementNS((ns || "http://www.w3.org/1999/xhtml").replace(/^https/, "http"), type) : _doc$3.createElement(type); //some servers swap in https for http in the namespace which can break things, making "style" inaccessible.
   		return e.style ? e : _doc$3.createElement(type); //some environments won't allow access to the element's style when created with a namespace in which case we default to the standard createElement() to work around the issue. Also note that when GSAP is embedded directly inside an SVG file, createElement() won't allow access to the style object in Firefox (see https://greensock.com/forums/topic/20215-problem-using-tweenmax-in-standalone-self-containing-svg-file-err-cannot-set-property-csstext-of-undefined/).
   	},
   	_RAD2DEG$1 = 180 / Math.PI,
-  	_bigNum$3 = 1e20,
+  	_bigNum$4 = 1e20,
   	_identityMatrix$1 = new Matrix2D(),
   	_getTime = Date.now || (() => new Date().getTime()),
   	_renderQueue = [],
@@ -12880,10 +14570,10 @@
   	_addToRenderQueue = func => {
   		_renderQueue.push(func);
   		if (_renderQueue.length === 1) {
-  			gsap$3.ticker.add(_renderQueueTick);
+  			gsap$4.ticker.add(_renderQueueTick);
   		}
   	},
-  	_renderQueueTimeout = () => !_renderQueue.length && gsap$3.ticker.remove(_renderQueueTick),
+  	_renderQueueTimeout = () => !_renderQueue.length && gsap$4.ticker.remove(_renderQueueTick),
   	_removeFromRenderQueue = func => {
   		let i = _renderQueue.length;
   		while (i--) {
@@ -12891,7 +14581,7 @@
   				_renderQueue.splice(i, 1);
   			}
   		}
-  		gsap$3.to(_renderQueueTimeout, {overwrite:true, delay:15, duration:0, onComplete:_renderQueueTimeout, data:"_draggable"}); //remove the "tick" listener only after the render queue is empty for 15 seconds (to improve performance). Adding/removing it constantly for every click/touch wouldn't deliver optimal speed, and we also don't want the ticker to keep calling the render method when things are idle for long periods of time (we want to improve battery life on mobile devices).
+  		gsap$4.to(_renderQueueTimeout, {overwrite:true, delay:15, duration:0, onComplete:_renderQueueTimeout, data:"_draggable"}); //remove the "tick" listener only after the render queue is empty for 15 seconds (to improve performance). Adding/removing it constantly for every click/touch wouldn't deliver optimal speed, and we also don't want the ticker to keep calling the render method when things are idle for long periods of time (we want to improve battery life on mobile devices).
   	},
   	_setDefaults$1 = (obj, defaults) => {
   		for (let p in defaults) {
@@ -12998,7 +14688,7 @@
   			return _tempRect;
   		}
   		let doc = e.ownerDocument || _doc$3,
-  			r = !_isUndefined$1(e.pageX) ? {left: e.pageX - _getDocScrollLeft$1(doc), top: e.pageY - _getDocScrollTop$1(doc), right: e.pageX - _getDocScrollLeft$1(doc) + 1, bottom: e.pageY - _getDocScrollTop$1(doc) + 1} : (!e.nodeType && !_isUndefined$1(e.left) && !_isUndefined$1(e.top)) ? e : _toArray$2(e)[0].getBoundingClientRect();
+  			r = !_isUndefined$1(e.pageX) ? {left: e.pageX - _getDocScrollLeft$1(doc), top: e.pageY - _getDocScrollTop$1(doc), right: e.pageX - _getDocScrollLeft$1(doc) + 1, bottom: e.pageY - _getDocScrollTop$1(doc) + 1} : (!e.nodeType && !_isUndefined$1(e.left) && !_isUndefined$1(e.top)) ? e : _toArray$3(e)[0].getBoundingClientRect();
   		if (_isUndefined$1(r.right) && !_isUndefined$1(r.width)) {
   			r.right = r.left + r.width;
   			r.bottom = r.top + r.height;
@@ -13013,7 +14703,7 @@
   			callback = vars[callbackName],
   			listeners = target._listeners[type],
   			result;
-  		if (_isFunction$2(callback)) {
+  		if (_isFunction$3(callback)) {
   			result = callback.apply(vars.callbackScope || target, vars[callbackName + "Params"] || [target.pointerEvent]);
   		}
   		if (listeners && target.dispatchEvent(type) === false) {
@@ -13022,7 +14712,7 @@
   		return result;
   	},
   	_getBounds = (target, context) => { //accepts any of the following: a DOM element, jQuery object, selector text, or an object defining bounds as {top, left, width, height} or {minX, maxX, minY, maxY}. Returns an object with left, top, width, and height properties.
-  		let e = _toArray$2(target)[0],
+  		let e = _toArray$3(target)[0],
   			top, left, offset;
   		if (!e.nodeType && e !== _win$4) {
   			if (!_isUndefined$1(target.left)) {
@@ -13037,7 +14727,7 @@
   	},
   	_point1 = {}, //we reuse to minimize garbage collection tasks.
   	_getElementBounds = (element, context) => {
-  		context = _toArray$2(context)[0];
+  		context = _toArray$3(context)[0];
   		let isSVG = (element.getBBox && element.ownerSVGElement),
   			doc = element.ownerDocument || _doc$3,
   			left, right, top, bottom, matrix, p1, p2, p3, p4, bbox, width, height, cs, contextParent;
@@ -13102,7 +14792,7 @@
   				}
   				max += 1.1; //allow 1.1 pixels of wiggle room when snapping in order to work around some browser inconsistencies in the way bounds are reported which can make them roughly a pixel off. For example, if "snap:[-$('#menu').width(), 0]" was defined and #menu had a wrapper that was used as the bounds, some browsers would be one pixel off, making the minimum -752 for example when snap was [-753,0], thus instead of snapping to -753, it would snap to 0 since -753 was below the minimum.
   				min -= 1.1;
-  			} else if (_isFunction$2(snap)) {
+  			} else if (_isFunction$3(snap)) {
   				vars.end = value => {
   					let result = snap.call(draggable, value),
   						copy, p;
@@ -13145,7 +14835,7 @@
   			e = elements[i];
   			e.ondragstart = e.onselectstart = selectable ? null : _emptyFunc$1;
   			//setStyle(e, "userSelect", (selectable ? "text" : "none"));
-  			gsap$3.set(e, {lazy:true, userSelect: (selectable ? "text" : "none")});
+  			gsap$4.set(e, {lazy:true, userSelect: (selectable ? "text" : "none")});
   		}
   	},
   	_isFixed$1 = element => {
@@ -13161,7 +14851,7 @@
 
   	//The ScrollProxy class wraps an element's contents into another div (we call it "content") that we either add padding when necessary or apply a translate3d() transform in order to overscroll (scroll past the boundaries). This allows us to simply set the scrollTop/scrollLeft (or top/left for easier reverse-axis orientation, which is what we do in Draggable) and it'll do all the work for us. For example, if we tried setting scrollTop to -100 on a normal DOM element, it wouldn't work - it'd look the same as setting it to 0, but if we set scrollTop of a ScrollProxy to -100, it'll give the correct appearance by either setting paddingTop of the wrapper to 100 or applying a 100-pixel translateY.
   	ScrollProxy = function(element, vars) {
-  		element = gsap$3.utils.toArray(element)[0];
+  		element = gsap$4.utils.toArray(element)[0];
   		vars = vars || {};
   		let content = document.createElement("div"),
   			style = content.style,
@@ -13203,7 +14893,7 @@
   				oldOffset = offsetLeft;
   			if ((dif > 2 || dif < -2) && !force) { //if the user interacts with the scrollbar (or something else scrolls it, like the mouse wheel), we should kill any tweens of the ScrollProxy.
   				prevLeft = element.scrollLeft;
-  				gsap$3.killTweensOf(this, {left:1, scrollLeft:1});
+  				gsap$4.killTweensOf(this, {left:1, scrollLeft:1});
   				this.left(-prevLeft);
   				if (vars.onKill) {
   					vars.onKill();
@@ -13239,7 +14929,7 @@
   				oldOffset = offsetTop;
   			if ((dif > 2 || dif < -2) && !force) { //if the user interacts with the scrollbar (or something else scrolls it, like the mouse wheel), we should kill any tweens of the ScrollProxy.
   				prevTop = element.scrollTop;
-  				gsap$3.killTweensOf(this, {top:1, scrollTop:1});
+  				gsap$4.killTweensOf(this, {top:1, scrollTop:1});
   				this.top(-prevTop);
   				if (vars.onKill) {
   					vars.onKill();
@@ -13347,7 +15037,7 @@
   		this._skip = false;
   		this.enable();
   	},
-  	_initCore$3 = required => {
+  	_initCore$4 = required => {
   		if (_windowExists$3() && document.body) {
   			let nav = window && window.navigator;
   			_win$4 = window;
@@ -13405,14 +15095,14 @@
   					}
   				}
   			});
-  			gsap$3 = _coreInitted$3 = _getGSAP$2();
+  			gsap$4 = _coreInitted$4 = _getGSAP$3();
   		}
-  		if (gsap$3) {
-  			InertiaPlugin = gsap$3.plugins.inertia;
-  			_checkPrefix = gsap$3.utils.checkPrefix;
+  		if (gsap$4) {
+  			InertiaPlugin = gsap$4.plugins.inertia;
+  			_checkPrefix = gsap$4.utils.checkPrefix;
   			_transformProp$2 = _checkPrefix(_transformProp$2);
   			_transformOriginProp$2 = _checkPrefix(_transformOriginProp$2);
-  			_toArray$2 = gsap$3.utils.toArray;
+  			_toArray$3 = gsap$4.utils.toArray;
   			_supports3D$1 = !!_checkPrefix("perspective");
   		} else if (required) {
   			console.warn("Please gsap.registerPlugin(Draggable)");
@@ -13463,12 +15153,12 @@
 
   	constructor(target, vars) {
   		super();
-  		if (!gsap$3) {
-  			_initCore$3(1);
+  		if (!gsap$4) {
+  			_initCore$4(1);
   		}
-  		target = _toArray$2(target)[0]; //in case the target is a selector object or selector text
+  		target = _toArray$3(target)[0]; //in case the target is a selector object or selector text
   		if (!InertiaPlugin) {
-  			InertiaPlugin = gsap$3.plugins.inertia;
+  			InertiaPlugin = gsap$4.plugins.inertia;
   		}
   		this.vars = vars = _copy(vars || {});
   		this.target = target;
@@ -13480,7 +15170,7 @@
   		this.lockedAxis = null;
   		this.allowEventDefault = !!vars.allowEventDefault;
 
-  		gsap$3.getProperty(target, "x"); // to ensure that transforms are instantiated.
+  		gsap$4.getProperty(target, "x"); // to ensure that transforms are instantiated.
 
   		let type = (vars.type || "x,y").toLowerCase(),
   			xyMode = (~type.indexOf("x") || ~type.indexOf("y")),
@@ -13491,7 +15181,7 @@
   			allowY = !!(~type.indexOf("y") || ~type.indexOf("top") || type === "scroll"),
   			minimumMovement = vars.minimumMovement || 2,
   			self = this,
-  			triggers = _toArray$2(vars.trigger || vars.handle || target),
+  			triggers = _toArray$3(vars.trigger || vars.handle || target),
   			killProps = {},
   			dragEndTime = 0,
   			checkAutoScrollBounds = false,
@@ -13501,7 +15191,7 @@
   			autoScrollMarginLeft = vars.autoScrollMarginLeft || 40,
   			isClickable = vars.clickableTest || _isClickable,
   			clickTime = 0,
-  			gsCache = target._gsap || gsap$3.core.getCache(target),
+  			gsCache = target._gsap || gsap$4.core.getCache(target),
   			isFixed = _isFixed$1(target),
   			getPropAsNum = (property, unit) => parseFloat(gsCache.get(target, property, unit)),
   			ownerDoc = target.ownerDocument || _doc$3,
@@ -13628,7 +15318,7 @@
   				let { x, y } = self,
   					snappedValue, cs;
   				if (!target._gsap) { //just in case the _gsap cache got wiped, like if the user called clearProps on the transform or something (very rare).
-  					gsCache = gsap$3.core.getCache(target);
+  					gsCache = gsap$4.core.getCache(target);
   				}
   				if (xyMode) {
   					self.x = parseFloat(gsCache.x);
@@ -13686,12 +15376,12 @@
 
   			buildSnapFunc = (snap, min, max, factor) => {
   				if (min == null) {
-  					min = -_bigNum$3;
+  					min = -_bigNum$4;
   				}
   				if (max == null) {
-  					max = _bigNum$3;
+  					max = _bigNum$4;
   				}
-  				if (_isFunction$2(snap)) {
+  				if (_isFunction$3(snap)) {
   					return n => {
   						let edgeTolerance = !self.isPressed ? 1 : 1 - self.edgeResistance; //if we're tweening, disable the edgeTolerance because it's already factored into the tweening values (we don't want to apply it multiple times)
   						return snap.call(self, (n > max ? max + (n - max) * edgeTolerance : (n < min) ? min + (n - min) * edgeTolerance : n)) * factor;
@@ -13701,7 +15391,7 @@
   					return n => {
   						let i = snap.length,
   							closest = 0,
-  							absDif = _bigNum$3,
+  							absDif = _bigNum$4,
   							val, dif;
   						while (--i > -1) {
   							val = snap[i];
@@ -13721,8 +15411,8 @@
   			},
 
   			buildPointSnapFunc = (snap, minX, maxX, minY, maxY, radius, factor) => {
-  				radius = (radius && radius < _bigNum$3) ? radius * radius : _bigNum$3; //so we don't have to Math.sqrt() in the functions. Performance optimization.
-  				if (_isFunction$2(snap)) {
+  				radius = (radius && radius < _bigNum$4) ? radius * radius : _bigNum$4; //so we don't have to Math.sqrt() in the functions. Performance optimization.
+  				if (_isFunction$3(snap)) {
   					return point => {
   						let edgeTolerance = !self.isPressed ? 1 : 1 - self.edgeResistance,
   							x = point.x,
@@ -13739,7 +15429,7 @@
   							point.x *= factor;
   							point.y *= factor;
   						}
-  						if (radius < _bigNum$3) {
+  						if (radius < _bigNum$4) {
   							dx = point.x - x;
   							dy = point.y - y;
   							if (dx * dx + dy * dy > radius) {
@@ -13754,7 +15444,7 @@
   					return p => {
   						let i = snap.length,
   							closest = 0,
-  							minDist = _bigNum$3,
+  							minDist = _bigNum$4,
   							x, y, point, dist;
   						while (--i > -1) {
   							point = snap[i];
@@ -13818,7 +15508,7 @@
   				}
   				if (vars.liveSnap) {
   					snap = (vars.liveSnap === true) ? (vars.snap || {}) : vars.liveSnap;
-  					snapIsRaw = (_isArray$1(snap) || _isFunction$2(snap));
+  					snapIsRaw = (_isArray$1(snap) || _isFunction$3(snap));
   					if (rotationMode) {
   						snapX = buildSnapFunc((snapIsRaw ? snap : snap.rotation), minX, maxX, 1);
   						snapY = null;
@@ -13850,7 +15540,7 @@
   				if (inertia && InertiaPlugin) {
   					if (inertia === true) {
   						snap = vars.snap || vars.liveSnap || {};
-  						snapIsRaw = (_isArray$1(snap) || _isFunction$2(snap));
+  						snapIsRaw = (_isArray$1(snap) || _isFunction$3(snap));
   						inertia = {resistance:(vars.throwResistance || vars.resistance || 1000) / (rotationMode ? 10 : 1)};
   						if (rotationMode) {
   							inertia.rotation = _parseInertia(self, snapIsRaw ? snap : snap.rotation, maxX, minX, 1, forceZeroVelocity);
@@ -13872,7 +15562,7 @@
   					if (!inertia.duration) {
   						inertia.duration = {max: Math.max(vars.minDuration || 0, ("maxDuration" in vars) ? vars.maxDuration : 2), min: (!isNaN(vars.minDuration) ? vars.minDuration : (overshootTolerance === 0 || (_isObject$1(inertia) && inertia.resistance > 1000)) ? 0 : 0.5), overshoot: overshootTolerance};
   					}
-  					self.tween = tween = gsap$3.to(scrollProxy || target, {
+  					self.tween = tween = gsap$4.to(scrollProxy || target, {
   						inertia: inertia,
   						data: "_draggable",
   						onComplete: onThrowComplete,
@@ -14054,8 +15744,8 @@
   				recordStartPositions();
   				self.tween && self.tween.kill();
   				self.isThrowing = false;
-  				gsap$3.killTweensOf(scrollProxy || target, killProps, true); //in case the user tries to drag it before the last tween is done.
-  				scrollProxy && gsap$3.killTweensOf(target, {scrollTo:1}, true); //just in case the original target's scroll position is being tweened somewhere else.
+  				gsap$4.killTweensOf(scrollProxy || target, killProps, true); //in case the user tries to drag it before the last tween is done.
+  				scrollProxy && gsap$4.killTweensOf(target, {scrollTo:1}, true); //just in case the original target's scroll position is being tweened somewhere else.
   				self.tween = self.lockedAxis = null;
   				if (vars.zIndexBoost || (!rotationMode && !scrollProxy && vars.zIndexBoost !== false)) {
   					target.style.zIndex = Draggable.zIndex++;
@@ -14067,7 +15757,7 @@
   					i = triggers.length;
   					while (--i > -1) {
   						//_setStyle(triggers[i], "cursor", vars.activeCursor || vars.cursor || (_defaultCursor === "grab" ? "grabbing" : _defaultCursor));
-  						gsap$3.set(triggers[i], {cursor: vars.activeCursor || vars.cursor || (_defaultCursor === "grab" ? "grabbing" : _defaultCursor)});
+  						gsap$4.set(triggers[i], {cursor: vars.activeCursor || vars.cursor || (_defaultCursor === "grab" ? "grabbing" : _defaultCursor)});
   					}
   				}
   				_dispatchEvent(self, "press", "onPress");
@@ -14111,7 +15801,7 @@
   						}
   						if (self.vars.lockAxisOnTouchScroll !== false && allowX && allowY) {
   							self.lockedAxis = (touchDragAxis === "x") ? "y" : "x";
-  							_isFunction$2(self.vars.onLockAxis) && self.vars.onLockAxis.call(self, originalEvent);
+  							_isFunction$3(self.vars.onLockAxis) && self.vars.onLockAxis.call(self, originalEvent);
   						}
   						if (_isAndroid && allowNativeTouchScrolling === touchDragAxis) {
   							onRelease(originalEvent);
@@ -14182,7 +15872,7 @@
   						temp = self.lockedAxis;
   						if (!temp) {
   							self.lockedAxis = temp = (allowX && Math.abs(xChange) > Math.abs(yChange)) ? "y" : allowY ? "x" : null;
-  							if (temp && _isFunction$2(self.vars.onLockAxis)) {
+  							if (temp && _isFunction$3(self.vars.onLockAxis)) {
   								self.vars.onLockAxis.call(self, self.pointerEvent);
   							}
   						}
@@ -14192,8 +15882,8 @@
   							xChange = 0;
   						}
   					}
-  					x = _round$3(startElementX + xChange * dragTolerance);
-  					y = _round$3(startElementY + yChange * dragTolerance);
+  					x = _round$4(startElementX + xChange * dragTolerance);
+  					y = _round$4(startElementY + yChange * dragTolerance);
   				}
 
   				if ((snapX || snapY || snapXY) && (self.x !== x || (self.y !== y && !rotationMode))) {
@@ -14201,14 +15891,14 @@
   						_temp1.x = x;
   						_temp1.y = y;
   						temp = snapXY(_temp1);
-  						x = _round$3(temp.x);
-  						y = _round$3(temp.y);
+  						x = _round$4(temp.x);
+  						y = _round$4(temp.y);
   					}
   					if (snapX) {
-  						x = _round$3(snapX(x));
+  						x = _round$4(snapX(x));
   					}
   					if (snapY) {
-  						y = _round$3(snapY(y));
+  						y = _round$4(snapY(y));
   					}
   				} else if (hasBounds) {
   					if (x > maxX) {
@@ -14267,7 +15957,7 @@
   				let originalEvent = e,
   					wasDragging = self.isDragging,
   					isContextMenuRelease = (self.vars.allowContextMenu && e && (e.ctrlKey || e.which > 2)),
-  					placeholderDelayedCall = gsap$3.delayedCall(0.001, removePlaceholder),
+  					placeholderDelayedCall = gsap$4.delayedCall(0.001, removePlaceholder),
   					touches, i, syntheticEvent, eventTarget, syntheticClick;
   				if (touchEventTarget) {
   					_removeListener(touchEventTarget, "touchend", onRelease);
@@ -14353,7 +16043,7 @@
   							}
   						};
   						if (!_isAndroid && !originalEvent.defaultPrevented) { //iOS Safari requires the synthetic click to happen immediately or else it simply won't work, but Android doesn't play nice.
-  							gsap$3.delayedCall(0.05, syntheticClick); //in addition to the iOS bug workaround, there's a Firefox issue with clicking on things like a video to play, so we must fake a click event in a slightly delayed fashion. Previously, we listened for the "click" event with "capture" false which solved the video-click-to-play issue, but it would allow the "click" event to be dispatched twice like if you were using a jQuery.click() because that was handled in the capture phase, thus we had to switch to the capture phase to avoid the double-dispatching, but do the delayed synthetic click. Don't fire it too fast (like 0.00001) because we want to give the native event a chance to fire first as it's "trusted".
+  							gsap$4.delayedCall(0.05, syntheticClick); //in addition to the iOS bug workaround, there's a Firefox issue with clicking on things like a video to play, so we must fake a click event in a slightly delayed fashion. Previously, we listened for the "click" event with "capture" false which solved the video-click-to-play issue, but it would allow the "click" event to be dispatched twice like if you were using a jQuery.click() because that was handled in the capture phase, thus we had to switch to the capture phase to avoid the double-dispatching, but do the delayed synthetic click. Don't fire it too fast (like 0.00001) because we want to give the native event a chance to fire first as it's "trusted".
   						}
   					}
   				} else {
@@ -14563,7 +16253,7 @@
   			if (!rotationMode && vars.cursor !== false) {
   				setVars.cursor = vars.cursor || _defaultCursor;
   			}
-  			if (gsap$3.utils.checkPrefix("touchCallout")) {
+  			if (gsap$4.utils.checkPrefix("touchCallout")) {
   				setVars.touchCallout = "none";
   			}
   			setVars.touchAction = (allowX === allowY) ? "none" : vars.allowNativeTouchScrolling || vars.allowEventDefault ? "manipulation" : allowX ? "pan-y" : "pan-x";
@@ -14574,9 +16264,9 @@
   					_supportsPointer || _addListener(trigger, "mousedown", onPress);
   					_addListener(trigger, "touchstart", onPress);
   					_addListener(trigger, "click", onClick, true); //note: used to pass true for capture but it prevented click-to-play-video functionality in Firefox.
-  					gsap$3.set(trigger, setVars);
+  					gsap$4.set(trigger, setVars);
   					if (trigger.getBBox && trigger.ownerSVGElement) { // a bug in chrome doesn't respect touch-action on SVG elements - it only works if we set it on the parent SVG.
-  						gsap$3.set(trigger.ownerSVGElement, {touchAction: (allowX === allowY) ? "none" : vars.allowNativeTouchScrolling || vars.allowEventDefault ? "manipulation" : allowX ? "pan-y" : "pan-x"});
+  						gsap$4.set(trigger.ownerSVGElement, {touchAction: (allowX === allowY) ? "none" : vars.allowNativeTouchScrolling || vars.allowEventDefault ? "manipulation" : allowX ? "pan-y" : "pan-x"});
   					}
   					vars.allowContextMenu || _addListener(trigger, "contextmenu", onContextMenu);
   				}
@@ -14653,7 +16343,7 @@
   				self.tween.kill();
   			}
   			self.disable();
-  			gsap$3.set(triggers, {clearProps:"userSelect"});
+  			gsap$4.set(triggers, {clearProps:"userSelect"});
   			delete _lookup[target._gsDragID];
   			return self;
   		};
@@ -14689,19 +16379,19 @@
 
 
   	static register(core) {
-  		gsap$3 = core;
-  		_initCore$3();
+  		gsap$4 = core;
+  		_initCore$4();
   	}
 
   	static create(targets, vars) {
-  		if (!_coreInitted$3) {
-  			_initCore$3(true);
+  		if (!_coreInitted$4) {
+  			_initCore$4(true);
   		}
-  		return _toArray$2(targets).map(target => new Draggable(target, vars));
+  		return _toArray$3(targets).map(target => new Draggable(target, vars));
   	}
 
   	static get(target) {
-  		return _lookup[(_toArray$2(target)[0] || {})._gsDragID];
+  		return _lookup[(_toArray$3(target)[0] || {})._gsDragID];
   	}
 
   	static timeSinceDrag() {
@@ -14743,7 +16433,7 @@
   Draggable.zIndex = 1000;
   Draggable.version = "3.4.0";
 
-  _getGSAP$2() && gsap$3.registerPlugin(Draggable);
+  _getGSAP$3() && gsap$4.registerPlugin(Draggable);
 
   /*!
    * GSDevTools 3.4.0
@@ -14755,13 +16445,13 @@
    * @author: Jack Doyle, jack@greensock.com
   */
 
-  let gsap$4, _coreInitted$4, _doc$4, _docEl, _win$5, _recordedRoot, Animation$1, _rootTween, _rootInstance, _keyboardInstance, _globalTimeline$1, _independentRoot, _delayedCall,
+  let gsap$5, _coreInitted$5, _doc$4, _docEl, _win$5, _recordedRoot, Animation$1, _rootTween, _rootInstance, _keyboardInstance, _globalTimeline$1, _independentRoot, _delayedCall,
   	_startupPhase = true, //for the first 2 seconds, we don't record any zero-duration tweens because they're typically just setup stuff and/or the "from" or "startAt" tweens. In version 1.20.3 we started flagging those with data:"isStart"|"isFromStart" but this logic helps GSDevTools work with older versions too.
   	_globalStartTime = 0,
   	_windowExists$4 = () => typeof(window) !== "undefined",
-  	_getGSAP$3 = () => gsap$4 || (_windowExists$4() && (gsap$4 = window.gsap) && gsap$4.registerPlugin && gsap$4),
-  	_isString$2 = value => typeof(value) === "string",
-  	_isFunction$3 = value => typeof(value) === "function",
+  	_getGSAP$4 = () => gsap$5 || (_windowExists$4() && (gsap$5 = window.gsap) && gsap$5.registerPlugin && gsap$5),
+  	_isString$3 = value => typeof(value) === "string",
+  	_isFunction$4 = value => typeof(value) === "function",
   	_isObject$2 = value => typeof(value) === "object",
   	_isUndefined$2 = value => typeof(value) === "undefined",
   	_svgNS = "http://www.w3.org/2000/svg",
@@ -14777,11 +16467,11 @@
   			return false;
   		}
   	}()),
-  	_parseAnimation = animationOrId => (animationOrId instanceof Animation$1) ? animationOrId : animationOrId ? gsap$4.getById(animationOrId) : null,
+  	_parseAnimation = animationOrId => (animationOrId instanceof Animation$1) ? animationOrId : animationOrId ? gsap$5.getById(animationOrId) : null,
   	_createElement$2 = (type, container, cssText) => {
   		let element = _doc$4.createElementNS ? _doc$4.createElementNS(type === "svg" ? _svgNS : _domNS, type) : _doc$4.createElement(type);
   		if (container) {
-  			if (_isString$2(container)) {
+  			if (_isString$3(container)) {
   				container = _doc$4.querySelector(container);
   			}
   			container.appendChild(element);
@@ -14805,7 +16495,7 @@
   	_getChildrenOf = (timeline, includeTimelines) => {
   		let a = [],
   			cnt = 0,
-  			Tween = gsap$4.core.Tween,
+  			Tween = gsap$5.core.Tween,
   			tween = timeline._first;
   		while (tween) {
   			if (tween instanceof Tween) {
@@ -14847,7 +16537,7 @@
   	},
   	_timeToProgress = (time, animation, defaultValue, relativeProgress) => {
   		let add, i, a;
-  		if (_isString$2(time)) {
+  		if (_isString$3(time)) {
   			if (time.charAt(1) === "=") {
   				add = parseInt(time.charAt(0) + "1", 10) * parseFloat(time.substr(2));
   				if (add < 0 && relativeProgress === 0) { //if something like inTime:"-=2", we measure it from the END, not the beginning
@@ -14864,7 +16554,7 @@
   				} else {
   					add = 0;
   				}
-  				a = gsap$4.getById(time);
+  				a = gsap$5.getById(time);
   				if (a) {
   					time = _globalizeTime(a, defaultValue / 100 * a.duration()) + add;
   				}
@@ -14880,7 +16570,7 @@
   			_createElement$2("style", _docEl).innerHTML = '.gs-dev-tools{height:51px;bottom:0;left:0;right:0;display:block;position:fixed;overflow:visible;padding:0}.gs-dev-tools *{box-sizing:content-box;visibility:visible}.gs-dev-tools .gs-top{position:relative;z-index:499}.gs-dev-tools .gs-bottom{display:flex;align-items:center;justify-content:space-between;background-color:rgba(0,0,0,.6);height:42px;border-top:1px solid #999;position:relative}.gs-dev-tools .timeline{position:relative;height:8px;margin-left:15px;margin-right:15px;overflow:visible}.gs-dev-tools .progress-bar,.gs-dev-tools .timeline-track{height:8px;width:100%;position:absolute;top:0;left:0}.gs-dev-tools .timeline-track{background-color:#999;opacity:.6}.gs-dev-tools .progress-bar{background-color:#91e600;height:8px;top:0;width:0;pointer-events:none}.gs-dev-tools .seek-bar{width:100%;position:absolute;height:24px;top:-12px;left:0;background-color:transparent}.gs-dev-tools .in-point,.gs-dev-tools .out-point{width:15px;height:26px;position:absolute;top:-18px}.gs-dev-tools .in-point-shape{fill:#6d9900;stroke:rgba(0,0,0,.5);stroke-width:1}.gs-dev-tools .out-point-shape{fill:#994242;stroke:rgba(0,0,0,.5);stroke-width:1}.gs-dev-tools .in-point{transform:translateX(-100%)}.gs-dev-tools .out-point{left:100%}.gs-dev-tools .grab{stroke:rgba(255,255,255,.3);stroke-width:1}.gs-dev-tools .playhead{position:absolute;top:-5px;transform:translate(-50%,0);left:0;border-radius:50%;width:16px;height:16px;border:1px solid #6d9900;background-color:#91e600}.gs-dev-tools .gs-btn-white{fill:#fff}.gs-dev-tools .pause{opacity:0}.gs-dev-tools .select-animation{vertical-align:middle;position:relative;padding:6px 10px}.gs-dev-tools .select-animation-container{flex-grow:4;width:40%}.gs-dev-tools .select-arrow{display:inline-block;width:12px;height:7px;margin:0 7px;transform:translate(0,-2px)}.gs-dev-tools .select-arrow-shape{stroke:rgba(255,255,255,.6);stroke-width:2px;fill:none}.gs-dev-tools .rewind{height:16px;width:19px;padding:10px 4px;min-width:24px}.gs-dev-tools .rewind-path{opacity:.6}.gs-dev-tools .play-pause{width:24px;height:24px;padding:6px 10px;min-width:24px}.gs-dev-tools .ease{width:30px;height:30px;padding:10px;min-width:30px;display:none}.gs-dev-tools .ease-path{fill:none;stroke:rgba(255,255,255,.6);stroke-width:2px}.gs-dev-tools .ease-border{fill:rgba(255,255,255,.25)}.gs-dev-tools .time-scale{font-family:monospace;font-size:18px;text-align:center;color:rgba(255,255,255,.6);padding:4px 4px 4px 0;min-width:30px;margin-left:7px}.gs-dev-tools .loop{width:20px;padding:5px;min-width:20px}.gs-dev-tools .loop-path{fill:rgba(255,255,255,.6)}.gs-dev-tools label span{color:#fff;font-family:monospace;text-decoration:none;font-size:16px;line-height:18px}.gs-dev-tools .time-scale span{color:rgba(255,255,255,.6)}.gs-dev-tools button:focus,.gs-dev-tools select:focus{outline:0}.gs-dev-tools label{position:relative;cursor:pointer}.gs-dev-tools label.locked{text-decoration:none;cursor:auto}.gs-dev-tools label input,.gs-dev-tools label select{position:absolute;left:0;top:0;z-index:1;font:inherit;font-size:inherit;line-height:inherit;height:100%;width:100%;color:#000!important;opacity:0;background:0 0;border:none;padding:0;margin:0;-webkit-appearance:none;-moz-appearance:none;appearance:none;cursor:pointer}.gs-dev-tools label input+.display{position:relative;z-index:2}.gs-dev-tools .gs-bottom-right{vertical-align:middle;display:flex;align-items:center;flex-grow:4;width:40%;justify-content:flex-end}.gs-dev-tools .time-container{font-size:18px;font-family:monospace;color:rgba(255,255,255,.6);margin:0 5px}.gs-dev-tools .logo{width:32px;height:32px;position:relative;top:2px;margin:0 12px}.gs-dev-tools .gs-hit-area{background-color:transparent;width:100%;height:100%;top:0;position:absolute}.gs-dev-tools.minimal{height:auto;display:flex;align-items:stretch}.gs-dev-tools.minimal .gs-top{order:2;flex-grow:4;background-color:rgba(0,0,0,1)}.gs-dev-tools.minimal .gs-bottom{background-color:rgba(0,0,0,1);border-top:none}.gs-dev-tools.minimal .timeline{top:50%;transform:translate(0,-50%)}.gs-dev-tools.minimal .in-point,.gs-dev-tools.minimal .out-point{display:none}.gs-dev-tools.minimal .select-animation-container{display:none}.gs-dev-tools.minimal .rewind{display:none}.gs-dev-tools.minimal .play-pause{width:20px;height:20px;padding:4px 6px;margin-left:14px}.gs-dev-tools.minimal .time-scale{min-width:26px}.gs-dev-tools.minimal .loop{width:18px;min-width:18px;display:none}.gs-dev-tools.minimal .gs-bottom-right{display:none}@media only screen and (max-width:600px){.gs-dev-tools{height:auto;display:flex;align-items:stretch}.gs-dev-tools .gs-top{order:2;flex-grow:4;background-color:rgba(0,0,0,1);height:42px}.gs-dev-tools .gs-bottom{background-color:rgba(0,0,0,1);border-top:none}.gs-dev-tools .timeline{top:50%;transform:translate(0,-50%)}.gs-dev-tools .in-point,.gs-dev-tools .out-point{display:none}.gs-dev-tools .select-animation-container{display:none}.gs-dev-tools .rewind{display:none}.gs-dev-tools .play-pause{width:20px;height:20px;padding:4px 6px;margin-left:14px}.gs-dev-tools .time-scale{min-width:26px}.gs-dev-tools .loop{width:18px;min-width:18px;display:none}.gs-dev-tools .gs-bottom-right{display:none}}';
   			_addedCSS = true;
   		}
-  		if (_isString$2(element)) {
+  		if (_isString$3(element)) {
   			element = _doc$4.querySelector(element);
   		}
   		let root = _createElement$2("div", element || _docEl.getElementsByTagName("body")[0] || _docEl);
@@ -14891,17 +16581,17 @@
   			root.style.top = minimal ? "calc(100% - 42px)" : "calc(100% - 51px)";
   		}
   		if (css) {
-  			if (_isString$2(css)) {
+  			if (_isString$3(css)) {
   				root.style.cssText = css;
   			} else if (_isObject$2(css)) {
   				css.data = "root";
-  				gsap$4.set(root, css).kill();
+  				gsap$5.set(root, css).kill();
   			}
   			if (root.style.top) {
   				root.style.bottom = "auto";
   			}
   			if (root.style.width) {
-  				gsap$4.set(root, {xPercent: -50, left: "50%", right: "auto", data:"root"}).kill();
+  				gsap$5.set(root, {xPercent: -50, left: "50%", right: "auto", data:"root"}).kill();
   			}
   		}
   		if (!minimal && root.offsetWidth < 600) {
@@ -14965,7 +16655,7 @@
   		if (insertIfAbsent) {
   			option = _createElement$2("option", element);
   			option.setAttribute("value", value);
-  			option.innerHTML = label.innerHTML = _isString$2(insertIfAbsent) ? insertIfAbsent : value;
+  			option.innerHTML = label.innerHTML = _isString$3(insertIfAbsent) ? insertIfAbsent : value;
   			element.selectedIndex = options.length - 1;
   		}
   	},
@@ -14988,7 +16678,7 @@
   			while (t) {
   				next = t._next;
   				target = t._targets && t._targets[0];
-  				if (!(_isFunction$3(target) && target === t.vars.onComplete && !t._dur) && !(target && target._gsIgnore)) { //typically, delayedCalls aren't included in the _recordedTemp, but since the hijacked add() below fires BEFORE TweenLite's constructor sets the target, we couldn't check that target === vars.onComplete there. And Draggable creates a tween with just an onComplete (no onReverseComplete), thus it fails that test. Therefore, we test again here to avoid merging that in.
+  				if (!(_isFunction$4(target) && target === t.vars.onComplete && !t._dur) && !(target && target._gsIgnore)) { //typically, delayedCalls aren't included in the _recordedTemp, but since the hijacked add() below fires BEFORE TweenLite's constructor sets the target, we couldn't check that target === vars.onComplete there. And Draggable creates a tween with just an onComplete (no onReverseComplete), thus it fails that test. Therefore, we test again here to avoid merging that in.
   					_recordedRoot.add(t, t._start - t._delay);
   				}
   				t = next;
@@ -14997,53 +16687,53 @@
   		}
   	},
   	_buildPlayPauseMorph = svg => {
-  		let tl = gsap$4.timeline({data:"root", parent:_independentRoot, onComplete:() => tl.kill() });
+  		let tl = gsap$5.timeline({data:"root", parent:_independentRoot, onComplete:() => tl.kill() });
   		tl.to(svg.querySelector(".play-1"), {duration:0.4, attr:{d:"M5.75,3.13 C5.75,9.79 5.75,16.46 5.75,23.13 4.08,23.13 2.41,23.13 0.75,23.13 0.75,16.46 0.75,9.79 0.75,3.12 2.41,3.12 4.08,3.12 5.75,3.12"}, ease:"power2.inOut", rotation:360, transformOrigin:"50% 50%"})
   		  .to(svg.querySelector(".play-2"), {duration:0.4, attr:{d:"M16.38,3.13 C16.38,9.79 16.38,16.46 16.38,23.13 14.71,23.13 13.04,23.13 11.38,23.13 11.38,16.46 11.38,9.79 11.38,3.12 13.04,3.12 14.71,3.12 16.38,3.12"}, ease:"power2.inOut", rotation:360, transformOrigin:"50% 50%"}, 0.05);
   		return tl;
   	},
 
   	_buildLoopAnimation = svg => {
-  		let tl = gsap$4.timeline({data:"root", id:"loop", parent:_independentRoot, paused:true, onComplete:() => tl.kill() });
+  		let tl = gsap$5.timeline({data:"root", id:"loop", parent:_independentRoot, paused:true, onComplete:() => tl.kill() });
   		tl.to(svg, {duration: 0.5, rotation:360, ease:"power3.inOut", transformOrigin:"50% 50%"})
   		  .to(svg.querySelectorAll(".loop-path"), {duration:0.5, fill:"#91e600", ease:"none"}, 0);
   		return tl;
   	},
 
-  	_getAnimationById = id => gsap$4.getById(id) || _independentRoot.getById(id) || (id === _recordedRoot.vars.id && _recordedRoot),
+  	_getAnimationById = id => gsap$5.getById(id) || _independentRoot.getById(id) || (id === _recordedRoot.vars.id && _recordedRoot),
 
 
 
-  	_initCore$4 = core => {
-  		gsap$4 = core || _getGSAP$3();
-  		if (!_coreInitted$4) {
-  			if (gsap$4 && _windowExists$4()) {
+  	_initCore$5 = core => {
+  		gsap$5 = core || _getGSAP$4();
+  		if (!_coreInitted$5) {
+  			if (gsap$5 && _windowExists$4()) {
   				_doc$4 = document;
   				_docEl = _doc$4.documentElement;
   				_win$5 = window;
-  				gsap$4.registerPlugin(Draggable);
-  				_globalTimeline$1 = gsap$4.globalTimeline;
+  				gsap$5.registerPlugin(Draggable);
+  				_globalTimeline$1 = gsap$5.globalTimeline;
   				_globalTimeline$1._sort = true;
   				_globalTimeline$1.autoRemoveChildren = false;
-  				Animation$1 = gsap$4.core.Animation;
-  				_independentRoot = gsap$4.timeline({data:"indy", autoRemoveChildren:true, smoothChildTiming:true});
+  				Animation$1 = gsap$5.core.Animation;
+  				_independentRoot = gsap$5.timeline({data:"indy", autoRemoveChildren:true, smoothChildTiming:true});
   				_independentRoot.kill();
   				_independentRoot._dp = 0; //don't let it revert to the global timeline as its parent.
   				_independentRoot.to({}, {duration:1e12});
-  				_recordedRoot = gsap$4.timeline({data:"root", id:"Global Timeline", autoRemoveChildren:false, smoothChildTiming:true, parent:_independentRoot});
-  				_rootTween = gsap$4.to(_recordedRoot, {duration:1, time:1, ease:"none", data:"root", id:"_rootTween", paused:true, immediateRender:false, parent:_independentRoot});
+  				_recordedRoot = gsap$5.timeline({data:"root", id:"Global Timeline", autoRemoveChildren:false, smoothChildTiming:true, parent:_independentRoot});
+  				_rootTween = gsap$5.to(_recordedRoot, {duration:1, time:1, ease:"none", data:"root", id:"_rootTween", paused:true, immediateRender:false, parent:_independentRoot});
   				// so that auto-overwriting works. Initially we transferred the tweens to the _recordedRoot.
   				_globalTimeline$1.killTweensOf = function(targets, props, onlyActive) {
   					_recordedRoot.killTweensOf(targets, props, onlyActive);
   					_recordedRoot.killTweensOf.call(_globalTimeline$1, targets, props, onlyActive);
   				};
-  				_independentRoot._start = gsap$4.ticker.time;
-  				gsap$4.ticker.add(time => _independentRoot.render(time - _independentRoot._start));
+  				_independentRoot._start = gsap$5.ticker.time;
+  				gsap$5.ticker.add(time => _independentRoot.render(time - _independentRoot._start));
 
   				//align the all of the playheads so they're starting at 0 now.
   				_globalTimeline$1._start += _globalTimeline$1._time;
   				_recordedRoot._start = _globalTimeline$1._time = _globalTimeline$1._tTime = 0;
-  				_delayedCall = (delay, callback, params, scope) => gsap$4.to(callback, {delay:delay, duration:0, onComplete:callback, onReverseComplete:callback, onCompleteParams:params, onReverseCompleteParams:params, callbackScope:scope, parent:_independentRoot});
+  				_delayedCall = (delay, callback, params, scope) => gsap$5.to(callback, {delay:delay, duration:0, onComplete:callback, onReverseComplete:callback, onCompleteParams:params, onReverseCompleteParams:params, callbackScope:scope, parent:_independentRoot});
 
   				//in case GSDevTools.create() is called before anything is actually on the global timeline, we've gotta update it or else the duration will be 0 and it'll be stuck.
   				_delayedCall(0.01, () => _rootInstance ? _rootInstance.update() : _merge$1());
@@ -15076,7 +16766,7 @@
   					}
   					_startupPhase = false;
   				});
-  				_coreInitted$4 = 1;
+  				_coreInitted$5 = 1;
   			}
   		}
   	},
@@ -15093,16 +16783,16 @@
 
 
   	GSDevTools = function(vars) {
-  		if (!_coreInitted$4) {
-  			_initCore$4();
-  			gsap$4 || console.warn("Please gsap.registerPlugin(GSDevTools)");
+  		if (!_coreInitted$5) {
+  			_initCore$5();
+  			gsap$5 || console.warn("Please gsap.registerPlugin(GSDevTools)");
   		}
 
   		this.vars = vars = vars || {};
   		if (vars.animation) {
   			(GSDevTools.getByAnimation(vars.animation) || {kill:() => 0}).kill();
   		}
-  		vars.id = vars.id || (_isString$2(vars.animation) ? vars.animation : _idSeed++); //try to find a unique ID so that sessionStorage can be mapped to it (otherwise, for example, all the embedded codepens on a page would share the same settings). So if no id is defined, see if there's a string-based "animation" defined. Last of all, we default to a numeric counter that we increment.
+  		vars.id = vars.id || (_isString$3(vars.animation) ? vars.animation : _idSeed++); //try to find a unique ID so that sessionStorage can be mapped to it (otherwise, for example, all the embedded codepens on a page would share the same settings). So if no id is defined, see if there's a string-based "animation" defined. Last of all, we default to a numeric counter that we increment.
   		_lookup$1[vars.id + ""] = this;
 
   		("globalSync" in vars) || (vars.globalSync = !vars.animation); //if the user calls create() and passes in an animation AFTER the initial recording time has elapsed, there's a good chance the animation won't be in the recordedRoot, so we change the default globalSync to false because that's the most intuitive behavior.
@@ -15161,7 +16851,7 @@
   					let trackBounds = timelineTrack.getBoundingClientRect(),
   						elementBounds = element.getBoundingClientRect(),
   						left = elementBounds.width * originRatio,
-  						x = gsap$4.getProperty(element, "x"),
+  						x = gsap$5.getProperty(element, "x"),
   						minX = trackBounds.left - elementBounds.left - left + x,
   						maxX = trackBounds.right - elementBounds.right + (elementBounds.width - left) + x,
   						unlimitedMinX = minX,
@@ -15253,7 +16943,7 @@
   					//for responsiveness, convert the px-based transform into %-based left position.
   					inPoint.style.left = inProgress + "%";
   					record("in", inProgress);
-  					gsap$4.set(inPoint, {x:0, data:"root", display:"block"}); //set display:block so that it remains visible even when the minimal skin is enabled.
+  					gsap$5.set(inPoint, {x:0, data:"root", display:"block"}); //set display:block so that it remains visible even when the minimal skin is enabled.
   					if (!paused) {
   						linkedAnimation.resume();
   					}
@@ -15280,7 +16970,7 @@
   					//for responsiveness, convert the px-based transform into %-based left position.
   					outPoint.style.left = outProgress + "%";
   					record("out", outProgress);
-  					gsap$4.set(outPoint, {x:0, data:"root", display:"block"}); //set display:block so that it remains visible even when the minimal skin is enabled.
+  					gsap$5.set(outPoint, {x:0, data:"root", display:"block"}); //set display:block so that it remains visible even when the minimal skin is enabled.
   					if (!pausedWhenDragStarted) {
   						play();
   						linkedAnimation.resume();
@@ -15480,7 +17170,7 @@
   				if (!arguments.length) {
   					return selectedAnimation;
   				}
-  				if (_isString$2(anim)) {
+  				if (_isString$3(anim)) {
   					anim = _getAnimationById(anim);
   				}
   				//console.log("animation() ", anim.vars.id);
@@ -15577,7 +17267,7 @@
   							endTime = startTime + maxDuration;
   						}
   						declaredAnimation.pause(startTime);
-  						linkedAnimation = gsap$4.to(declaredAnimation, {duration: endTime - startTime, time:endTime, ease:"none", data:"root", parent:_independentRoot});
+  						linkedAnimation = gsap$5.to(declaredAnimation, {duration: endTime - startTime, time:endTime, ease:"none", data:"root", parent:_independentRoot});
   					}
   					linkedAnimation.timeScale(ts);
   					_rootTween.pause();
@@ -15653,7 +17343,7 @@
 
 
   			//AUTOHIDE
-  			autoHideTween = gsap$4.to([find(".gs-bottom"), find(".gs-top")], {duration:0.3, autoAlpha:0, y:50, ease:"power2.in", data:"root", paused:true, parent:_independentRoot}),
+  			autoHideTween = gsap$5.to([find(".gs-bottom"), find(".gs-top")], {duration:0.3, autoAlpha:0, y:50, ease:"power2.in", data:"root", paused:true, parent:_independentRoot}),
   			hidden = false,
   			onMouseOut = e => {
   				if (!Draggable.hitTest(e, root) && !progressDrag.isDragging && !inDrag.isDragging && !outDrag.isDragging) {
@@ -15798,12 +17488,12 @@
   		}
 
 
-  		gsap$4.set(playhead, {xPercent:-50, x:0, data:"root"}); //so that when we drag, x is properly discerned (browsers report in pure pixels rather than percents)
-  		gsap$4.set(inPoint, {xPercent:-100, x:0, data:"root"});
+  		gsap$5.set(playhead, {xPercent:-50, x:0, data:"root"}); //so that when we drag, x is properly discerned (browsers report in pure pixels rather than percents)
+  		gsap$5.set(inPoint, {xPercent:-100, x:0, data:"root"});
   		inPoint._gsIgnore = outPoint._gsIgnore = playhead._gsIgnore = playPauseButton._gsIgnore = loopButton._gsIgnore = true;
 
   		//Draggable fires off a TweenLite.set() that affects the transforms, and we don't want them to get into the _recordedRoot, so kill those tweens.
-  		gsap$4.killTweensOf([inPoint, outPoint, playhead]);
+  		gsap$5.killTweensOf([inPoint, outPoint, playhead]);
 
 
   		initialize(_startupPhase);
@@ -15811,7 +17501,7 @@
   			//developers may call GSDevTools.create() before they even create some of their animations, so the inTime/outTime or animation values may not exist, thus we wait for 1 tick and initialize again, just in case.
   			_delayedCall(0.0001, initialize, [false], this);
   		}
-  		gsap$4.ticker.add(updateProgress);
+  		gsap$5.ticker.add(updateProgress);
 
   		this.update = forceMerge => {
   			if (_rootInstance === _self) {
@@ -15833,7 +17523,7 @@
   			progressDrag.disable();
   			inDrag.disable();
   			outDrag.disable();
-  			gsap$4.ticker.remove(updateProgress);
+  			gsap$5.ticker.remove(updateProgress);
   			_removeListener$1(root, "mouseout", onMouseOut);
   			_removeListener$1(root, "mouseover", show);
   			_removeListener$1(_docEl, "keydown", keyboardHandler);
@@ -15888,8 +17578,8 @@
   GSDevTools.getById = id => id ? _lookup$1[id] : _rootInstance;
 
   GSDevTools.getByAnimation = animation => {
-  	if (_isString$2(animation)) {
-  		animation = gsap$4.getById(animation);
+  	if (_isString$3(animation)) {
+  		animation = gsap$5.getById(animation);
   	}
   	for (let p in _lookup$1) {
   		if (_lookup$1[p].animation() === animation) {
@@ -15900,9 +17590,9 @@
 
   GSDevTools.create = vars => new GSDevTools(vars);
 
-  GSDevTools.register = _initCore$4;
+  GSDevTools.register = _initCore$5;
 
-  _getGSAP$3() && gsap$4.registerPlugin(GSDevTools);
+  _getGSAP$4() && gsap$5.registerPlugin(GSDevTools);
 
   /*!
    * ScrollTrigger 3.4.0
@@ -15915,7 +17605,7 @@
   */
   /* eslint-disable */
 
-  let gsap$5, _coreInitted$5, _win$6, _doc$5, _docEl$1, _body$2, _root, _resizeDelay, _raf, _request, _toArray$3, _clamp$1, _time2, _syncInterval, _refreshing, _pointerIsDown, _transformProp$3, _i, _prevWidth, _prevHeight, _autoRefresh,
+  let gsap$6, _coreInitted$6, _win$6, _doc$5, _docEl$1, _body$2, _root, _resizeDelay, _raf, _request, _toArray$4, _clamp$1, _time2, _syncInterval, _refreshing, _pointerIsDown, _transformProp$3, _i, _prevWidth, _prevHeight, _autoRefresh,
   	_limitCallbacks, // if true, we'll only trigger callbacks if the active state toggles, so if you scroll immediately past both the start and end positions of a ScrollTrigger (thus inactive to inactive), neither its onEnter nor onLeave will be called. This is useful during startup.
   	_startup = 1,
   	_proxies = [],
@@ -15926,7 +17616,7 @@
   	_enabled = 1,
   	_passThrough$1 = v => v,
   	_windowExists$5 = () => typeof(window) !== "undefined",
-  	_getGSAP$4 = () => gsap$5 || (_windowExists$5() && (gsap$5 = window.gsap) && gsap$5.registerPlugin && gsap$5),
+  	_getGSAP$5 = () => gsap$6 || (_windowExists$5() && (gsap$6 = window.gsap) && gsap$6.registerPlugin && gsap$6),
   	_isViewport = e => !!~_root.indexOf(e),
   	_getProxyProp = (element, property) => ~_proxies.indexOf(element) && _proxies[_proxies.indexOf(element) + 1][property],
   	_getScrollFunc = (element, {s, sc}) => {
@@ -15944,11 +17634,11 @@
   			(!events || ~events.indexOf(_autoRefresh[i+1])) && func(_autoRefresh[i], _autoRefresh[i+1], _autoRefresh[i+2]);
   		}
   	},
-  	_isString$3 = value => typeof(value) === "string",
-  	_isFunction$4 = value => typeof(value) === "function",
-  	_isNumber$2 = value => typeof(value) === "number",
+  	_isString$4 = value => typeof(value) === "string",
+  	_isFunction$5 = value => typeof(value) === "function",
+  	_isNumber$3 = value => typeof(value) === "number",
   	_isObject$3 = value => typeof(value) === "object",
-  	_abs$1 = Math.abs,
+  	_abs$2 = Math.abs,
   	_scrollLeft = "scrollLeft",
   	_scrollTop = "scrollTop",
   	_left = "left",
@@ -15978,12 +17668,12 @@
   	},
   	//_isInViewport = element => (element = _getBounds(element)) && !(element.top > (_win.innerHeight || _docEl.clientHeight) || element.bottom < 0 || element.left > (_win.innerWidth || _docEl.clientWidth) || element.right < 0) && element,
   	_getBounds$1 = (element, withoutTransforms) => {
-  		let tween = withoutTransforms && _getComputedStyle$1(element)[_transformProp$3] !== "matrix(1, 0, 0, 1, 0, 0)" && gsap$5.to(element, {x: 0, y: 0, xPercent: 0, yPercent: 0, rotation: 0, rotationX: 0, rotationY: 0, scale: 1, skewX: 0, skewY: 0}).progress(1),
+  		let tween = withoutTransforms && _getComputedStyle$1(element)[_transformProp$3] !== "matrix(1, 0, 0, 1, 0, 0)" && gsap$6.to(element, {x: 0, y: 0, xPercent: 0, yPercent: 0, rotation: 0, rotationX: 0, rotationY: 0, scale: 1, skewX: 0, skewY: 0}).progress(1),
   			bounds = element.getBoundingClientRect();
   		tween && tween.progress(0).kill();
   		return bounds;
   	},
-  	_getSize$1 = (element, {d2}) => element["offset" + d2] || element["client" + d2] || 0,
+  	_getSize$2 = (element, {d2}) => element["offset" + d2] || element["client" + d2] || 0,
   	_getLabels = animation => {
   		return value => {
   			let a = [],
@@ -15993,7 +17683,7 @@
   			for (p in labels) {
   				a.push(labels[p] / duration);
   			}
-  			return gsap$5.utils.snap(a, value);
+  			return gsap$6.utils.snap(a, value);
   		};
   	},
   	_multiListener = (func, element, types, callback) => types.split(",").forEach(type => func(element, type, callback)),
@@ -16003,7 +17693,7 @@
   	_defaults$1 = {toggleActions: "play", anticipatePin: 0},
   	_keywords = {top: 0, left: 0, center: 0.5, bottom: 1, right: 1},
   	_offsetToPx = (value, size) => {
-  		if (_isString$3(value)) {
+  		if (_isString$4(value)) {
   			let eqIndex = value.indexOf("="),
   				relative = ~eqIndex ? +(value.charAt(eqIndex-1) + 1) * parseFloat(value.substr(eqIndex + 1)) : 0;
   			if (relative) {
@@ -16044,7 +17734,7 @@
   		vars["border" + side + _Width] = 1;
   		vars["border" + oppositeSide + _Width] = 0;
   		vars[direction.p] = start;
-  		gsap$5.set(marker, vars);
+  		gsap$6.set(marker, vars);
   	},
   	_triggers = [],
   	_ids = {},
@@ -16063,7 +17753,7 @@
   	_creatingMedia, // when ScrollTrigger.matchMedia() is called, we record the current media key here (like "(min-width: 800px)") so that we can assign it to everything that's created during that call. Then we can revert just those when necessary. In the ScrollTrigger's init() call, the _creatingMedia is recorded as a "media" property on the instance.
   	_lastMediaTick,
   	_onMediaChange = e => {
-  		let tick = gsap$5.ticker.frame,
+  		let tick = gsap$6.ticker.frame,
   			matches = [],
   			i = 0;
   		if (_lastMediaTick !== tick) {
@@ -16169,8 +17859,8 @@
   			pinStyle[_bottom] = pinStyle[_right] = "auto";
   			spacerStyle.overflow = "visible";
   			spacerStyle.boxSizing = "border-box";
-  			spacerStyle[_width] = _getSize$1(pin, _horizontal) + _px;
-  			spacerStyle[_height] = _getSize$1(pin, _vertical) + _px;
+  			spacerStyle[_width] = _getSize$2(pin, _horizontal) + _px;
+  			spacerStyle[_height] = _getSize$2(pin, _vertical) + _px;
   			spacerStyle[_padding] = pinStyle[_margin] = pinStyle[_top] = pinStyle[_left] = "0";
   			pinStyle[_width] = cs[_width];
   			pinStyle[_height] = cs[_height];
@@ -16222,13 +17912,13 @@
   	},
   	_winOffsets = {left:0, top:0},
   	_parsePosition$1 = (value, trigger, scrollerSize, direction, scroll, marker, markerScroller, self, scrollerBounds, borderWidth, useFixedPosition, scrollerMax) => {
-  		_isFunction$4(value) && (value = value(self));
-  		if (_isString$3(value) && value.substr(0,3) === "max") {
+  		_isFunction$5(value) && (value = value(self));
+  		if (_isString$4(value) && value.substr(0,3) === "max") {
   			value = scrollerMax + (value.charAt(4) === "=" ? _offsetToPx("0" + value.substr(3), scrollerSize) : 0);
   		}
-  		if (!_isNumber$2(value)) {
-  			_isFunction$4(trigger) && (trigger = trigger(self));
-  			let element = _toArray$3(trigger)[0] || _body$2,
+  		if (!_isNumber$3(value)) {
+  			_isFunction$5(trigger) && (trigger = trigger(self));
+  			let element = _toArray$4(trigger)[0] || _body$2,
   				bounds = _getBounds$1(element) || {},
   				offsets = value.split(" "),
   				localOffset, globalOffset, display;
@@ -16304,7 +17994,7 @@
   					getTween.tween = 0;
   					onComplete && onComplete.call(tween);
   				};
-  				tween = getTween.tween = gsap$5.to(scroller, vars);
+  				tween = getTween.tween = gsap$6.to(scroller, vars);
   				return tween;
   			};
   		scroller[prop] = getScroll;
@@ -16318,7 +18008,7 @@
   class ScrollTrigger {
 
   	constructor(vars, animation) {
-  		_coreInitted$5 || ScrollTrigger.register(gsap$5) || console.warn("Please gsap.registerPlugin(ScrollTrigger)");
+  		_coreInitted$6 || ScrollTrigger.register(gsap$6) || console.warn("Please gsap.registerPlugin(ScrollTrigger)");
   		this.init(vars, animation);
   	}
 
@@ -16329,12 +18019,12 @@
   			this.update = this.refresh = this.kill = _passThrough$1;
   			return;
   		}
-  		vars = _setDefaults$2((_isString$3(vars) || _isNumber$2(vars) || vars.nodeType) ? {trigger: vars} : vars, _defaults$1);
+  		vars = _setDefaults$2((_isString$4(vars) || _isNumber$3(vars) || vars.nodeType) ? {trigger: vars} : vars, _defaults$1);
   		let direction = vars.horizontal ? _horizontal : _vertical,
   			{onUpdate, toggleClass, id, onToggle, onRefresh, scrub, trigger, pin, pinSpacing, invalidateOnRefresh, anticipatePin, onScrubComplete, onSnapComplete, once, snap, pinReparent} = vars,
   			isToggle = !scrub && scrub !== 0,
-  			scroller = _toArray$3(vars.scroller || _win$6)[0],
-  			scrollerCache = gsap$5.core.getCache(scroller),
+  			scroller = _toArray$4(vars.scroller || _win$6)[0],
+  			scrollerCache = gsap$6.core.getCache(scroller),
   			isViewport = _isViewport(scroller),
   			useFixedPosition = isViewport || _getProxyProp(scroller, "pinType") === "fixed",
   			callbacks = [vars.onEnter, vars.onLeave, vars.onEnterBack, vars.onLeaveBack],
@@ -16367,22 +18057,22 @@
   			animation._initted || (animation.vars.immediateRender !== false && vars.immediateRender !== false && animation.render(0, true, true));
   			self.animation = animation.pause();
   			animation.scrollTrigger = self;
-  			scrubSmooth = _isNumber$2(scrub) && scrub;
-  			scrubSmooth && (scrubTween = gsap$5.to(animation, {ease: "power3", duration: scrubSmooth, onComplete: () => onScrubComplete && onScrubComplete(self)}));
+  			scrubSmooth = _isNumber$3(scrub) && scrub;
+  			scrubSmooth && (scrubTween = gsap$6.to(animation, {ease: "power3", duration: scrubSmooth, onComplete: () => onScrubComplete && onScrubComplete(self)}));
   			snap1 = 0;
   			id || (id = animation.vars.id);
   		}
   		if (snap) {
   			_isObject$3(snap) || (snap = {snapTo: snap});
-  			gsap$5.set(isViewport ? [_body$2, _docEl$1] : scroller, {scrollBehavior: "auto"}); // smooth scrolling doesn't work with snap.
-  			snapFunc = _isFunction$4(snap.snapTo) ? snap.snapTo : snap.snapTo === "labels" ? _getLabels(animation) : gsap$5.utils.snap(snap.snapTo);
+  			gsap$6.set(isViewport ? [_body$2, _docEl$1] : scroller, {scrollBehavior: "auto"}); // smooth scrolling doesn't work with snap.
+  			snapFunc = _isFunction$5(snap.snapTo) ? snap.snapTo : snap.snapTo === "labels" ? _getLabels(animation) : gsap$6.utils.snap(snap.snapTo);
   			snapDurClamp = snap.duration || {min: 0.1, max: 2};
   			snapDurClamp = _isObject$3(snapDurClamp) ? _clamp$1(snapDurClamp.min, snapDurClamp.max) : _clamp$1(snapDurClamp, snapDurClamp);
-  			snapDelayedCall = gsap$5.delayedCall(snap.delay || (scrubSmooth / 2) || 0.1, () => {
+  			snapDelayedCall = gsap$6.delayedCall(snap.delay || (scrubSmooth / 2) || 0.1, () => {
   				if (!_lastScrollTime || (_lastScrollTime === scrubScrollTime && !_pointerIsDown)) {
   					let totalProgress = animation && !isToggle ? animation.totalProgress() : self.progress,
   						velocity = ((totalProgress - snap2) / (_getTime$1() - _time2) * 1000) || 0,
-  						change1 = _abs$1(velocity / 2) * velocity / 0.185,
+  						change1 = _abs$2(velocity / 2) * velocity / 0.185,
   						naturalEnd = totalProgress + change1,
   						endValue = _clamp$1(0, 1, snapFunc(naturalEnd, self)),
   						change2 = endValue - totalProgress - change1,
@@ -16397,7 +18087,7 @@
   							tween.kill();
   						}
   						tweenTo(endScroll, {
-  							duration: snapDurClamp(_abs$1( (Math.max(_abs$1(naturalEnd - totalProgress), _abs$1(endValue - totalProgress)) * 0.185 / velocity / 0.05) || 0)),
+  							duration: snapDurClamp(_abs$2( (Math.max(_abs$2(naturalEnd - totalProgress), _abs$2(endValue - totalProgress)) * 0.185 / velocity / 0.05) || 0)),
   							ease: snap.ease || "power3",
   							data: Math.abs(endScroll - scroll), // record the distance so that if another snap tween occurs (conflict) we can prioritize the closest snap.
   							onComplete: () => {
@@ -16412,14 +18102,14 @@
   			}).pause();
   		}
   		id && (_ids[id] = self);
-  		trigger = self.trigger = _toArray$3(trigger || pin)[0];
-  		pin = pin === true ? trigger : _toArray$3(pin)[0];
-  		_isString$3(toggleClass) && (toggleClass = {targets: trigger, className: toggleClass});
+  		trigger = self.trigger = _toArray$4(trigger || pin)[0];
+  		pin = pin === true ? trigger : _toArray$4(pin)[0];
+  		_isString$4(toggleClass) && (toggleClass = {targets: trigger, className: toggleClass});
   		if (pin) {
   			(pinSpacing === false || pinSpacing === _margin) || (pinSpacing = _getComputedStyle$1(pin.parentNode).display === "flex" ? false : _padding); // if the parent is display: flex, don't apply pinSpacing by default.
   			self.pin = pin;
-  			vars.force3D !== false && gsap$5.set(pin, {force3D: true});
-  			pinCache = gsap$5.core.getCache(pin);
+  			vars.force3D !== false && gsap$6.set(pin, {force3D: true});
+  			pinCache = gsap$6.core.getCache(pin);
   			if (!pinCache.spacer) { // record the spacer and pinOriginalState on the cache in case someone tries pinning the same element with MULTIPLE ScrollTriggers - we don't want to have multiple spacers or record the "original" pin state after it has already been affected by another ScrollTrigger.
   				pinCache.spacer = spacer = _doc$5.createElement("div");
   				spacer.setAttribute("class", "pin-spacer" + (id ? " pin-spacer-" + id : ""));
@@ -16430,8 +18120,8 @@
   			self.spacer = spacer = pinCache.spacer;
   			cs = _getComputedStyle$1(pin);
   			spacingStart = cs[pinSpacing + direction.os2];
-  			pinGetter = gsap$5.getProperty(pin);
-  			pinSetter = gsap$5.quickSetter(pin, direction.a, _px);
+  			pinGetter = gsap$6.getProperty(pin);
+  			pinSetter = gsap$6.quickSetter(pin, direction.a, _px);
   			_swapPinIn(pin, spacer, cs);
   			pinState = _getState(pin);
   		}
@@ -16444,9 +18134,9 @@
   			markerEnd =_createMarker("end", id, scroller, direction, markerVars, offset);
   			if (!useFixedPosition) {
   				_makePositionable(scroller);
-  				gsap$5.set([markerStartTrigger, markerEndTrigger], {force3D: true});
-  				markerStartSetter = gsap$5.quickSetter(markerStartTrigger, direction.a, _px);
-  				markerEndSetter = gsap$5.quickSetter(markerEndTrigger, direction.a, _px);
+  				gsap$6.set([markerStartTrigger, markerEndTrigger], {force3D: true});
+  				markerStartSetter = gsap$6.quickSetter(markerStartTrigger, direction.a, _px);
+  				markerEndSetter = gsap$6.quickSetter(markerEndTrigger, direction.a, _px);
   			}
   		}
 
@@ -16500,13 +18190,13 @@
   				}
   			}
   			start = _parsePosition$1(parsedStart, trigger, size, direction, self.scroll(), markerStart, markerStartTrigger, self, scrollerBounds, borderWidth, useFixedPosition, max) || (pin ? -0.001 : 0);
-  			_isFunction$4(parsedEnd) && (parsedEnd = parsedEnd(self));
-  			if (_isString$3(parsedEnd) && !parsedEnd.indexOf("+=")) {
+  			_isFunction$5(parsedEnd) && (parsedEnd = parsedEnd(self));
+  			if (_isString$4(parsedEnd) && !parsedEnd.indexOf("+=")) {
   				if (~parsedEnd.indexOf(" ")) {
-  					parsedEnd = (_isString$3(parsedStart) ? parsedStart.split(" ")[0] : "") + parsedEnd;
+  					parsedEnd = (_isString$4(parsedStart) ? parsedStart.split(" ")[0] : "") + parsedEnd;
   				} else {
   					offset = _offsetToPx(parsedEnd.substr(2), size);
-  					parsedEnd = _isString$3(parsedStart) ? parsedStart : start + offset; // _parsePosition won't factor in the offset if the start is a number, so do it here.
+  					parsedEnd = _isString$4(parsedStart) ? parsedStart : start + offset; // _parsePosition won't factor in the offset if the start is a number, so do it here.
   					parsedEndTrigger = trigger;
   				}
   			}
@@ -16526,7 +18216,7 @@
   				if (markerStart && otherPinOffset) { // offset the markers if necessary
   					cs = {};
   					cs[direction.a] = "+=" + otherPinOffset;
-  					gsap$5.set([markerStart, markerEnd], cs);
+  					gsap$6.set([markerStart, markerEnd], cs);
   				}
   				cs = _getComputedStyle$1(pin);
   				isVertical = (direction === _vertical);
@@ -16538,7 +18228,7 @@
   				bounds = _getBounds$1(pin, true);
   				if (pinSpacing) {
   					spacer.style[pinSpacing + direction.os2] = change + otherPinOffset + _px;
-  					spacingActive = (pinSpacing === _padding) ? _getSize$1(pin, direction) + change + otherPinOffset : 0;
+  					spacingActive = (pinSpacing === _padding) ? _getSize$2(pin, direction) + change + otherPinOffset : 0;
   					spacingActive && (spacer.style[direction.d] = spacingActive + _px); // for box-sizing: border-box (must include padding).
   					useFixedPosition && self.scroll(prevScroll);
   				}
@@ -16654,7 +18344,7 @@
   					scrubScrollTime = _lastScrollTime;
   					snapDelayedCall.restart(true);
   				}
-  				toggleClass && toggled && (!once || isActive) && _toArray$3(toggleClass.targets).forEach(el => el.classList[isActive ? "add" : "remove"](toggleClass.className)); // classes could affect positioning, so do it even if reset or refreshing is true.
+  				toggleClass && toggled && (!once || isActive) && _toArray$4(toggleClass.targets).forEach(el => el.classList[isActive ? "add" : "remove"](toggleClass.className)); // classes could affect positioning, so do it even if reset or refreshing is true.
   				onUpdate && !isToggle && !reset && onUpdate(self);
   				if (stateChanged && !_refreshing) {
   					toggleState = clipped && !prevProgress ? 0 : clipped === 1 ? 1 : prevProgress === 1 ? 2 : 3; // 0 = enter, 1 = leave, 2 = enterBack, 3 = leaveBack (we prioritize the FIRST encounter, thus if you scroll really fast past the onEnter and onLeave in one tick, it'd prioritize onEnter.
@@ -16697,7 +18387,7 @@
   				_addListener$2(scroller, "resize", _onResize);
   				_addListener$2(scroller, "scroll", _onScroll);
   				onRefreshInit && _addListener$2(ScrollTrigger, "refreshInit", onRefreshInit);
-  				!animation || !animation.add ? self.refresh() : gsap$5.delayedCall(0.01, self.refresh) && (change = 0.01) && (start = end = 0); // if the animation is a timeline, it may not have been populated yet, so it wouldn't render at the proper place on the first refresh(), thus we should schedule one for the next tick.
+  				!animation || !animation.add ? self.refresh() : gsap$6.delayedCall(0.01, self.refresh) && (change = 0.01) && (start = end = 0); // if the animation is a timeline, it may not have been populated yet, so it wouldn't render at the proper place on the first refresh(), thus we should schedule one for the next tick.
   			}
   		};
 
@@ -16746,18 +18436,18 @@
 
 
   	static register(core) {
-  		if (!_coreInitted$5) {
-  			gsap$5 = core || _getGSAP$4();
+  		if (!_coreInitted$6) {
+  			gsap$6 = core || _getGSAP$5();
   			if (_windowExists$5() && window.document) {
   				_win$6 = window;
   				_doc$5 = document;
   				_docEl$1 = _doc$5.documentElement;
   				_body$2 = _doc$5.body;
   			}
-  			if (gsap$5) {
-  				_toArray$3 = gsap$5.utils.toArray;
-  				_clamp$1 = gsap$5.utils.clamp;
-  				gsap$5.core.globals("ScrollTrigger", ScrollTrigger); // must register the global manually because in Internet Explorer, functions (classes) don't have a "name" property.
+  			if (gsap$6) {
+  				_toArray$4 = gsap$6.utils.toArray;
+  				_clamp$1 = gsap$6.utils.clamp;
+  				gsap$6.core.globals("ScrollTrigger", ScrollTrigger); // must register the global manually because in Internet Explorer, functions (classes) don't have a "name" property.
   				if (_body$2) {
   					_raf = _win$6.requestAnimationFrame || (f => setTimeout(f, 16));
   					_addListener$2(_win$6, "mousewheel", _onScroll);
@@ -16772,15 +18462,15 @@
   					_horizontal.m = Math.round(bounds.left + _horizontal.sc()) || 0;
   					border ? (bodyStyle.borderTop = border) : bodyStyle.removeProperty("border-top");
   					_syncInterval = setInterval(_sync, 200);
-  					gsap$5.delayedCall(0.5, () => _startup = 0);
+  					gsap$6.delayedCall(0.5, () => _startup = 0);
   					_addListener$2(_doc$5, "touchcancel", _passThrough$1); // some older Android devices intermittently stop dispatching "touchmove" events if we don't listen for "touchcancel" on the document.
   					_addListener$2(_body$2, "touchstart", _passThrough$1); //works around Safari bug: https://greensock.com/forums/topic/21450-draggable-in-iframe-on-mobile-is-buggy/
   					_multiListener(_addListener$2, _doc$5, "pointerdown,touchstart,mousedown", () => _pointerIsDown = 1);
   					_multiListener(_addListener$2, _doc$5, "pointerup,touchend,mouseup", () => _pointerIsDown = 0);
-  					_transformProp$3 = gsap$5.utils.checkPrefix("transform");
+  					_transformProp$3 = gsap$6.utils.checkPrefix("transform");
   					_stateProps.push(_transformProp$3);
-  					_coreInitted$5 = _getTime$1();
-  					_resizeDelay = gsap$5.delayedCall(0.2, _refreshAll).pause();
+  					_coreInitted$6 = _getTime$1();
+  					_resizeDelay = gsap$6.delayedCall(0.2, _refreshAll).pause();
   					_autoRefresh = [_doc$5, "visibilitychange", () => {
   						let w = _win$6.innerWidth,
   							h = _win$6.innerHeight;
@@ -16796,7 +18486,7 @@
   				}
   			}
   		}
-  		return _coreInitted$5;
+  		return _coreInitted$6;
   	}
 
   	static defaults(config) {
@@ -16818,7 +18508,7 @@
   	}
 
   	static scrollerProxy(target, vars) {
-  		let t = _toArray$3(target)[0];
+  		let t = _toArray$4(target)[0];
   		_isViewport(t) ? _proxies.unshift(_win$6, vars, _body$2, vars, _docEl$1, vars) : _proxies.unshift(t, vars);
   	}
 
@@ -16844,17 +18534,17 @@
   }
 
   ScrollTrigger.version = "3.4.0";
-  ScrollTrigger.saveStyles = targets => targets ? _toArray$3(targets).forEach(target => {
+  ScrollTrigger.saveStyles = targets => targets ? _toArray$4(targets).forEach(target => {
   	let i = _savedStyles.indexOf(target);
   	i >= 0 && _savedStyles.splice(i, 4);
-  	_savedStyles.push(target, target.style.cssText, gsap$5.core.getCache(target), _creatingMedia);
+  	_savedStyles.push(target, target.style.cssText, gsap$6.core.getCache(target), _creatingMedia);
   }) : _savedStyles;
   ScrollTrigger.revert = (soft, media) => _revertAll(!soft, media);
   ScrollTrigger.create = (vars, animation) => new ScrollTrigger(vars, animation);
   ScrollTrigger.refresh = safe => safe ? _onResize() : _refreshAll(true);
   ScrollTrigger.update = _updateAll;
   ScrollTrigger.maxScroll = (element, horizontal) => _maxScroll(element, horizontal ? _horizontal : _vertical);
-  ScrollTrigger.getScrollFunc = (element, horizontal) => _getScrollFunc(_toArray$3(element)[0], horizontal ? _horizontal : _vertical);
+  ScrollTrigger.getScrollFunc = (element, horizontal) => _getScrollFunc(_toArray$4(element)[0], horizontal ? _horizontal : _vertical);
   ScrollTrigger.getById = id => _ids[id];
   ScrollTrigger.getAll = () => _triggers.slice(0);
   ScrollTrigger.isScrolling = () => !!_lastScrollTime;
@@ -16875,7 +18565,7 @@
   		proxyCallback = (type, callback) => {
   			let elements = [],
   				triggers = [],
-  				delay = gsap$5.delayedCall(interval, () => {callback(elements, triggers); elements = []; triggers = [];}).pause();
+  				delay = gsap$6.delayedCall(interval, () => {callback(elements, triggers); elements = []; triggers = [];}).pause();
   			return self => {
   				elements.length || delay.restart(true);
   				elements.push(self.trigger);
@@ -16885,13 +18575,13 @@
   		},
   		p;
   	for (p in vars) {
-  		varsCopy[p] = (p.substr(0, 2) === "on" && _isFunction$4(vars[p]) && p !== "onRefreshInit") ? proxyCallback(p, vars[p]) : vars[p];
+  		varsCopy[p] = (p.substr(0, 2) === "on" && _isFunction$5(vars[p]) && p !== "onRefreshInit") ? proxyCallback(p, vars[p]) : vars[p];
   	}
-  	if (_isFunction$4(batchMax)) {
+  	if (_isFunction$5(batchMax)) {
   		batchMax = batchMax();
   		_addListener$2(ScrollTrigger, "refresh", () => batchMax = vars.batchMax());
   	}
-  	_toArray$3(targets).forEach(target => {
+  	_toArray$4(targets).forEach(target => {
   		let config = {};
   		for (p in varsCopy) {
   			config[p] = varsCopy[p];
@@ -16902,7 +18592,7 @@
   	return result;
   };
 
-  _getGSAP$4() && gsap$5.registerPlugin(ScrollTrigger);
+  _getGSAP$5() && gsap$6.registerPlugin(ScrollTrigger);
 
   // Used in two objects below, hence declared out here.
   var baseStops = {
@@ -21824,8 +23514,8 @@
     id: '#animalBird',
     name: 'animalBird'
   }, {
-    id: '#animalSloth2',
-    name: 'animalSloth2'
+    id: '#animalSloth2a',
+    name: 'animalSloth2a'
   }, {
     id: '#bottle-path',
     name: 'bottle'
@@ -27760,9 +29450,21 @@
 
   var animalSloth1 = 'M41.6675 87.8046C38.1819 88.477 33.6615 88.6092 30.2746 88.6092C27.0034 88.6092 24.0789 89.6321 20.9161 89.816C19.5714 89.8943 18.0789 91.4898 16.6438 91.8052C15.0193 92.1621 14.1172 93.7268 12.7783 94.5542C10.4356 96.0018 8.51152 98.281 6.58455 100.186C4.57936 102.169 5.04741 106.439 5.04741 109.126C5.04741 112.082 6.45718 115.124 8.619 117.261C13.5725 122.159 21.1788 121.999 27.8333 121.999C31.3931 121.999 35.0035 121.597 38.4124 121.597C39.9896 121.597 41.6302 121.091 43.0916 120.77C44.0487 120.56 44.9275 120.144 45.9173 119.966C46.9103 119.787 47.4472 118.511 48.5847 118.379C49.6037 118.26 52.4328 116.54 53.0604 115.764C53.631 115.059 54.9294 115.169 55.4792 114.535C56.0821 113.839 56.8884 113.425 57.5362 112.747C59.9303 110.24 59.9776 106.403 59.9776 103.092C59.9776 101.493 60.2155 99.2799 59.1412 98.0407C57.7393 96.4236 56.1909 95.01 54.688 93.4367C52.4144 91.0566 50.2545 87.8046 46.5502 87.8046C44.6084 87.8046 42.6735 87 40.6277 87C38.2316 87 35.8354 87 33.4393 87C28.9188 87 25.0804 89.2482 20.9161 90.6206 M4.18278 106.315C4.18278 106.98 3.71657 110.428 4.27329 111.126C4.62008 111.561 4.99739 113.305 4.99739 113.872C4.99739 116.194 6.49706 118.683 6.6266 121.021C6.76324 123.488 8.0764 125.998 8.66311 128.352C9.0353 129.845 10.3688 131.069 10.7223 132.664C10.8856 133.401 11.8761 135.032 12.4193 135.637C13.9671 137.362 14.7584 139.765 16.2208 141.651C17.3172 143.065 20.2497 144.429 20.4749 146.349C20.7224 148.459 24.0938 148.333 24.9552 149.413C26.5598 151.424 29.8224 152.426 31.7889 154.201C35.0278 157.125 39.4264 160.112 43.6911 160.647C45.8942 160.923 47.8001 162.584 50.0043 163.075C53.3948 163.831 56.6192 165.408 59.9833 166.275C65.1078 167.597 70.985 168 76.2754 168C80.3254 168 83.8942 167.183 87.9061 167.183C91.2583 167.183 94.3559 167.367 97.2515 165.753C99.6606 164.411 103.162 162.571 105.194 160.647C106.068 159.818 107.399 158.669 108.543 158.287C110.348 157.683 111.605 155.534 113.363 155.313C115.391 155.059 117.135 154.283 118.861 153.294C120.062 152.605 121.319 151.434 122.617 150.933C124.759 150.107 127.881 146.623 128.817 144.511C130.067 141.691 132.284 139.317 133.705 136.545C134.335 135.316 135.115 134.146 135.651 132.868C136.194 131.575 137.039 129.974 137.348 128.579C138.431 123.691 139 118.787 139 113.668C139 111.021 138.593 108.538 138.593 105.884C138.593 104.204 138.364 100.411 137.28 99.0525C136.226 97.7302 136.717 94.5152 135.131 93.2426C134.295 92.5717 132.607 88.5755 132.483 87.5234C132.232 85.3814 130.575 82.6549 129.836 80.5787C129.102 78.5197 127.799 76.8789 126.283 75.3589C123.521 72.5883 118.13 72 114.358 72C112.161 72 110.489 72.8447 110.489 75.2681C110.489 77.6719 112.331 78.107 114.358 78.5589C115.988 78.9221 117.742 82.0193 117.82 83.4383C117.901 84.9014 118.68 85.8279 119.359 87.1149C119.675 87.7132 120.394 89.1799 120.875 89.566C121.753 90.2701 122.643 94.5236 122.708 95.6936C122.83 97.8943 123.93 100.119 123.93 102.434C123.93 105.226 123.93 108.017 123.93 110.809C123.93 112.14 122.708 113.177 122.708 114.485C122.708 115.523 121.674 115.782 121.463 116.732C120.932 119.129 117.68 119.387 115.784 119.387C113.507 119.387 110.781 120.792 108.633 121.407C107.575 121.71 106.062 121.616 104.968 121.816C104.107 121.973 101.91 121.369 101.211 121.929C100.014 122.89 96.3659 122.247 94.785 122.247C92.7241 122.247 93.3821 121.772 93.3821 120C93.3821 118.656 93.6854 117.817 93.8799 116.573C94.1573 114.8 95.0113 112.97 95.0113 111.217C95.0113 109.591 95.0113 107.964 95.0113 106.338C95.0113 104.956 95.4186 103.823 95.4186 102.434C95.4186 101.596 94.6516 100.59 94.604 99.7787C94.43 96.8115 93.3401 93.314 92.9748 90.383C92.8864 89.6736 91.8915 88.4121 91.4361 87.8411C90.7282 86.9536 90.8497 85.4026 90.3273 84.4596C89.8171 83.5384 89.6119 82.5144 89.1054 81.6C88.5919 80.673 87.6591 80.4298 87.182 79.3532C86.517 77.8524 85.3017 74.8596 83.4032 74.8596C82.104 74.8596 77.753 73.5748 76.9995 74.8596C76.3696 75.9334 75.647 76.584 75.144 77.7191C74.9127 78.2411 74.7606 80.9974 75.2571 81.3957C76.0243 82.0113 76.4186 83.3323 77.3163 83.8468C77.962 84.2169 78.5639 84.8063 78.9002 85.4808C79.17 86.0219 78.8783 87.008 79.217 87.4326C82.0547 90.9902 83.1995 96.9472 83.1995 101.39C83.1995 103.849 83.1995 106.307 83.1995 108.766C83.1995 111.021 81.9776 113.466 81.9776 115.506C81.9776 116.655 79.5231 120.133 78.3119 120.204C77.3256 120.262 76.4201 121.386 75.4608 120.93C74.3783 120.416 73.1718 119.796 71.9987 119.796C69.8204 119.796 67.6107 118.979 65.2782 118.979C64.3818 118.979 59.2486 118.977 58.7614 118.366C57.8763 117.256 57.9467 113.116 57.9467 111.626C57.9467 109.165 58.354 107.081 58.354 104.681 M51 92C51 89.7252 51 86.0967 51 84 M66.5877 97.6558C66.5877 94.9937 66.5877 92.3317 66.5877 89.6696C66.5877 88.7822 66.5877 87.8949 66.5877 87.0075C66.5877 86.8627 66.2664 88.8446 66.171 89.4648C65.6166 93.0666 66.5877 96.8404 66.5877 100.318C66.5877 103.743 68.3526 106.878 68.3526 110.352C68.3526 111.647 69.2018 113.999 70.0195 114.948C70.9916 116.076 71 119.638 71 121 M106 121C105.014 116.564 103.532 111.865 103.532 107.312C103.532 105.553 103.179 103.588 103.179 101.705C103.179 100.161 103.81 98.7409 103.257 97.3011C102.322 94.8622 104.237 92.4289 104.237 90.1505C104.237 87.9333 105.194 84.8679 106 83 M95 86C95 87.0794 95 87.9534 95 89 M2 68C4.4723 68.494 6.41374 70.1413 8.67857 70.5994C11.0444 71.078 13.2562 71.6842 15.7619 71.6842C16.7045 71.6842 17.7542 72.1202 18.5952 72.5029C19.9954 73.1402 22.291 73.3022 23.8571 73.5058C25.7774 73.7555 27.9796 73.7826 29.7487 74.2427C31.3665 74.6634 34.3562 74.6316 36 74.6316C38.0913 74.6316 40.1825 74.6316 42.2738 74.6316C46.6519 74.6316 50.9329 75 55.4286 75C56.7565 75 60.6087 74.7247 61.5 73.7105C62.5478 72.5184 65.6861 72.7895 67.1667 72.7895C70.9549 72.7895 75.2964 71.6707 79.1071 72.4415C81.044 72.8333 82.6592 73.5263 84.6614 73.5263C87.0548 73.5263 89.3253 73.8947 91.6548 73.8947C93.7807 73.8947 96.0213 73.5263 98.3333 73.5263C99.4783 73.5263 103.347 74.7147 104 73.5263 M120 73C123.433 73.0724 127.049 73.8889 129.953 75.2848C130.474 75.5352 131.476 75.6612 132.007 75.7925C132.235 75.8488 132.993 75.6862 133.135 75.8511C133.352 76.1014 131.984 76.7338 132.639 76.847C134.56 77.1794 136.927 76.8666 138.891 76.8666C145.633 76.8666 152.248 76.1636 159 76.1636 M160 89C158.542 88.7619 156.583 88.3848 155.13 88.3208C154.463 88.2914 152.264 88.8877 151.884 88.4906C150.783 87.3388 147.402 87.3021 145.797 87.3021C143.806 87.3021 132.722 86.4337 132 87.6417 M119 84.051C114.05 83.9362 109.526 84.051 104.6 84.051C103.454 84.051 102.597 84.8306 101.4 84.8306C100.262 84.8306 99.3231 84.9892 98.3556 85.1988C96.4931 85.6021 95.0096 86 93 86 M77 86C74.0007 85.5911 71.1947 85.1964 68.2594 85.1964C66.2822 85.1964 64.2006 84.3929 62.1613 84.3929C57.5732 84.3929 52.9895 83.1876 48.5421 83.1876C44.1605 83.1876 40.1162 81.5805 35.7361 81.5805C33.6151 81.5805 30.9256 80.4124 28.8249 79.951C27.8355 79.7337 26.9086 79.3516 25.9791 79.1475C25.3865 79.0173 22.7949 78.9024 22.5235 78.5671C21.6708 77.5137 17.8327 77.8683 16.4254 77.2502C15.5549 76.8679 13.8665 77.3111 13.2634 76.3573C12.8598 75.7191 11.9681 74.3966 11.1403 74.3485C9.90035 74.2764 9.56395 73.6252 8.52042 74.9511C7.8997 75.7398 6.70095 76.7591 5.65204 76.7591C3.4558 76.7591 2.51342 79.6031 1.20268 76.5806C0.921162 75.9314 3.59501 74.2752 4.22915 73.8574C5.00618 73.3455 3.46006 72.2045 3.09987 71.8485C1.6296 70.3955 -0.225699 69.503 2.1061 67.429C3.51439 66.1764 5.53001 67.9843 6.57805 68.8129C7.78241 69.7651 11.1653 69.9289 12.7665 69.9289 M77 74.3636C76.6446 74.1564 76.0757 73.7822 75.6311 73.7576C75.4365 73.7468 75.0581 73.6949 74.9043 73.5724C74.5294 73.2736 73.9114 73 73.4255 73C72.0973 73 73.4004 75.0844 73.4931 75.5C73.5569 75.7858 74.338 76.8589 73.4171 76.4512C73.0795 76.3017 72.5656 75.8788 72.2003 75.8788C71.1039 75.8788 69.809 76.8974 70.8398 77.9242C71.2698 78.3527 71.8005 78.4736 72.3608 78.5976C72.6238 78.6559 73.3823 78.8923 73.1129 78.8923C73.0792 78.8923 72.5489 78.4767 72.4369 78.4209C71.4842 77.9464 69.92 77.9556 70.0032 79.3636C70.0154 79.5699 71.5379 80.3683 71.7524 80.4158C72.0365 80.4787 72.2947 80.6435 72.589 80.7273C72.9384 80.8267 73.4247 80.781 73.7382 80.9125C74.6995 81.3156 75.445 82.0232 75.9353 83 M110.272 78C109.081 78 107.992 77.6689 107.261 76.6809C106.413 75.533 107.833 75.5169 108.624 75.5169C108.979 75.5169 109.608 75.3861 109.874 75.6376C110.181 75.9285 109.204 75.1282 108.839 74.9306C108.402 74.6945 106.916 73.3975 107.978 72.9131C108.193 72.8153 109.41 72.4493 109.555 72.6459C109.788 72.9601 110.709 72.9439 110.838 73.4304C110.914 73.7192 110.951 73.8903 111.204 74.0426C111.502 74.2219 111.068 73.821 110.989 73.5856C110.834 73.1237 110.379 72.8161 110.28 72.3355C110.171 71.8054 109.985 71.5511 110.559 71.206C111.039 70.9175 111.601 71.0163 112.136 71.0163C112.634 71.0163 113.778 72.0882 114 72.5683 M99 74C99.211 73.1201 99.4548 72.173 100.131 71.5012C100.386 71.2481 100.705 71.1706 101.036 71.039C101.49 70.8589 101.612 71.3466 101.828 71.5951C102.118 71.9284 102.055 72.9859 102.055 73.415C102.055 73.7416 102.055 72.8947 102.055 72.7651C102.055 72.5205 102.473 72.1548 102.604 71.9201C102.871 71.4421 103.974 70.822 104.349 71.5301C104.693 72.1783 104.673 72.8288 104.673 73.5306C104.673 73.854 104.93 72.9231 105.109 72.6423C105.306 72.3337 105.535 72.3101 105.909 72.3101C107.103 72.3101 106.744 72.8237 107 73.74 M56 75C56.1279 74.4047 56.4274 73.8232 56.8421 73.38C57.2644 72.9287 57.9162 73.5662 57.9649 73.92C57.9836 74.0559 58.1457 74.2333 58.2456 74.34C58.3603 74.4625 58.4884 73.6491 58.6043 73.4933C58.8564 73.1546 58.8929 72.48 59.5088 72.48C60.0909 72.48 60.65 72.7301 60.7641 73.2667C60.7735 73.3105 60.8004 74.0132 60.8811 73.8667C61.1032 73.4631 61.1519 73.144 61.4737 72.7467C61.8534 72.2777 62.4436 72 63.0877 72C63.5093 72 63.7952 72.6066 64 72.84 M152 86C148.443 86 145.163 84.4037 141.849 83.4907C139.943 82.9657 137.983 82 136 82 M113 80.9359C111.715 80.9359 109.494 81.2653 108.418 80.4308C108.181 80.2471 107.113 80.1337 106.793 80.1337C106.188 80.1337 105.624 80 105 80 M103 83C101.061 83 99.2742 82.3333 97.3382 82.3333C96.2949 82.3333 94.938 82.5906 94 82 M99 78C98.4367 78 94.2607 78 94 78 M68 81.9171C66.3814 81.9171 64.5681 82.1739 62.979 81.7836C61.8981 81.5181 61.0748 80.629 60.0556 80.2011C59.5482 79.9882 58.9285 79 58.4122 79C57.9414 79 57.4707 79 57 79 M27 77.0454C27.7265 77.0454 28.6283 76.91 29.3329 77.1069C29.6258 77.1887 29.9996 77.276 30.3043 77.2916C31.0033 77.3273 31.6541 77.6609 32.3696 77.6609C33.6365 77.6609 35.3007 78.1239 36.5076 78.4611C36.7119 78.5182 37.0326 78.7612 37.1884 78.7689C37.6695 78.7928 38.16 78.7689 38.6417 78.7689C39.9244 78.7689 41.0316 79.1155 42.275 79.2545C43.0118 79.3369 43.7434 79.4407 44.4855 79.5144C45.0719 79.5727 45.4286 80 46 80 M50 79C50.6111 79 51.2222 79 51.8333 79C52.2625 79 52.6067 79 53 79 M10 72C8.97542 72 7.96302 72 7 72 M143 80.0152C143.869 80.0152 144.739 80.0152 145.608 80.0152C146.038 80.0152 147.016 79.937 147.362 80.1355C147.887 80.437 149.308 81 150 81 M34.5891 101.946C33.764 101.533 30.9137 100.382 30.4403 102.077C30.2075 102.911 29.7349 104.546 29.22 105.205C28.9481 105.552 28.9301 106.379 29.1558 106.795C29.5539 107.528 30.1253 107.297 30.6458 107.741C31.2369 108.245 33.4567 107.859 34.2423 107.859C35.5847 107.859 36.6043 106.982 37.826 106.913C39.2369 106.833 38.982 104.914 38.982 103.956C38.982 102.631 37.4353 102.478 36.7214 101.893C35.8544 101.184 34.3531 101.627 33.4331 101 M29.5487 102.007C28.1669 103.84 27.2317 106.045 27.2317 108.408C27.2317 109.343 27 110.392 27 111.434C27 112.283 27.9206 113.216 28.1456 114.007C28.6286 115.705 29.7046 118.3 31.8657 118.3C32.7096 118.3 33.5484 118.947 34.4144 118.998C35.2743 119.049 37.2506 117.81 38.1216 117.421C39.1091 116.98 40.4767 117.581 41.4812 117.02C42.6122 116.389 42.9872 116.171 42.9872 114.693C42.9872 112.42 43.1227 109.873 42.511 107.723C42.3213 107.056 41.8701 105.72 41.4168 105.214C41.1318 104.896 40.7619 104.624 40.49 104.283C40.1052 103.8 39.9147 103.972 39.2801 103.688C38.5854 103.378 37.6048 103.128 37.0146 102.654C36.056 101.884 35.1588 102.007 33.951 102.007 M5 102.799C8.22572 99.7588 12.3663 99.0517 16.6867 99.0517C18.4288 99.0517 21.6302 98.6463 22.8313 100.106C23.236 100.597 23.8862 100.768 24.0228 101.498C24.0729 101.766 24.1988 102.645 24.3976 102.799C24.8995 103.19 25 104.663 25 105.272C25 106.074 24.0757 106.324 24.0361 107.015C24.0231 107.244 23.8824 107.963 23.7416 108.135C23.2622 108.717 22.884 109.437 22.2958 110.008C21.7055 110.582 21.1099 111.445 20.7162 112.168C20.3366 112.865 19.4259 113.032 18.9224 113.522C18.3446 114.083 17.3868 114.201 16.7537 114.693C16.4833 114.903 16.0716 114.942 15.7898 115.161C15.364 115.492 14.5167 116.148 13.9692 116.332C13.0267 116.65 12.1431 116.894 11.0776 116.853C10.1884 116.818 9.44576 117.2 8.37349 116.853 M15.6786 104.676C14.7495 105.125 14.4012 105.341 14.2161 106.603C14.1096 107.329 15.4097 106.875 15.6786 106.679C16.2505 106.262 15.7848 105.476 15.2286 105.601C14.612 105.74 14.9856 106.754 15.7195 106.451C16.0662 106.308 16.7998 104.904 16.1388 104.904C15.5172 104.904 15.088 105.466 15.1263 106.273C15.1552 106.883 15.9956 105.36 15.2183 105.36C14.5281 105.36 15.137 107.148 15.5763 106.603C15.8916 106.212 15.7865 105.132 15.3104 105.132C14.783 105.132 14.4401 105.692 14.8604 106.362C15.1343 106.799 15.6889 105.076 14.9831 104.726C14.3352 104.405 13.8697 104.882 14.2467 105.817C14.5191 106.492 15.3475 106.466 15.4843 105.703C15.5922 105.1 14.2801 103.661 14.0627 104.092C13.8698 104.475 14.144 105.87 14.5843 105.234C15.0646 104.539 14.7581 103.504 14.7581 104.333C14.7581 104.805 15.2991 105.824 15.6377 105.031C15.9448 104.312 14.853 104.152 14.9524 104.891C15.0984 105.977 15.6786 104.729 15.6786 104.219C15.6786 103.574 14.9422 104.509 14.9422 105.018C14.9422 105.825 15.2796 105.859 15.8627 105.817C16.4288 105.776 15.7646 104.702 15.6888 105.031C15.5184 105.77 16.6066 105.953 16.0877 105.31C15.7558 104.898 15.1263 105.017 15.1263 105.639C15.1263 108.443 16.9552 105.057 15.8627 105.132C15.2545 105.174 15.423 106.511 16.1286 106.261C16.6774 106.066 16.3529 104.081 16.2308 104.346C15.9544 104.946 15.9898 106.103 16.7831 106.045C17.4348 105.998 16.4575 104.676 15.9547 104.676C15.8547 104.676 15.5709 104.897 15.5354 104.853C15.4802 104.785 15.4178 103.994 15.1672 104.27C14.7574 104.722 15.6348 105.925 15.8627 105.36 M53.8433 93C48.7257 93 39.5055 97.6171 44.3781 103.672C45.0052 104.451 46.6229 105.256 47.4947 105.738C49.0316 106.586 50.3439 107 52.1119 107C52.8429 107 53.574 107 54.305 107C55.3225 107 55.5469 107.023 56.2802 106.426C56.9247 105.902 57.9376 106.188 58.5118 105.674C59.5725 104.725 60.1937 104.128 61 102.869 M50.1882 98.8646C48.8341 102.309 52.1705 99.3134 50.4471 98.4077C49.1706 97.737 48.7239 101.037 50.6485 100.349C51.5484 100.028 50.4713 99.2392 50.1738 98.9931C49.5141 98.4474 49.6071 100.087 49.9293 100.406C51.2275 101.695 51.3096 98.1894 49.9293 98.3506C49.3176 98.4221 49.1098 100.24 49.7998 100.392C50.4089 100.527 51.0852 100.528 50.9074 99.7783C50.7512 99.1195 50.4803 98.1026 49.5553 98.3649C49.144 98.4816 49.2795 100.114 49.9293 100.149C51.3713 100.229 49.8232 96.5671 48.491 98.5505C47.1234 100.587 50.2728 101.721 50.1882 98.8646ZM50.1882 98.8646C50.1722 98.3234 49.023 96.9104 48.9081 97.9937C48.8709 98.3444 49.2917 100.682 49.8718 99.3214C50.047 98.9103 50.533 97.292 49.7855 97.08C49.082 96.8805 48.7593 97.0496 48.5773 97.6368C47.9123 99.7818 51.1833 99.7462 49.1526 97.8367C48.0991 96.846 48.117 98.9299 48.117 99.4927C48.117 100.59 48.4757 100.983 49.6704 100.92C50.5181 100.876 48.3759 98.0744 48.3759 100.149C48.3759 102.583 50.9112 99.0103 48.8937 99.1216C48.3426 99.1519 47.5528 100.825 48.0019 100.506C48.4639 100.179 48.6207 99.2498 48.3759 99.4927C47.7628 100.101 48.4142 101.441 48.1026 100.05C48.0289 99.7201 47.8384 100.137 47.6999 100.107C47.553 100.074 46.7445 99.6355 47.0814 99.6355 M28.1071 50.3647C26.9551 50.3684 25.9624 50.1637 25.129 49.7504C24.6161 49.464 24.359 49.1289 24.3578 48.7449C24.3565 48.3609 24.4515 48.0566 24.6428 47.832C24.8339 47.5753 25.1055 47.4464 25.4575 47.4453C25.7775 47.4442 26.2419 47.5707 26.8508 47.8247C27.5236 48.0786 27.94 48.2052 28.1 48.2047C28.708 48.2027 29.2512 47.9449 29.7295 47.4314C30.2397 46.8857 30.6374 46.1804 30.9226 45.3154C31.4934 43.7136 31.7767 42.2726 31.7725 40.9927C31.768 39.6167 31.5393 38.1774 31.0864 36.6749C30.6654 35.1402 30.0846 33.6541 29.3439 32.2165L28.5708 30.683C27.7656 29.0857 27.1375 27.8237 26.6865 26.8972C26.2675 25.9705 25.8962 24.9637 25.5726 23.8768C25.0876 22.3424 24.8428 20.8552 24.8381 19.4152C24.8343 18.2632 25.0228 17.1745 25.4034 16.1493C25.8161 15.1239 26.4212 14.258 27.2189 13.5514C28.0164 12.7808 29.0072 12.3935 30.1912 12.3897C30.7672 12.3878 31.3277 12.5619 31.8729 12.9122C32.4179 13.2304 32.8033 13.6451 33.029 14.1564L32.2162 15.1671C31.3842 15.1698 30.7597 15.0118 30.3427 14.6932C29.7669 14.7591 29.2558 15.0487 28.8095 15.5622C28.3951 16.0435 28.0769 16.6046 27.855 17.2453C27.665 17.8539 27.571 18.4622 27.573 19.0702C27.5769 20.2862 27.741 21.5337 28.0652 22.8126C28.4212 24.0595 28.8731 25.242 29.4207 26.3602L32.8027 33.0692C33.3504 34.2195 33.7866 35.5141 34.1113 36.953C34.436 38.3919 34.6007 39.8314 34.6054 41.2714C34.6123 43.3834 34.1068 45.3691 33.0889 47.2284C32.548 48.1902 31.8465 48.9445 30.9842 49.4913C30.1221 50.0701 29.1631 50.3612 28.1071 50.3647ZM47.5288 50.0133C46.3755 49.6331 44.9509 49.4457 43.2549 49.4512C42.744 49.7729 42.2005 49.9347 41.6245 49.9366C41.2405 49.9378 40.9039 49.7629 40.6148 49.4118C40.3577 49.0927 40.2286 48.7411 40.2273 48.3571C40.2186 45.6691 40.3189 42.0848 40.5282 37.6041C40.7047 32.8355 40.789 29.2672 40.7813 26.8992L40.7802 26.5632C40.5816 24.5478 40.4807 23.0441 40.4775 22.0521C40.4676 19.0122 41.0226 17.4903 42.1426 17.4867C42.4626 17.4856 42.735 17.6128 42.9599 17.868C43.2166 18.0912 43.3455 18.3628 43.3465 18.6828C43.3478 19.0668 43.3018 19.6749 43.2085 20.5072C43.1151 21.3075 43.0691 21.9157 43.0704 22.3317C43.0774 24.4757 43.0997 26.4116 43.1374 28.1395C43.1749 29.8354 43.1972 31.7553 43.2042 33.8993C43.0457 34.3798 42.9679 35.0521 42.9708 35.9161L42.9726 36.4921L42.889 40.2844C42.8287 41.4046 42.8008 42.6847 42.8055 44.1247C42.8127 46.3327 43.3443 47.4349 44.4003 47.4315C44.4643 47.4313 44.5603 47.431 44.6883 47.4305C44.8482 47.398 45.0562 47.3813 45.3122 47.3805C45.6001 47.3476 45.968 47.3304 46.416 47.3289C48.144 47.3233 49.0096 47.8004 49.0127 48.7604C49.0137 49.0804 48.8706 49.3529 48.5834 49.5778C48.2961 49.8028 47.9446 49.9479 47.5288 50.0133ZM58.5969 50.1212C57.7649 50.1239 56.9961 49.8544 56.2903 49.3127C55.5846 48.803 55.0063 48.1009 54.5554 47.2063C53.621 45.2574 53.0381 43.1313 52.8066 40.828C52.5115 38.653 52.3606 36.5575 52.3541 34.5415C52.3528 34.1575 52.3678 33.8374 52.3989 33.5813L52.3961 32.7173C52.3956 32.5573 52.3793 32.4774 52.3473 32.4775L52.3445 31.6135L52.3815 28.2533C52.4102 27.2292 52.5329 25.5968 52.7496 23.3561C52.9046 21.8196 53.2677 20.3304 53.839 18.8885C54.0609 18.2478 54.3473 17.7669 54.6983 17.4457C55.0491 17.0926 55.4486 16.9153 55.8966 16.9138C57.1766 16.9096 58.3293 17.1459 59.3549 17.6225C60.3804 18.0672 61.2464 18.7044 61.9532 19.5341C62.5958 20.332 63.143 21.3222 63.5949 22.5047C64.0466 23.6553 64.3706 24.8862 64.5669 26.1976C64.7633 27.5409 64.8639 28.9646 64.8688 30.4686L64.8701 30.8526C64.8733 31.8446 64.8923 32.7405 64.9269 33.5404L64.9838 36.2763C65.0139 45.4922 62.8849 50.1072 58.5969 50.1212ZM58.3984 48.1058C58.9744 48.1039 59.5016 47.8782 59.9802 47.4286C60.4586 46.9471 60.8245 46.3059 61.0779 45.5051C61.6806 43.8711 62.0428 42.1099 62.1647 40.2215C62.3193 38.589 62.3947 37.1807 62.3909 35.9967C62.3862 34.5567 62.268 32.6691 62.0364 30.3338C61.8364 27.8705 61.7343 26.0308 61.7304 24.8148L61.7276 23.9508C61.6596 22.735 61.2402 21.6804 60.4692 20.7869C59.7303 19.8933 58.8169 19.4483 57.7289 19.4518C56.6409 19.4554 55.9229 20.0817 55.575 21.3309C55.2582 22.3239 55.1024 23.6044 55.1075 25.1724C55.1095 25.7804 55.1272 26.2924 55.1605 26.7083L55.1648 28.0043L55.076 30.2126C55.0141 30.8848 54.9846 31.6209 54.9872 32.4209C54.9928 34.1489 55.0464 35.8607 55.1479 37.5564C55.2837 39.9559 55.6114 42.2909 56.1308 44.5612C56.6505 46.9275 57.4064 48.1091 58.3984 48.1058ZM72.9603 48.3943L72.9061 46.5225C72.8724 45.9786 72.8544 45.3706 72.8522 44.6986L72.8949 43.0665C72.7977 42.7148 72.5463 39.2116 72.1406 32.5569C71.7349 25.9022 71.4969 21.6309 71.4268 19.7432C69.5706 19.6852 68.3859 19.4971 67.8729 19.1787C67.5201 18.9239 67.3431 18.6365 67.3421 18.3165C67.3412 18.0605 67.5005 17.836 67.8199 17.6429C68.1712 17.4178 68.5228 17.3046 68.8748 17.3035C69.7708 17.3005 70.859 17.361 72.1394 17.4848C73.3559 17.6408 74.4442 17.7173 75.4042 17.7142L75.7882 17.7129L76.1722 17.7117C77.1642 17.7084 77.6614 18.0908 77.6639 18.8588C77.6652 19.2428 77.5062 19.5633 77.187 19.8204C76.8678 20.0454 76.5001 20.1586 76.0841 20.16C75.7961 20.1609 75.38 20.1143 74.8357 20.02L73.8751 19.8312L73.8278 20.0713L73.7806 20.3115C73.7899 23.1595 74.0767 27.7025 74.6411 33.9407C75.1722 39.795 75.443 44.3382 75.4536 47.5702C75.4548 47.9542 75.2799 48.2907 74.9289 48.5799C74.6098 48.8689 74.2423 49.0141 73.8263 49.0155L72.9603 48.3943ZM91.0039 49.1034C89.9159 49.107 89.3633 46.4688 89.3461 41.1888L89.3852 38.4527L89.4259 36.2445L89.4255 36.1005L89.4239 35.6205C89.4551 35.3644 89.4701 35.0604 89.4689 34.7084C89.4687 34.6444 89.4205 34.5645 89.3242 34.4688C89.2278 34.3731 89.1796 34.2933 89.1794 34.2293L89.1792 34.1813C89.0194 34.2458 88.7315 34.2788 88.3155 34.2801C87.8995 34.2815 87.3873 34.2192 86.7789 34.0931C86.5868 34.0618 86.0746 33.9834 85.2421 33.8581L85.2602 39.3781C85.2629 40.2101 85.3151 41.522 85.417 43.3136C85.5187 45.0733 85.571 46.3851 85.5738 47.2491C85.5754 47.7291 85.4488 48.1456 85.1939 48.4984C84.9391 48.8512 84.6036 49.0283 84.1876 49.0297C83.5796 49.0317 83.1457 48.4411 82.8858 47.2579C82.6259 46.0428 82.4927 44.4592 82.4863 42.5072L82.5697 38.6189C82.5981 37.5308 82.6104 36.3788 82.6064 35.1628L82.6037 34.3468L82.6015 33.6748C82.5999 33.1628 82.5828 32.8268 82.5502 32.6669L82.5495 32.4269L82.6844 29.6425C82.6804 28.4265 82.6265 26.6186 82.5227 24.219C82.4188 21.8193 82.3649 20.0115 82.361 18.7955C82.3597 18.4115 82.4866 18.0751 82.7417 17.7862C82.9967 17.4974 83.3163 17.3523 83.7003 17.3511C84.7243 17.3477 85.2394 18.3061 85.2457 20.2261L85.1691 26.1783C85.1109 27.9705 85.0855 29.9706 85.0927 32.1786C85.5732 32.3371 86.4374 32.4142 87.6854 32.4102L89.4614 32.4044C89.5248 32.2122 89.5562 32.0201 89.5555 31.8281C89.5505 30.2921 89.4471 28.0204 89.2453 25.013C89.0121 22.1978 88.8927 19.9102 88.8869 18.1502C88.8858 17.7982 89.0128 17.5098 89.2681 17.2849C89.5553 17.028 89.8908 16.8989 90.2748 16.8976C90.4988 16.8969 90.8191 16.9759 91.2356 17.1345L91.6682 17.3251C91.6831 21.8691 91.8628 27.9325 92.2076 35.5154L92.6792 47.658C92.6807 48.106 92.5058 48.4585 92.1547 48.7157C91.8355 48.9727 91.4519 49.102 91.0039 49.1034ZM100.775 41.9195C100.455 41.9206 100.15 41.5215 99.8592 40.7225C99.5685 39.8914 99.4205 38.6599 99.4152 37.0279C99.4133 36.4519 99.4418 35.3638 99.5005 33.7636C99.5607 32.5794 99.5884 31.2673 99.5837 29.8273L99.462 21.9557L99.3403 14.084C99.3387 13.572 99.5452 13.1394 99.9601 12.786C100.375 12.4007 100.838 12.2071 101.35 12.2055C101.67 12.2044 101.943 12.3155 102.167 12.5388C102.392 12.7621 102.505 13.0497 102.506 13.4017C102.515 16.2177 102.368 20.0422 102.064 24.8752C101.729 30.2203 101.565 34.0449 101.573 36.3489C101.579 38.0449 101.551 39.277 101.489 40.0452C101.459 40.7813 101.381 41.2775 101.254 41.5339C101.159 41.7903 100.999 41.9188 100.775 41.9195ZM99.9379 50.1303C99.5539 50.1315 99.1854 49.9567 98.8322 49.6059C98.5111 49.2549 98.3497 48.8235 98.348 48.3115C98.3461 47.7355 98.5365 47.2388 98.9191 46.8216C99.3017 46.3723 99.7649 46.1468 100.309 46.1451C100.885 46.1432 101.35 46.3657 101.703 46.8125C102.088 47.2273 102.282 47.7706 102.284 48.4426C102.288 49.5626 101.506 50.1252 99.9379 50.1303Z';
 
-  var animalSloth2 = 'M78 89C71.5856 90.5503 67.7047 97.6645 64.0207 102.473C62.4341 104.543 61.6381 107.375 60.0208 109.486C58.4242 111.569 57.1523 115.006 55.8998 117.421C53.2825 122.469 52.4288 129.228 49.0919 133.744C48.2561 134.876 47.5982 137.424 47.092 138.83C46.6097 140.17 45.9786 141.484 45.6375 142.87C45.2216 144.558 44.6469 146.457 43.9002 148.058C42.6773 150.678 42.2198 153.98 41.6174 156.732C40.0868 163.724 38.0014 171.09 38.0014 178.325C38.0014 182.412 38.0014 186.5 38.0014 190.587C38.0014 193.534 37.9344 196.87 38.7286 199.692C39.5114 202.473 38.8546 205.568 39.4761 208.407C39.7388 209.607 39.5764 210.895 39.8397 212.098C40.1154 213.357 41.228 214.796 41.274 216.056C41.3329 217.67 40.9065 219.656 41.5568 221.141C41.9352 222.006 42.1877 223.008 42.3851 223.91C42.8441 226.006 44.2398 227.958 44.9102 230 M44.4976 183.308C44.4976 185.85 44.4976 188.392 44.4976 190.934C44.4976 192.386 45.1598 193.58 45.236 194.929C45.3626 197.171 46.3436 199.077 46.3436 201.386C46.3436 203.386 46.9696 205.651 47.082 207.64C47.2519 210.649 47.082 213.707 47.082 216.72C47.082 218.709 46.7681 220.627 46.7128 222.531C46.6644 224.197 46.5515 227.596 45.5231 228.987C44.3978 230.509 43.3814 231.78 41.9952 233.143C40.9065 234.214 39.1363 236.03 37.6674 236.351C36.0326 236.709 35.0528 237.784 33.237 237.784C31.8798 237.784 29.5074 237.853 28.0682 238.167C26.4595 238.519 27.1452 242.464 27.1452 243.776C27.1452 244.869 26.7503 245.983 28.0477 246.218C29.297 246.443 30.8286 246.597 31.9448 247.146C33.2515 247.789 35.7665 247.875 37.1136 247.953C38.9451 248.059 40.8165 247.953 42.6516 247.953C46.4125 247.953 49.9446 246.177 53.543 245.39C56.4986 244.744 59.4633 241.238 61.2961 239.035C62.7886 237.241 64.2452 235.455 65.706 233.607C67.0563 231.9 65.7503 229.353 66.8341 227.433C67.9221 225.507 67.4012 222.885 68.7006 220.876C69.5853 219.509 70.3415 216.543 70.3415 214.904C70.3415 212.344 69.9723 210.017 69.9723 207.459C69.9723 205.346 71.3385 203.787 71.4491 201.83C71.6392 198.465 71.8183 195.117 71.8183 191.741C71.8183 190.363 71.6264 188.842 71.8388 187.484C72.0707 186.001 72.8422 184.426 72.9259 182.944C73.0926 179.993 72.9259 177.231 72.9259 174.228C72.9259 172.498 73.0949 169.053 72.3721 167.489C71.412 165.411 72.2308 161.914 72.1875 159.701C72.1566 158.118 71.7573 156.375 71.4696 154.818C71.1625 153.157 70.3415 151.325 70.3415 149.714C70.3415 147.93 69.673 145.392 69.2544 143.54C68.9828 142.337 68.9812 139.602 67.7571 139 M50.686 249C50.686 251.759 52.0633 260.671 49.4244 262.797C48.14 263.832 47.4849 266.911 47.0614 268.404C46.6728 269.774 46 271.2 46 272.782C46 275.947 46.5835 280.951 50.5058 280.951C53.9773 280.951 57.4305 280.588 60.9793 280.588C64.6452 280.588 68.4027 279.869 71.2326 282.403C74.3901 285.23 77 284.255 77 279.862C77 277.995 76.9536 277.112 75.6382 275.787C75.0297 275.174 72.8083 273.74 71.9535 273.689C67.3259 273.415 68.0242 277.81 66.186 280.588 M76.4217 275.001C79.2411 275.001 80.3353 274.912 82.2325 276.37C83.3985 277.267 83.4916 279.156 84.6459 279.866C85.2835 280.258 85.0526 281.311 84.0132 280.911C83.379 280.667 82.3571 280.19 81.6936 280.19C79.8056 280.19 77.9692 279.866 76 279.866 M87.1793 278C88.6366 277.713 90.0739 278.17 90.0739 276.541C90.0739 275.786 89.8021 274.862 89.1693 274.352C88.0796 273.473 86.6132 273.116 85.6516 272.244C84.6394 271.325 82.5382 271.147 81.7519 270.156C80.6455 268.761 78.2239 269.244 76.9678 268.23C75.2534 266.847 74.5154 266.955 74.5154 264.319C74.5154 262.483 75.1486 260.67 75.2391 259.028C75.3583 256.865 76.6864 254.752 76.6864 252.644C76.6864 251.657 77.0482 250.882 77.0482 249.907C77.0482 248.873 76.8211 248.361 77.9528 248.995C79.0608 249.616 81.5606 249.543 82.8374 249.543C85.0184 249.543 86.7312 249.298 88.8075 248.833C90.5731 248.438 92.2227 247.718 94.054 247.718C95.6293 247.718 97.5909 247.196 98.9386 246.441C100.54 245.544 102.71 245.765 104.265 244.8C105.937 243.762 107.718 242.658 109.432 241.698C113.263 239.552 115.863 236.428 118.739 233.206C119.299 232.577 120.414 232.055 120.467 231.138C120.553 229.674 121.218 228.166 121.533 226.74C121.915 225.006 121.844 223.478 122.357 221.734C122.968 219.655 123 217.787 123 215.612C123 213.652 122.377 211.96 122.276 210.14C122.201 208.774 120.99 206.856 120.286 205.579C119.797 204.691 119.675 203.465 119.181 202.681C118.781 202.047 118.02 201.067 117.934 200.289C117.758 198.685 115.521 195.936 114.517 194.634C113.4 193.186 112.987 191.246 111.623 189.871C109.196 187.424 107.84 183.536 105.09 181.318C104.282 180.666 104.221 179.119 103.823 178.216C103.434 177.333 102.723 176.707 102.296 175.845C101.407 174.053 100.061 172.561 99.1195 170.899C98.2605 169.384 98.2793 167.919 97.5918 166.359C97.1086 165.263 96.5466 162.314 95.6822 161.616C94.5775 160.725 95.1395 157.802 95.1395 156.427C95.1395 154.448 94.054 152.94 94.054 151.036C94.054 147.144 94.054 143.253 94.054 139.361C94.054 137.407 94.8972 135.71 95.1596 133.726C95.5225 130.981 96.8621 128.338 97.9537 125.862C98.5493 124.511 99.4566 123.122 99.8633 121.687C100.072 120.949 101.08 120.188 101.471 119.477C101.905 118.69 102.049 117.638 102.657 117.025C104.406 115.261 100.56 115.647 99.3004 115.647C97.5198 115.647 95.4334 114.552 93.5112 114.552C91.6292 114.552 89.7859 114.257 87.9834 114.187C87.2058 114.157 83.2418 113.785 82.8374 113.275C82.6459 113.034 81.1608 112.844 80.8273 112.748C80.0512 112.524 79.5455 112.104 78.9377 111.552C77.9227 110.631 76.2838 109.168 75.9828 107.802C75.729 106.651 74.6025 104.446 73.8722 103.526C73.1952 102.672 73.0681 100.155 73.0681 99.0463C73.0681 97.4239 72.653 95.4314 73.8722 94.2021C74.9897 93.0752 76.3854 92.7624 77.4904 91.6482C78.2082 90.9244 79.1055 90.3557 79.8624 89.6618C80.5177 89.0611 82.0642 88.442 82.4756 87.716C83.6893 85.5744 85.7654 86.4444 87.5411 85.6486C88.8111 85.0795 91.0564 85 92.4258 85C94.1746 85 95.9234 85 97.6722 85C99.2765 85 100.564 86.0945 102.195 86.0945C103.965 86.0945 105.468 86.8242 107.08 86.8242C110.122 86.8242 114.082 88.553 115.04 91.9319C115.662 94.127 117.211 95.2563 117.211 97.6883C117.211 99.4022 117.573 101.245 117.573 103.06C117.573 106.392 113.125 108.939 110.879 110.701C109.447 111.824 107.556 112.474 105.994 113.174C104.691 113.758 102.981 115.4 101.632 115.626C100.727 115.778 100.193 116.376 99.3004 116.376C98.3959 116.376 97.4913 116.376 96.5868 116.376C95.5229 116.376 92.0134 117.369 91.5212 116.376 M76.6921 108C79.6108 107.508 83.6572 105.895 85.3357 103.38C86.1167 102.209 87.9683 101.444 88.8353 100.023C89.524 98.8941 90.5903 96.5488 89.5943 95.3827C88.7113 94.3489 87.2444 93.1477 85.7995 93.0725C83.9423 92.9758 81.9646 92.9758 80.1074 93.0725C78.9325 93.1336 75.927 94.1459 75.1742 95.0273C74.1957 96.1729 71.3795 96.7134 71.3795 98.5814C71.3795 100.314 71 102.25 71 104.09 M82.6399 98.5256C80.8961 98.5256 80.2843 98.3238 79.1131 99.296C78.5325 99.7779 80.365 99.6812 80.598 99.6812C81.5106 99.6812 81.5794 99.4644 81.5261 98.5256C81.492 97.9225 80.3388 98.6378 81.2374 98.9964C82.4403 99.4764 83.3961 99.6812 84.6817 99.6812C85.5914 99.6812 84.2985 99.296 83.9392 99.296C82.7871 99.296 83.1568 98.9783 83.4649 98.0549C83.6713 97.436 83.4892 95.328 83.3824 96.2145C83.1607 98.0546 81.169 96.63 80.8043 98.333C80.7286 98.6866 81.4443 98.0114 81.6911 97.7553C82.2744 97.1501 80.6449 97.8465 80.4949 98.1405C80.0572 98.9982 80.6029 99.296 81.2993 99.296C81.3019 99.296 81.1145 99.6306 81.1755 99.8524C81.3149 100.359 81.619 99.4061 81.7324 99.3388C82.5128 98.8761 81.7217 98.9108 81.8974 98.9108C82.8805 98.9108 82.6399 98.2069 82.6399 97.3701 M97.1079 95.333C94.5905 95.3933 93.2367 97.4566 92.0956 99.4252C90.8463 101.58 91.4609 103.867 90.7754 106.167C90.5348 106.974 89.7263 108.082 90.0947 109.053C90.4832 110.077 91.8537 111.702 93.0238 111.702C94.4056 111.702 98.9526 112.423 99.9957 111.623C101.692 110.322 103.61 109.524 104.719 107.61C105.213 106.757 104.905 105.193 104.905 104.229C104.905 103.109 104.162 102.151 104.162 101.204C104.162 99.6133 101.391 97.0617 100.078 96.3215C98.3771 95.3625 95.5291 94.0443 94.1376 96.0447 M93.5176 97.4304C94.2599 100.627 95.6417 101 98.7624 101C99.7307 101 100.301 99.9588 100.651 99.2152C101.305 97.8235 101.031 97.5074 99.9047 96.549C98.5063 95.3594 96.5872 95.5114 94.9628 95.0727C93.0725 94.5622 92.1454 96.8891 91 97.4304 M113.345 107.289C110.198 105.528 105.467 103.406 105.215 99.4712C105.116 97.9187 104.773 95.4717 105.237 93.9828C105.892 91.8771 108.996 92.0086 110.829 92.0086C113.156 92.0086 114.477 91.8007 116.055 93.43C117.075 94.4837 117.991 96.4419 117.991 97.8721C117.991 99.8266 117.991 101.781 117.991 103.736C117.991 104.56 118.108 105.822 117.517 106.5C117.021 107.07 115.945 107.491 115.668 108 M110 97C113.493 102.588 112.364 97.2808 110.933 97.7917C108.83 98.5429 112.326 100 113 100 M94 147.051C98.6671 150.403 104.035 154 109.924 154C113.627 154 117.33 154 121.033 154C124.193 154 128.055 153.886 130.846 152.354C133.079 151.129 135.646 150.024 138.067 148.961C139.235 148.448 141.314 147.523 142.141 146.503C142.513 146.043 143.326 145.755 143.807 145.385C144.795 144.626 145.489 143.345 146.585 142.744C148.144 141.888 148.83 140.136 150.288 139.289C151.993 138.299 152.481 135.783 153.806 134.474C157.158 131.164 158.805 128.379 158.805 123.827C158.805 122.364 158.805 120.901 158.805 119.438C158.805 118.517 159.294 115.654 158.723 114.948C157.818 113.831 157.756 112.017 156.871 110.925C156.132 110.013 155.679 109.078 155.102 108.08C153.661 105.59 151.219 104.436 148.807 103.245C146.949 102.328 141.983 100.962 140.207 102.716C139.437 103.477 138.445 103.725 137.615 104.545C136.645 105.503 135.77 106.697 135.455 108.101C135.29 108.834 134.735 109.526 134.735 110.295C134.735 111.781 134.321 109.511 134.282 109.462C133.569 108.582 133.109 107.366 132.862 106.272C132.533 104.806 132.513 103.433 132.513 101.883C132.513 99.9511 133.53 100.312 134.652 99.4248C135.341 98.8805 138.173 98.8732 138.993 99.3232C140.063 99.9101 140.881 101.04 141.4 102.066 M134.232 95.3226C132.635 94.1804 131.167 93.4438 129.555 92.5635C127.766 91.5861 126.644 91.2816 127.103 89.2527C127.435 87.7831 127.743 86.8248 128.911 85.6762C130.198 84.4105 131.302 84.6543 133.109 84.6543C135.425 84.6543 136.476 91.7926 136.476 93.6671C136.476 94.1481 136.718 95.3248 136.871 95.8539C137.063 96.5117 137.715 94.765 138.16 94.2394C139.211 92.9995 139.095 90.7923 139.095 89.2527C139.095 87.5597 139.844 85.6183 139.844 83.9186C139.844 82.7312 140.345 79.9203 139.553 79.0545C138.626 78.0427 138.071 76.6149 136.643 76.2138C134.974 75.745 133.783 76.1933 132.174 76.1933C130.898 76.1933 131.188 76.0857 131.239 76.9291C131.28 77.6149 131.492 78.7117 131.904 79.218C132.074 79.4271 132.349 81.3268 132.361 81.6296C132.399 82.5572 132.735 83.3189 132.735 84.2865C132.735 85.6384 133.548 87.8875 134.149 89.0688C134.794 90.3378 136.102 92.4784 136.102 93.8511 M142.183 83C145.447 83.7435 147.452 85.7464 150.291 87.3891C151.275 87.9583 152.136 88.9791 153.182 89.5837C154.291 90.2257 156.262 91.3692 156.914 92.5097C158.221 94.795 160.931 96.7716 162.574 98.9105C163.478 100.088 164.417 101.216 165.384 102.304C166.083 103.09 166.17 105.062 166.929 105.677C167.962 106.514 167.832 109.583 167.832 110.757C167.832 112.609 168.845 114.34 168.916 116.203C169.037 119.374 170 122.575 170 125.794C170 128.662 170.006 131.718 169.257 134.369C168.193 138.139 166.715 142.282 165.645 146.073C165.294 147.317 163.946 148.604 163.317 149.751C162.519 151.204 161.334 152.718 160.246 153.957C158.059 156.449 155.838 158.668 153.202 160.744C150.669 162.738 147.764 163.994 145.354 165.946C143.465 167.476 139.523 169.399 137.126 169.685C134.551 169.991 132.134 172.245 129.359 172.245C126.434 172.245 123.499 173.421 120.688 174.054C119.466 174.329 117.968 174.44 116.715 174.44C114.44 174.44 112.287 175.044 110.031 175.171C107.045 175.339 104.033 177 101 177 M25.0833 246.973C21.6015 246.973 15.4512 247.537 13.4475 243.544C11.7224 240.107 11 237.23 11 233.259C11 229.962 11.8011 232.664 13.5278 232.878C15.016 233.063 17.2122 234.055 18.5833 234.698C19.8589 235.296 22.3054 235.843 23.6389 235.926C24.5529 235.982 25.1883 236.03 25.9861 236.497C26.8346 236.994 25.0164 236.326 24.642 236.01C23.0413 234.66 21.3599 235.373 20.4691 233.259C20.2323 232.697 20.4167 227.334 20.4691 227.334C21.8329 227.334 24.4912 230.349 25.4444 231.355C26.1285 232.076 27.0452 232.816 27.7917 233.429C28.1662 233.736 28.9622 234.755 29.4167 234.783C30.107 234.826 31.1163 234.738 31.5833 235.354C31.956 235.846 32.4522 232.834 32.5864 232.497C33.1631 231.053 32.6667 228.357 32.6667 226.783C32.6667 225.122 32.7515 226.487 33.2083 227.355C33.6966 228.282 34.1029 229.263 34.5525 230.212C35.3567 231.908 36.579 233.768 37 235.545 M89.6504 251C89.6504 253.857 89.4435 256.718 89.2968 259.468C89.2416 260.504 89.2968 261.56 89.2968 262.597C89.2968 263.736 88.3978 264.242 89.7289 264.704C91.7973 265.422 93.3768 267.435 95.6599 267.567C97.7076 267.686 99.795 267.567 101.846 267.567C103.845 267.567 105.135 265.879 106.815 265.379C108.816 264.784 110.361 263.886 112.451 263.886C114.913 263.886 115.705 264.151 117.734 265.358C119.117 266.182 119.552 269.372 119.973 270.799C120.387 272.201 115.869 271.372 115.181 270.799C113.53 269.423 111.943 269.04 109.8 269.04C107.996 269.04 108.74 268.802 108.74 267.383C108.74 265.992 109.704 265.759 108.818 266.913C108.484 267.348 108.789 269.578 108.19 269.756C107.284 270.026 105.972 269.776 105.028 269.776C103.447 269.776 103.939 269.952 103.162 270.963C102.738 271.514 102.237 272.909 101.846 273.642C101.409 274.463 100.941 275.228 100.53 276.035C99.7334 277.603 101.279 276.947 102.2 277.16C102.977 277.34 107.679 278.851 107.679 277.324C107.679 275.601 107.641 271.413 105.912 270.513 M110.133 275.856C111.124 275.856 116 276.506 116 275.045C116 273.875 115.707 271.09 114.167 270.99C112.681 270.893 111.463 270.179 109.767 270.179C107.874 270.179 106.823 269.576 105 270.584 M31.5964 88.3866C30.6225 89.0019 29.6727 89.3559 28.7472 89.4486C28.1605 89.4786 27.7646 89.3313 27.5595 89.0067C27.3544 88.682 27.2732 88.3737 27.3158 88.0818C27.3414 87.7628 27.503 87.5093 27.8006 87.3213C28.0711 87.1504 28.5317 87.0108 29.1825 86.9025C29.8873 86.76 30.3074 86.646 30.4427 86.5605C30.9567 86.2358 31.2798 85.7288 31.4121 85.0395C31.5544 84.3062 31.5166 83.4973 31.2985 82.6131C30.9309 80.9528 30.4052 79.5816 29.7215 78.4995C28.9866 77.3362 28.0281 76.2384 26.846 75.2063C25.6739 74.1299 24.3922 73.1796 23.0008 72.3553L21.5311 71.467C20.0002 70.5417 18.7975 69.8064 17.9231 69.2611C17.0757 68.6988 16.2262 68.0432 15.3746 67.2943C14.1484 66.2521 13.1507 65.1224 12.3815 63.905C11.7662 62.9311 11.3474 61.9087 11.1251 60.8379C10.9298 59.75 10.9824 58.6949 11.2826 57.6724C11.5488 56.5958 12.1823 55.7413 13.1833 55.1089C13.6702 54.8013 14.2376 54.651 14.8856 54.658C15.5164 54.6379 16.0632 54.7845 16.526 55.0977L16.3746 56.3857C15.6712 56.8301 15.0582 57.0282 14.5356 56.9798C14.0829 57.3416 13.8038 57.8585 13.6986 58.5307C13.6033 59.1587 13.6318 59.803 13.7843 60.4637C13.9467 61.0803 14.1903 61.6456 14.5151 62.1596C15.1646 63.1876 15.9664 64.1572 16.9207 65.0684C17.8848 65.9354 18.896 66.6971 19.9541 67.3534L26.384 71.2398C27.4592 71.9232 28.5167 72.7881 29.5563 73.8345C30.596 74.881 31.5004 76.0129 32.2696 77.2303C33.3976 79.0158 34.0245 80.9665 34.1501 83.0826C34.203 84.1847 34.0095 85.1965 33.5696 86.1179C33.1469 87.0663 32.4891 87.8225 31.5964 88.3866ZM47.8626 77.7689C46.6836 78.0595 45.3772 78.6578 43.9434 79.5637C43.6815 80.1077 43.307 80.5335 42.8201 80.8412C42.4954 81.0463 42.1174 81.077 41.6859 80.9332C41.2985 80.7994 41.0023 80.5702 40.7972 80.2456C39.3615 77.9731 37.5418 74.8834 35.3383 70.9763C32.9539 66.8429 31.1293 63.7752 29.8645 61.7733L29.685 61.4893C28.4459 59.8875 27.5614 58.6673 27.0316 57.8286C25.4078 55.2586 25.0694 53.6745 26.0162 53.0762C26.2867 52.9053 26.5851 52.8683 26.9112 52.965C27.2472 53.0177 27.5007 53.1792 27.6717 53.4498C27.8768 53.7744 28.1609 54.3141 28.5242 55.0687C28.8703 55.7963 29.1545 56.3359 29.3767 56.6876C30.5218 58.5002 31.5694 60.1283 32.5195 61.5721C33.4524 62.9888 34.4915 64.6034 35.6366 66.416C35.7577 66.9072 36.049 67.5181 36.5105 68.2485L36.8182 68.7355L38.7624 71.9925C39.3066 72.9736 39.9632 74.0728 40.7323 75.2901C41.9117 77.1568 42.9477 77.8081 43.8405 77.2441C43.8946 77.2099 43.9758 77.1586 44.084 77.0902C44.2021 76.9777 44.3694 76.8531 44.5859 76.7164C44.8122 76.5355 45.1148 76.3254 45.4935 76.0861C46.9544 75.1631 47.9412 75.1074 48.454 75.919C48.6249 76.1896 48.6484 76.4964 48.5246 76.8396C48.4008 77.1828 48.1801 77.4926 47.8626 77.7689ZM57.2962 71.979C56.5929 72.4234 55.7983 72.6037 54.9126 72.5198C54.0439 72.463 53.181 72.1755 52.3236 71.6573C50.4965 70.5027 48.8729 69.0114 47.4529 67.1832C46.0472 65.4974 44.8059 63.8024 43.7291 62.098C43.524 61.7734 43.3666 61.4943 43.2569 61.2608L42.7954 60.5304C42.71 60.3951 42.6537 60.336 42.6267 60.3531L42.1652 59.6227L40.4111 56.7565C39.8912 55.8737 39.1277 54.4256 38.1206 52.4123C37.4355 51.0283 36.9518 49.5738 36.6696 48.0487C36.5171 47.388 36.5042 46.8284 36.6309 46.3699C36.7405 45.8843 36.9846 45.5218 37.3634 45.2825C38.4455 44.5989 39.5476 44.1864 40.6696 44.0453C41.7746 43.8771 42.8469 43.9567 43.8865 44.284C44.8548 44.6185 45.8446 45.1666 46.8557 45.9282C47.8498 46.6628 48.7784 47.5335 49.6414 48.5401C50.5216 49.5737 51.3634 50.7263 52.1667 51.9978L52.3718 52.3224C52.9017 53.1611 53.3938 53.91 53.8481 54.5693L55.3501 56.8566C60.2726 64.6479 60.9213 69.6887 57.2962 71.979ZM56.0571 70.3772C56.5441 70.0696 56.8708 69.5982 57.0373 68.9631C57.1867 68.3009 57.156 67.5633 56.9451 66.7502C56.5874 65.0458 55.9585 63.3613 55.0582 61.6968C54.3218 60.2316 53.6374 58.9986 53.005 57.9976C52.2358 56.7802 51.1327 55.2439 49.6956 53.3887C48.2172 51.4082 47.1533 49.9039 46.5038 48.8759L46.0423 48.1455C45.3387 47.1517 44.4229 46.4811 43.2951 46.1338C42.1943 45.7695 41.184 45.8779 40.2642 46.459C39.3444 47.0401 39.069 47.9522 39.438 49.1953C39.6973 50.2049 40.2458 51.3725 41.0833 52.698C41.408 53.212 41.695 53.6363 41.9443 53.9709L42.6365 55.0666L43.7347 56.9845C44.0395 57.5868 44.4056 58.2261 44.8329 58.9024C45.7559 60.3633 46.7109 61.785 47.6979 63.1675C49.088 65.1281 50.6063 66.9321 52.2527 68.5794C53.9503 70.3078 55.2185 70.9071 56.0571 70.3772ZM68.5464 62.8839L67.5059 61.327C67.1883 60.8842 66.85 60.3787 66.4911 59.8106L65.66 58.4052C65.3908 58.1589 63.3163 55.3248 59.4365 49.9029C55.5568 44.481 53.0856 40.9891 52.0231 39.4272C50.4198 40.3644 49.3163 40.8345 48.7125 40.8374C48.2782 40.809 47.9756 40.6596 47.8047 40.389C47.6679 40.1726 47.6835 39.8978 47.8515 39.5645C48.0295 39.1872 48.2672 38.9045 48.5648 38.7164C49.3223 38.2379 50.2763 37.7108 51.4268 37.1354C52.5402 36.6211 53.5028 36.1076 54.3143 35.5949L54.639 35.3898L54.9636 35.1847C55.8023 34.6548 56.4267 34.7145 56.8369 35.3638C57.042 35.6884 57.0776 36.0444 56.9439 36.4318C56.793 36.792 56.5417 37.0833 56.19 37.3055C55.9465 37.4593 55.5692 37.6409 55.058 37.8503L54.1439 38.2008L54.2315 38.4293L54.3191 38.6579C55.8403 41.0656 58.4973 44.7618 62.2902 49.7466C65.8509 54.4238 68.4944 58.1285 70.2207 60.8609C70.4258 61.1855 70.4565 61.5636 70.3127 61.9951C70.196 62.4095 69.9618 62.7278 69.6101 62.95L68.5464 62.8839ZM84.2088 53.8969C83.289 54.478 81.419 52.5367 78.5988 48.073L77.178 45.7343L76.0392 43.842L75.9623 43.7203L75.7059 43.3145C75.5962 43.081 75.4474 42.8154 75.2594 42.5178C75.2252 42.4637 75.1419 42.4217 75.0094 42.3918C74.877 42.362 74.7937 42.32 74.7595 42.2659L74.7339 42.2253C74.6328 42.3648 74.4064 42.5457 74.0547 42.7679C73.703 42.9901 73.236 43.2095 72.6536 43.426C72.4742 43.5015 71.9986 43.7074 71.2269 44.0436L74.1753 48.7102C74.6197 49.4136 75.361 50.4971 76.3993 51.9608C77.4206 53.3974 78.1619 54.4809 78.6234 55.2114C78.8798 55.6172 78.9938 56.0372 78.9654 56.4715C78.9369 56.9059 78.7469 57.2341 78.3952 57.4563C77.8812 57.7811 77.1998 57.5113 76.351 56.6471C75.485 55.7558 74.5308 54.4851 73.4881 52.8349L71.4926 49.4966C70.9385 48.5598 70.3367 47.5773 69.6872 46.5493L69.2514 45.8594L68.8925 45.2913C68.619 44.8585 68.426 44.583 68.3135 44.4648L68.1853 44.2619L66.82 41.8314C66.1705 40.8034 65.1642 39.3005 63.8012 37.3228C62.4381 35.3451 61.4318 33.8423 60.7823 32.8143C60.5772 32.4896 60.506 32.1372 60.5686 31.757C60.6312 31.3768 60.8248 31.0841 61.1494 30.879C62.0151 30.3321 62.9607 30.8702 63.9862 32.4934L67.0842 37.5765C67.9873 39.1256 69.0285 40.8335 70.2078 42.7002C70.6991 42.5791 71.4722 42.1852 72.5273 41.5186L74.0287 40.57C73.9803 40.3735 73.9048 40.1941 73.8022 40.0318C72.9818 38.7332 71.6871 36.8638 69.9181 34.4233C68.2247 32.1623 66.9079 30.2879 65.9678 28.8C65.7798 28.5024 65.7342 28.1905 65.831 27.8644C65.9377 27.4942 66.1534 27.2065 66.478 27.0014C66.6674 26.8817 66.9807 26.7785 67.4178 26.6915L67.8856 26.6231C70.3127 30.4646 73.6869 35.5057 78.0082 41.7463L84.8599 51.7821C85.0992 52.1609 85.1384 52.5525 84.9776 52.9569C84.8438 53.3442 84.5875 53.6576 84.2088 53.8969ZM96.0796 37.937C95.809 38.1079 95.3384 37.9321 94.6676 37.4096C93.9797 36.8601 93.2 35.8955 92.3283 34.5158C92.0206 34.0288 91.4665 33.0919 90.666 31.7051C90.0877 30.6699 89.414 29.5437 88.6449 28.3263L84.359 21.7226L80.0732 15.1188C79.7998 14.686 79.7449 14.2096 79.9085 13.6899C80.0551 13.143 80.3448 12.7329 80.7777 12.4594C81.0482 12.2885 81.338 12.2379 81.647 12.3076C81.956 12.3773 82.2045 12.561 82.3925 12.8586C83.8966 15.2392 85.8039 18.5575 88.1143 22.8134C90.6711 27.5193 92.5648 30.8461 93.7954 32.7939C94.7013 34.2277 95.3323 35.2864 95.6884 35.9698C96.0544 36.6091 96.2517 37.0712 96.2803 37.356C96.3358 37.6237 96.2689 37.8173 96.0796 37.937ZM99.7333 45.3375C99.4086 45.5426 99.0035 45.5904 98.5179 45.4808C98.0594 45.3542 97.6934 45.0744 97.4199 44.6416C97.1122 44.1546 97.0096 43.6328 97.1121 43.076C97.1974 42.4921 97.47 42.0549 97.9299 41.7643C98.4169 41.4567 98.9288 41.3982 99.4657 41.589C100.013 41.7355 100.465 42.0929 100.824 42.661C101.423 43.6078 101.059 44.5 99.7333 45.3375Z';
+  var animalSloth2a = 'M78 89C71.5856 90.5503 67.7047 97.6645 64.0207 102.473C62.4341 104.543 61.6381 107.375 60.0208 109.486C58.4242 111.569 57.1523 115.006 55.8998 117.421C53.2825 122.469 52.4288 129.228 49.0919 133.744C48.2561 134.876 47.5982 137.424 47.092 138.83C46.6097 140.17 45.9786 141.484 45.6375 142.87C45.2216 144.558 44.6469 146.457 43.9002 148.058C42.6773 150.678 42.2198 153.98 41.6174 156.732C40.0868 163.724 38.0014 171.09 38.0014 178.325C38.0014 182.412 38.0014 186.5 38.0014 190.587C38.0014 193.534 37.9344 196.87 38.7286 199.692C39.5114 202.473 38.8546 205.568 39.4761 208.407C39.7388 209.607 39.5764 210.895 39.8397 212.098C40.1154 213.357 41.228 214.796 41.274 216.056C41.3329 217.67 40.9065 219.656 41.5568 221.141C41.9352 222.006 42.1877 223.008 42.3851 223.91C42.8441 226.006 44.2398 227.958 44.9102 230 M44.4976 183.308C44.4976 185.85 44.4976 188.392 44.4976 190.934C44.4976 192.386 45.1598 193.58 45.236 194.929C45.3626 197.171 46.3436 199.077 46.3436 201.386C46.3436 203.386 46.9696 205.651 47.082 207.64C47.2519 210.649 47.082 213.707 47.082 216.72C47.082 218.709 46.7681 220.627 46.7128 222.531C46.6644 224.197 46.5515 227.596 45.5231 228.987C44.3978 230.509 43.3814 231.78 41.9952 233.143C40.9065 234.214 39.1363 236.03 37.6674 236.351C36.0326 236.709 35.0528 237.784 33.237 237.784C31.8798 237.784 29.5074 237.853 28.0682 238.167C26.4595 238.519 27.1452 242.464 27.1452 243.776C27.1452 244.869 26.7503 245.983 28.0477 246.218C29.297 246.443 30.8286 246.597 31.9448 247.146C33.2515 247.789 35.7665 247.875 37.1136 247.953C38.9451 248.059 40.8165 247.953 42.6516 247.953C46.4125 247.953 49.9446 246.177 53.543 245.39C56.4986 244.744 59.4633 241.238 61.2961 239.035C62.7886 237.241 64.2452 235.455 65.706 233.607C67.0563 231.9 65.7503 229.353 66.8341 227.433C67.9221 225.507 67.4012 222.885 68.7006 220.876C69.5853 219.509 70.3415 216.543 70.3415 214.904C70.3415 212.344 69.9723 210.017 69.9723 207.459C69.9723 205.346 71.3385 203.787 71.4491 201.83C71.6392 198.465 71.8183 195.117 71.8183 191.741C71.8183 190.363 71.6264 188.842 71.8388 187.484C72.0707 186.001 72.8422 184.426 72.9259 182.944C73.0926 179.993 72.9259 177.231 72.9259 174.228C72.9259 172.498 73.0949 169.053 72.3721 167.489C71.412 165.411 72.2308 161.914 72.1875 159.701C72.1566 158.118 71.7573 156.375 71.4696 154.818C71.1625 153.157 70.3415 151.325 70.3415 149.714C70.3415 147.93 69.673 145.392 69.2544 143.54C68.9828 142.337 68.9812 139.602 67.7571 139 M50.686 249C50.686 251.759 52.0633 260.671 49.4244 262.797C48.14 263.832 47.4849 266.911 47.0614 268.404C46.6728 269.774 46 271.2 46 272.782C46 275.947 46.5835 280.951 50.5058 280.951C53.9773 280.951 57.4305 280.588 60.9793 280.588C64.6452 280.588 68.4027 279.869 71.2326 282.403C74.3901 285.23 77 284.255 77 279.862C77 277.995 76.9536 277.112 75.6382 275.787C75.0297 275.174 72.8083 273.74 71.9535 273.689C67.3259 273.415 68.0242 277.81 66.186 280.588 M76.4217 275.001C79.2411 275.001 80.3353 274.912 82.2325 276.37C83.3985 277.267 83.4916 279.156 84.6459 279.866C85.2835 280.258 85.0526 281.311 84.0132 280.911C83.379 280.667 82.3571 280.19 81.6936 280.19C79.8056 280.19 77.9692 279.866 76 279.866 M87.1793 278C88.6366 277.713 90.0739 278.17 90.0739 276.541C90.0739 275.786 89.8021 274.862 89.1693 274.352C88.0796 273.473 86.6132 273.116 85.6516 272.244C84.6394 271.325 82.5382 271.147 81.7519 270.156C80.6455 268.761 78.2239 269.244 76.9678 268.23C75.2534 266.847 74.5154 266.955 74.5154 264.319C74.5154 262.483 75.1486 260.67 75.2391 259.028C75.3583 256.865 76.6864 254.752 76.6864 252.644C76.6864 251.657 77.0482 250.882 77.0482 249.907C77.0482 248.873 76.8211 248.361 77.9528 248.995C79.0608 249.616 81.5606 249.543 82.8374 249.543C85.0184 249.543 86.7312 249.298 88.8075 248.833C90.5731 248.438 92.2227 247.718 94.054 247.718C95.6293 247.718 97.5909 247.196 98.9386 246.441C100.54 245.544 102.71 245.765 104.265 244.8C105.937 243.762 107.718 242.658 109.432 241.698C113.263 239.552 115.863 236.428 118.739 233.206C119.299 232.577 120.414 232.055 120.467 231.138C120.553 229.674 121.218 228.166 121.533 226.74C121.915 225.006 121.844 223.478 122.357 221.734C122.968 219.655 123 217.787 123 215.612C123 213.652 122.377 211.96 122.276 210.14C122.201 208.774 120.99 206.856 120.286 205.579C119.797 204.691 119.675 203.465 119.181 202.681C118.781 202.047 118.02 201.067 117.934 200.289C117.758 198.685 115.521 195.936 114.517 194.634C113.4 193.186 112.987 191.246 111.623 189.871C109.196 187.424 107.84 183.536 105.09 181.318C104.282 180.666 104.221 179.119 103.823 178.216C103.434 177.333 102.723 176.707 102.296 175.845C101.407 174.053 100.061 172.561 99.1195 170.899C98.2605 169.384 98.2793 167.919 97.5918 166.359C97.1086 165.263 96.5466 162.314 95.6822 161.616C94.5775 160.725 95.1395 157.802 95.1395 156.427C95.1395 154.448 94.054 152.94 94.054 151.036C94.054 147.144 94.054 143.253 94.054 139.361C94.054 137.407 94.8972 135.71 95.1596 133.726C95.5225 130.981 96.8621 128.338 97.9537 125.862C98.5493 124.511 99.4566 123.122 99.8633 121.687C100.072 120.949 101.08 120.188 101.471 119.477C101.905 118.69 102.049 117.638 102.657 117.025C104.406 115.261 100.56 115.647 99.3004 115.647C97.5198 115.647 95.4334 114.552 93.5112 114.552C91.6292 114.552 89.7859 114.257 87.9834 114.187C87.2058 114.157 83.2418 113.785 82.8374 113.275C82.6459 113.034 81.1608 112.844 80.8273 112.748C80.0512 112.524 79.5455 112.104 78.9377 111.552C77.9227 110.631 76.2838 109.168 75.9828 107.802C75.729 106.651 74.6025 104.446 73.8722 103.526C73.1952 102.672 73.0681 100.155 73.0681 99.0463C73.0681 97.4239 72.653 95.4314 73.8722 94.2021C74.9897 93.0752 76.3854 92.7624 77.4904 91.6482C78.2082 90.9244 79.1055 90.3557 79.8624 89.6618C80.5177 89.0611 82.0642 88.442 82.4756 87.716C83.6893 85.5744 85.7654 86.4444 87.5411 85.6486C88.8111 85.0795 91.0564 85 92.4258 85C94.1746 85 95.9234 85 97.6722 85C99.2765 85 100.564 86.0945 102.195 86.0945C103.965 86.0945 105.468 86.8242 107.08 86.8242C110.122 86.8242 114.082 88.553 115.04 91.9319C115.662 94.127 117.211 95.2563 117.211 97.6883C117.211 99.4022 117.573 101.245 117.573 103.06C117.573 106.392 113.125 108.939 110.879 110.701C109.447 111.824 107.556 112.474 105.994 113.174C104.691 113.758 102.981 115.4 101.632 115.626C100.727 115.778 100.193 116.376 99.3004 116.376C98.3959 116.376 97.4913 116.376 96.5868 116.376C95.5229 116.376 92.0134 117.369 91.5212 116.376 M76.6921 108C79.6108 107.508 83.6572 105.895 85.3357 103.38C86.1167 102.209 87.9683 101.444 88.8353 100.023C89.524 98.8941 90.5903 96.5488 89.5943 95.3827C88.7113 94.3489 87.2444 93.1477 85.7995 93.0725C83.9423 92.9758 81.9646 92.9758 80.1074 93.0725C78.9325 93.1336 75.927 94.1459 75.1742 95.0273C74.1957 96.1729 71.3795 96.7134 71.3795 98.5814C71.3795 100.314 71 102.25 71 104.09 M82.6399 98.5256C80.8961 98.5256 80.2843 98.3238 79.1131 99.296C78.5325 99.7779 80.365 99.6812 80.598 99.6812C81.5106 99.6812 81.5794 99.4644 81.5261 98.5256C81.492 97.9225 80.3388 98.6378 81.2374 98.9964C82.4403 99.4764 83.3961 99.6812 84.6817 99.6812C85.5914 99.6812 84.2985 99.296 83.9392 99.296C82.7871 99.296 83.1568 98.9783 83.4649 98.0549C83.6713 97.436 83.4892 95.328 83.3824 96.2145C83.1607 98.0546 81.169 96.63 80.8043 98.333C80.7286 98.6866 81.4443 98.0114 81.6911 97.7553C82.2744 97.1501 80.6449 97.8465 80.4949 98.1405C80.0572 98.9982 80.6029 99.296 81.2993 99.296C81.3019 99.296 81.1145 99.6306 81.1755 99.8524C81.3149 100.359 81.619 99.4061 81.7324 99.3388C82.5128 98.8761 81.7217 98.9108 81.8974 98.9108C82.8805 98.9108 82.6399 98.2069 82.6399 97.3701 M97.1079 95.333C94.5905 95.3933 93.2367 97.4566 92.0956 99.4252C90.8463 101.58 91.4609 103.867 90.7754 106.167C90.5348 106.974 89.7263 108.082 90.0947 109.053C90.4832 110.077 91.8537 111.702 93.0238 111.702C94.4056 111.702 98.9526 112.423 99.9957 111.623C101.692 110.322 103.61 109.524 104.719 107.61C105.213 106.757 104.905 105.193 104.905 104.229C104.905 103.109 104.162 102.151 104.162 101.204C104.162 99.6133 101.391 97.0617 100.078 96.3215C98.3771 95.3625 95.5291 94.0443 94.1376 96.0447 M93.5176 97.4304C94.2599 100.627 95.6417 101 98.7624 101C99.7307 101 100.301 99.9588 100.651 99.2152C101.305 97.8235 101.031 97.5074 99.9047 96.549C98.5063 95.3594 96.5872 95.5114 94.9628 95.0727C93.0725 94.5622 92.1454 96.8891 91 97.4304 M113.345 107.289C110.198 105.528 105.467 103.406 105.215 99.4712C105.116 97.9187 104.773 95.4717 105.237 93.9828C105.892 91.8771 108.996 92.0086 110.829 92.0086C113.156 92.0086 114.477 91.8007 116.055 93.43C117.075 94.4837 117.991 96.4419 117.991 97.8721C117.991 99.8266 117.991 101.781 117.991 103.736C117.991 104.56 118.108 105.822 117.517 106.5C117.021 107.07 115.945 107.491 115.668 108 M110 97C113.493 102.588 112.364 97.2808 110.933 97.7917C108.83 98.5429 112.326 100 113 100 M94 147.051C98.6671 150.403 104.035 154 109.924 154C113.627 154 117.33 154 121.033 154C124.193 154 128.055 153.886 130.846 152.354C133.079 151.129 135.646 150.024 138.067 148.961C139.235 148.448 141.314 147.523 142.141 146.503C142.513 146.043 143.326 145.755 143.807 145.385C144.795 144.626 145.489 143.345 146.585 142.744C148.144 141.888 148.83 140.136 150.288 139.289C151.993 138.299 152.481 135.783 153.806 134.474C157.158 131.164 158.805 128.379 158.805 123.827C158.805 122.364 158.805 120.901 158.805 119.438C158.805 118.517 159.294 115.654 158.723 114.948C157.818 113.831 157.756 112.017 156.871 110.925C156.132 110.013 155.679 109.078 155.102 108.08C153.661 105.59 151.219 104.436 148.807 103.245C146.949 102.328 141.983 100.962 140.207 102.716C139.437 103.477 138.445 103.725 137.615 104.545C136.645 105.503 135.77 106.697 135.455 108.101C135.29 108.834 134.735 109.526 134.735 110.295C134.735 111.781 134.321 109.511 134.282 109.462C133.569 108.582 133.109 107.366 132.862 106.272C132.533 104.806 132.513 103.433 132.513 101.883C132.513 99.9511 133.53 100.312 134.652 99.4248C135.341 98.8805 138.173 98.8732 138.993 99.3232C140.063 99.9101 140.881 101.04 141.4 102.066 M134.232 95.3226C132.635 94.1804 131.167 93.4438 129.555 92.5635C127.766 91.5861 126.644 91.2816 127.103 89.2527C127.435 87.7831 127.743 86.8248 128.911 85.6762C130.198 84.4105 131.302 84.6543 133.109 84.6543C135.425 84.6543 136.476 91.7926 136.476 93.6671C136.476 94.1481 136.718 95.3248 136.871 95.8539C137.063 96.5117 137.715 94.765 138.16 94.2394C139.211 92.9995 139.095 90.7923 139.095 89.2527C139.095 87.5597 139.844 85.6183 139.844 83.9186C139.844 82.7312 140.345 79.9203 139.553 79.0545C138.626 78.0427 138.071 76.6149 136.643 76.2138C134.974 75.745 133.783 76.1933 132.174 76.1933C130.898 76.1933 131.188 76.0857 131.239 76.9291C131.28 77.6149 131.492 78.7117 131.904 79.218C132.074 79.4271 132.349 81.3268 132.361 81.6296C132.399 82.5572 132.735 83.3189 132.735 84.2865C132.735 85.6384 133.548 87.8875 134.149 89.0688C134.794 90.3378 136.102 92.4784 136.102 93.8511 M142.183 83C145.447 83.7435 147.452 85.7464 150.291 87.3891C151.275 87.9583 152.136 88.9791 153.182 89.5837C154.291 90.2257 156.262 91.3692 156.914 92.5097C158.221 94.795 160.931 96.7716 162.574 98.9105C163.478 100.088 164.417 101.216 165.384 102.304C166.083 103.09 166.17 105.062 166.929 105.677C167.962 106.514 167.832 109.583 167.832 110.757C167.832 112.609 168.845 114.34 168.916 116.203C169.037 119.374 170 122.575 170 125.794C170 128.662 170.006 131.718 169.257 134.369C168.193 138.139 166.715 142.282 165.645 146.073C165.294 147.317 163.946 148.604 163.317 149.751C162.519 151.204 161.334 152.718 160.246 153.957C158.059 156.449 155.838 158.668 153.202 160.744C150.669 162.738 147.764 163.994 145.354 165.946C143.465 167.476 139.523 169.399 137.126 169.685C134.551 169.991 132.134 172.245 129.359 172.245C126.434 172.245 123.499 173.421 120.688 174.054C119.466 174.329 117.968 174.44 116.715 174.44C114.44 174.44 112.287 175.044 110.031 175.171C107.045 175.339 104.033 177 101 177 M25.0833 246.973C21.6015 246.973 15.4512 247.537 13.4475 243.544C11.7224 240.107 11 237.23 11 233.259C11 229.962 11.8011 232.664 13.5278 232.878C15.016 233.063 17.2122 234.055 18.5833 234.698C19.8589 235.296 22.3054 235.843 23.6389 235.926C24.5529 235.982 25.1883 236.03 25.9861 236.497C26.8346 236.994 25.0164 236.326 24.642 236.01C23.0413 234.66 21.3599 235.373 20.4691 233.259C20.2323 232.697 20.4167 227.334 20.4691 227.334C21.8329 227.334 24.4912 230.349 25.4444 231.355C26.1285 232.076 27.0452 232.816 27.7917 233.429C28.1662 233.736 28.9622 234.755 29.4167 234.783C30.107 234.826 31.1163 234.738 31.5833 235.354C31.956 235.846 32.4522 232.834 32.5864 232.497C33.1631 231.053 32.6667 228.357 32.6667 226.783C32.6667 225.122 32.7515 226.487 33.2083 227.355C33.6966 228.282 34.1029 229.263 34.5525 230.212C35.3567 231.908 36.579 233.768 37 235.545 M89.6504 251C89.6504 253.857 89.4435 256.718 89.2968 259.468C89.2416 260.504 89.2968 261.56 89.2968 262.597C89.2968 263.736 88.3978 264.242 89.7289 264.704C91.7973 265.422 93.3768 267.435 95.6599 267.567C97.7076 267.686 99.795 267.567 101.846 267.567C103.845 267.567 105.135 265.879 106.815 265.379C108.816 264.784 110.361 263.886 112.451 263.886C114.913 263.886 115.705 264.151 117.734 265.358C119.117 266.182 119.552 269.372 119.973 270.799C120.387 272.201 115.869 271.372 115.181 270.799C113.53 269.423 111.943 269.04 109.8 269.04C107.996 269.04 108.74 268.802 108.74 267.383C108.74 265.992 109.704 265.759 108.818 266.913C108.484 267.348 108.789 269.578 108.19 269.756C107.284 270.026 105.972 269.776 105.028 269.776C103.447 269.776 103.939 269.952 103.162 270.963C102.738 271.514 102.237 272.909 101.846 273.642C101.409 274.463 100.941 275.228 100.53 276.035C99.7334 277.603 101.279 276.947 102.2 277.16C102.977 277.34 107.679 278.851 107.679 277.324C107.679 275.601 107.641 271.413 105.912 270.513 M110.133 275.856C111.124 275.856 116 276.506 116 275.045C116 273.875 115.707 271.09 114.167 270.99C112.681 270.893 111.463 270.179 109.767 270.179C107.874 270.179 106.823 269.576 105 270.584 M62.4531 61.4532C61.9121 61.7951 61.3994 61.7026 60.9152 61.1758C59.8726 59.5256 58.8577 57.6496 57.8705 55.548C56.9104 53.4293 55.7936 50.8229 54.5201 47.7287L53.9795 46.4238C52.8712 43.8309 51.8128 41.7364 50.8044 40.1402C49.2148 37.6243 48.0143 36.6227 47.2027 37.1355C46.6887 37.4602 46.8162 38.2313 47.5854 39.4487C47.7734 39.7463 48.3296 40.4169 49.2539 41.4605C49.271 41.4876 49.2546 41.6114 49.2048 41.8322C49.0013 42.5285 48.7913 42.9451 48.5749 43.0818C47.8174 43.5604 46.8661 42.8934 45.7209 41.0809L45.4646 40.6751C45.0202 39.9717 44.7118 39.3338 44.5394 38.7614C44.3769 38.1448 44.379 37.519 44.5455 36.8839C44.7661 36.2146 45.2146 35.6663 45.8909 35.239C46.4861 34.8629 47.0684 34.6464 47.638 34.5893C48.2076 34.5323 48.7473 34.6077 49.2571 34.8155C50.1002 35.1913 50.9775 35.9807 51.889 37.1839C52.1041 37.4644 52.4509 37.9833 52.9295 38.7408C54.4336 41.1215 55.6686 43.9749 56.6346 47.3012C57.0179 48.6867 57.6518 50.3491 58.5364 52.2884C59.4039 54.2007 60.4359 56.1037 61.6324 57.9974C62.5724 59.4853 63.1585 60.383 63.3907 60.6905C62.9037 60.9982 62.6503 61.1962 62.6304 61.2845C62.5934 61.3457 62.5343 61.402 62.4531 61.4532ZM65.3502 66.0387C64.9444 66.2951 64.5173 66.3379 64.0687 66.1671C63.6002 66.0846 63.2377 65.8404 62.9813 65.4346C62.7421 65.0559 62.6822 64.6016 62.8017 64.0719C62.9041 63.5151 63.1583 63.1085 63.5641 62.8521C63.8887 62.647 64.3244 62.6178 64.8713 62.7643C65.4181 62.9109 65.7941 63.1465 65.9992 63.4712C66.6487 64.4992 66.4324 65.355 65.3502 66.0387Z';
 
   var animalWhale = 'M32.1871 42.0408C25.4849 42.0408 20.3661 44.0759 15.149 48.1336C13.0696 49.7509 12.4188 51.9127 10.6446 53.7912C8.0851 56.5013 6.77497 59.7457 4.55176 62.6041C1.24002 66.8621 0.852539 72.7514 0.852539 78.0756C0.852539 79.8319 3.69369 82.5629 4.57352 84.1466C5.71948 86.2094 8.813 87.515 10.9492 88.1723C13.9279 89.0888 16.9318 89.2573 19.9579 90.3048C22.5234 91.1928 24.895 92.1028 27.4652 92.9595C29.6984 93.7039 32.4428 94.1345 34.9289 94.1345C36.306 94.1345 37.356 93.6605 38.6499 93.3729C39.25 93.2396 39.5916 92.7285 40.2166 92.5896C41.232 92.3639 40.3471 91.9641 40.0208 92.372C39.6521 92.8328 37.1411 93.3153 36.4956 93.3512C35.5371 93.4044 33.6303 94.0497 32.7964 94.5262C30.8024 95.6657 28.2733 95.7013 25.9202 95.7013C23.1132 95.7013 20.3061 95.7013 17.499 95.7013C15.7888 95.7013 11.4704 95.7862 10.6446 94.1345 M10.253 89.8262C7.85885 90.3517 3.57769 93.1003 5.07409 96.0931C6.05927 98.0635 8.72684 100.257 10.6447 101.272C12.6463 102.332 15.0588 103.41 17.3033 103.535C19.03 103.631 21.2045 104.593 22.7651 105.276C25.7894 106.599 28.8891 106.277 32.1655 106.277C38.2185 106.277 45.5453 107.31 51.3797 105.689C54.3656 104.86 57.3294 104.014 60.3013 103.143C61.8873 102.679 64.8158 102.225 65.8937 100.967C66.9912 99.6869 70.2602 99.5783 71.7472 98.8349 M70.9639 95.3096C72.6241 96.8722 74.3228 98.2334 75.8817 99.7922C76.7643 100.675 79.1836 101.909 80.3642 101.968C84.6201 102.181 88.7485 103.143 93.0722 103.143C96.0804 103.143 98.9724 102.409 101.907 101.99C103.069 101.824 104.22 101.697 105.127 100.88C107.093 99.1108 109.74 99.0063 109.74 96.093C109.74 94.0084 105.247 95.0536 103.865 94.4392C101.806 93.5238 99.1015 93.7162 97.2936 92.0891C95.902 90.8367 93.8911 90.0627 92.4194 88.7381C91.0207 87.4793 88.4286 86.6926 86.6312 86.6926 M97.5981 89.8259C102.734 88.0135 105.847 84.1222 109.349 80.4256C111.299 78.3668 113.696 76.6962 115.616 74.5503C116.93 73.0814 117.796 71.2737 119.141 69.8501C121.382 67.4768 123.173 63.1285 124.537 60.0581C124.715 59.6578 124.919 58.1433 125.103 58.4913C125.662 59.5481 126.694 60.4004 127.845 60.7544C129.996 61.4164 132.567 61.3576 134.808 61.2331C138.616 61.0215 144.51 59.6387 147.429 57.0117C150.393 54.3441 153.972 53.3968 156.351 49.9614C157.1 48.8791 158.78 47.6959 158.701 46.3492C158.665 45.7521 155.128 46.7409 154.392 46.7409C151.68 46.7409 148.049 47.2283 145.862 45.4788C143.611 43.6778 139.566 43.9991 136.766 43.9991C136.143 43.9991 132.686 45.6728 133.328 44.8695C134.461 43.4542 134.038 41.8935 133.328 40.474C132.642 39.1005 131.675 38.1795 131.675 36.5571C131.675 35.2714 131.24 33.0306 131.762 31.8569C132.752 29.6289 134.721 25.0727 131.675 23.7186C129.343 22.6825 124.723 23.5341 122.97 25.1113C120.481 27.3514 117.771 29.6225 116.094 32.6403C114.468 35.5671 112.874 38.6312 112.874 42.0407C112.874 43.7354 112.824 45.4387 112.874 47.1326C112.901 48.0506 113.371 51.494 114.049 51.8327 M119.924 46.3494C118.185 46.7312 113.599 47.8914 112.482 49.287C111.723 50.2361 109.371 51.3081 108.174 51.4412C106.495 51.6277 104.828 52.7802 103.082 53.0297C101.001 53.3269 99.5592 54.3362 97.3371 54.096C93.8334 53.7172 88.9979 53.196 85.8478 51.5283C84.5176 50.8241 83.0812 50.2396 81.7569 49.4828C80.4945 48.7614 79.7897 47.52 78.4058 46.8281C75.213 45.2317 71.7637 45.4863 68.6137 44.0863C67.0044 43.371 64.9548 43.9249 63.326 43.0201C62.2484 42.4214 60.0495 41.6492 58.8217 41.6492C57.5217 41.6492 56.1118 40.8658 54.709 40.8658C52.8966 40.8658 51.2577 40.4741 49.4213 40.4741C47.9198 40.4741 46.4184 40.4741 44.9169 40.4741C42.6024 40.4741 42.2095 41.1424 40.4126 42.0409 M34.1456 47.1326C33.7692 49.3374 34.1516 50.6578 36.4957 50.6578C38.1416 50.6578 39.8989 50.8997 41.3918 50.0703C42.2573 49.5894 44.2857 48.5592 43.3284 47.3285C42.2256 45.9105 40.4678 46.3493 38.8458 46.3493 M37.2791 47.5242C37.2791 44.4561 37.2791 41.3879 37.2791 38.3197C37.2791 36.7694 36.6818 35.9292 36.1911 34.5117C34.4456 29.4692 30.9432 29.5068 26.312 29.5068 M38.0627 45.566C38.0627 41.5767 38.0627 37.5873 38.0627 33.598C38.0627 32.3375 37.2793 28.6383 37.2793 29.8987 M38.8462 45.1744C38.8462 38.1256 40.8058 31.8568 47.8549 29.5071 M41.1963 29.5071C42.3766 27.949 43.5347 27.0342 45.1131 25.9819 M31.7959 27.1569C31.3341 26.821 26.5957 24.4693 27.4874 24.0234 M29.8371 35.3823C28.0495 35.054 26.3193 34.5227 24.5712 34.0332C23.2668 33.668 21.9239 33.9324 20.6108 33.6198C19.4412 33.3413 15.102 34.1131 14.5615 33.0322 M47.4629 33.4238C49.5519 33.4238 51.6408 33.4238 53.7298 33.4238 M58.4299 80.4257C56.3081 80.4257 54.9048 80.6762 54.9048 82.9717C54.9048 84.3559 56.4323 85.5176 57.6465 85.5176C60.798 85.5176 59.8672 80.2156 57.6465 79.1636C56.0485 78.4067 56.1102 81.1572 57.0808 81.7749C58.6626 82.7815 60.1058 82.7833 59.9966 80.8174C59.9377 79.756 57.2088 78.3806 56.8849 79.8382C56.6972 80.683 57.388 83.4045 58.3429 81.6008C59.0178 80.326 58.065 78.4673 56.6456 78.4673C54.6735 78.4673 54.81 79.5033 54.9048 81.2091C54.9919 82.7772 58.0382 82.9775 58.0382 81.035C58.0382 79.8233 56.0375 78.6837 54.9918 79.7294C53.478 81.2432 56.46 82.3841 57.4289 82.3841C58.2038 82.3841 58.0382 81.831 58.0382 81.2091C58.0382 79.9416 57.1639 80.0341 56.0798 80.0341C53.8438 80.0341 54.1214 80.4628 54.1214 82.58C54.1214 84.4366 57.2549 85.6829 57.2549 84.1467C57.2549 82.4149 57.2774 81.6774 55.2094 81.6008C52.6699 81.5067 57.9003 82.2093 58.9739 81.9707C60.3493 81.6651 58.4311 79.2507 57.2549 79.2507C55.7659 79.2507 56.4428 80.8174 57.8424 80.8174C59.6705 80.8174 58.8466 78.8258 57.5595 78.3803C55.5608 77.6884 55.8042 79.7478 56.1016 81.3832C56.2872 82.4042 58.8216 83.0326 58.8216 81.6008C58.8216 80.771 58.9946 80.2607 58.2341 79.8382C57.8737 79.638 56.2461 79.354 56.1016 79.86C55.4813 82.0309 58.044 82.4709 59.6049 82.3841C60.2085 82.3506 59.9966 81.4408 59.9966 81.0133C59.9966 79.68 59.216 79.3881 57.8859 79.2724C56.3763 79.1412 56.4317 82.8562 56.9502 83.9509C57.7299 85.5968 60.4735 83.2566 58.9304 82.1883C57.7564 81.3756 55.8245 81.1573 54.426 81.2091C53.2457 81.2528 53.875 82.0823 54.6001 82.2971C55.6494 82.608 60.0601 82.9463 58.9957 80.8174C58.1797 79.1855 54.3993 79.6344 56.7761 80.3387C60.3686 81.4031 57.5782 78.2123 56.8632 79.6424 M54.4854 74.6347C56.3079 74.6347 62.0864 73.9692 62.8362 76.5937C63.2278 77.9642 64.347 79.7814 64.347 81.2091 M90.985 18.27C90.745 18.27 90.253 17.034 89.509 14.562C88.669 11.67 87.943 9.012 87.331 6.588V12.492C87.331 12.996 87.379 13.854 87.475 15.066C87.559 16.386 87.601 17.238 87.601 17.622C87.601 17.73 87.535 17.826 87.403 17.91C87.271 17.982 87.121 18.018 86.953 18.018C86.701 18.018 86.575 17.922 86.575 17.73L86.611 17.208C86.635 16.824 86.647 16.572 86.647 16.452C86.647 15.816 86.611 14.808 86.539 13.428C86.467 12.024 86.431 11.172 86.431 10.872V8.568C86.431 8.196 86.449 7.644 86.485 6.912C86.533 6.276 86.557 5.724 86.557 5.256V5.148C86.557 4.548 86.689 4.248 86.953 4.248C87.109 4.248 87.307 4.512 87.547 5.04C87.943 5.904 88.447 7.452 89.059 9.684C89.407 10.98 89.815 12.648 90.283 14.688C90.271 14.64 90.367 15.054 90.571 15.93L90.589 16.02C90.589 14.856 90.601 13.812 90.625 12.888L90.661 9.756V4.428C90.709 4.128 90.901 3.978 91.237 3.978C91.561 3.978 91.723 4.212 91.723 4.68V4.788C91.651 4.932 91.615 5.106 91.615 5.31C91.615 6.042 91.597 7.146 91.561 8.622C91.525 10.11 91.507 11.226 91.507 11.97V17.46C91.507 17.652 91.453 17.832 91.345 18C91.249 18.18 91.129 18.27 90.985 18.27ZM96.081 18.342C95.769 18.342 95.481 18.24 95.217 18.036C94.953 17.844 94.737 17.58 94.569 17.244C94.221 16.512 94.005 15.714 93.921 14.85C93.813 14.034 93.759 13.248 93.759 12.492C93.759 12.348 93.765 12.228 93.777 12.132V11.808C93.777 11.748 93.771 11.718 93.759 11.718V11.394L93.777 10.134C93.789 9.75 93.837 9.138 93.921 8.298C93.981 7.722 94.119 7.164 94.335 6.624C94.419 6.384 94.527 6.204 94.659 6.084C94.791 5.952 94.941 5.886 95.109 5.886C95.589 5.886 96.021 5.976 96.405 6.156C96.789 6.324 97.113 6.564 97.377 6.876C97.617 7.176 97.821 7.548 97.989 7.992C98.157 8.424 98.277 8.886 98.349 9.378C98.421 9.882 98.457 10.416 98.457 10.98V11.124C98.457 11.496 98.463 11.832 98.475 12.132L98.493 13.158C98.493 16.614 97.689 18.342 96.081 18.342ZM96.009 17.586C96.225 17.586 96.423 17.502 96.603 17.334C96.783 17.154 96.921 16.914 97.017 16.614C97.245 16.002 97.383 15.342 97.431 14.634C97.491 14.022 97.521 13.494 97.521 13.05C97.521 12.51 97.479 11.802 97.395 10.926C97.323 10.002 97.287 9.312 97.287 8.856V8.532C97.263 8.076 97.107 7.68 96.819 7.344C96.543 7.008 96.201 6.84 95.793 6.84C95.385 6.84 95.115 7.074 94.983 7.542C94.863 7.914 94.803 8.394 94.803 8.982C94.803 9.21 94.809 9.402 94.821 9.558V10.044L94.785 10.872C94.761 11.124 94.749 11.4 94.749 11.7C94.749 12.348 94.767 12.99 94.803 13.626C94.851 14.526 94.971 15.402 95.163 16.254C95.355 17.142 95.637 17.586 96.009 17.586ZM100.857 18.126C100.701 17.49 100.623 16.608 100.623 15.48L100.659 13.878C100.683 13.398 100.695 12.864 100.695 12.276C100.623 12.108 100.587 11.958 100.587 11.826V11.772C100.707 11.544 100.767 11.028 100.767 10.224L100.785 9.396C100.797 9.132 100.803 8.838 100.803 8.514C100.803 7.806 100.755 7.248 100.659 6.84C100.695 6.672 100.755 6.528 100.839 6.408C100.923 6.276 101.025 6.21 101.145 6.21H101.937C102.273 6.21 102.567 6.288 102.819 6.444C103.071 6.588 103.263 6.798 103.395 7.074C103.635 7.566 103.755 8.148 103.755 8.82C103.755 9.3 103.749 9.678 103.737 9.954C103.713 10.302 103.653 10.62 103.557 10.908C103.521 11.064 103.467 11.196 103.395 11.304C103.335 11.4 103.245 11.52 103.125 11.664C102.957 11.868 102.681 12.06 102.297 12.24C102.141 12.324 101.937 12.402 101.685 12.474V14.4L101.721 15.552L101.757 16.11C101.805 16.782 101.829 17.352 101.829 17.82C101.829 17.964 101.769 18.084 101.649 18.18C101.529 18.288 101.391 18.342 101.235 18.342L100.857 18.126ZM101.703 11.736C102.411 11.628 102.765 10.614 102.765 8.694C102.765 8.346 102.747 8.076 102.711 7.884C102.675 7.74 102.627 7.626 102.567 7.542C102.507 7.446 102.417 7.368 102.297 7.308C102.165 7.236 102.021 7.2 101.865 7.2C101.865 7.188 101.799 7.182 101.667 7.182V8.208C101.667 8.916 101.673 9.546 101.685 10.098C101.685 10.722 101.691 11.13 101.703 11.322V11.7V11.736ZM106.352 18.234C106.196 18.234 106.052 18.18 105.92 18.072C105.8 17.964 105.734 17.832 105.722 17.676V17.208V16.848C105.71 16.74 105.704 16.614 105.704 16.47C105.704 16.218 105.686 15.834 105.65 15.318L105.614 14.166C105.614 13.578 105.632 12.702 105.668 11.538C105.716 10.494 105.74 9.618 105.74 8.91C105.74 8.742 105.722 8.49 105.686 8.154C105.65 7.806 105.632 7.554 105.632 7.398C105.632 6.546 105.884 6.12 106.388 6.12C106.784 6.12 107.24 6.198 107.756 6.354C108.284 6.51 108.548 6.696 108.548 6.912C108.548 7.032 108.494 7.146 108.386 7.254C108.29 7.35 108.17 7.428 108.026 7.488C107.522 7.308 107.066 7.188 106.658 7.128C106.67 7.308 106.676 7.566 106.676 7.902C106.676 8.382 106.67 8.814 106.658 9.198C106.622 9.774 106.604 10.206 106.604 10.494L106.658 10.782L106.946 10.764C107.042 10.752 107.162 10.746 107.306 10.746C107.882 10.746 108.17 10.914 108.17 11.25C108.17 11.382 108.116 11.496 108.008 11.592C107.9 11.676 107.762 11.718 107.594 11.718C107.378 11.718 107.21 11.706 107.09 11.682H106.64C106.664 11.994 106.676 12.45 106.676 13.05C106.676 13.65 106.67 14.19 106.658 14.67C106.622 15.402 106.604 15.948 106.604 16.308C106.604 16.98 106.616 17.316 106.64 17.316L107.234 17.298C107.438 17.286 107.684 17.28 107.972 17.28C108.428 17.28 108.656 17.424 108.656 17.712C108.656 17.88 108.578 18.006 108.422 18.09C108.278 18.186 108.098 18.234 107.882 18.234H106.352Z';
+
+  var sloth = 'M78 89C71.5856 90.5503 67.7047 97.6645 64.0207 102.473C62.4341 104.543 61.6381 107.375 60.0208 109.486C58.4242 111.569 57.1523 115.006 55.8998 117.421C53.2825 122.469 52.4288 129.228 49.0919 133.744C48.2561 134.876 47.5982 137.424 47.092 138.83C46.6097 140.17 45.9786 141.484 45.6375 142.87C45.2216 144.558 44.6469 146.457 43.9002 148.058C42.6773 150.678 42.2198 153.98 41.6174 156.732C40.0868 163.724 38.0014 171.09 38.0014 178.325C38.0014 182.412 38.0014 186.5 38.0014 190.587C38.0014 193.534 37.9344 196.87 38.7286 199.692C39.5114 202.473 38.8546 205.568 39.4761 208.407C39.7388 209.607 39.5764 210.895 39.8397 212.098C40.1154 213.357 41.228 214.796 41.274 216.056C41.3329 217.67 40.9065 219.656 41.5568 221.141C41.9352 222.006 42.1877 223.008 42.3851 223.91C42.8441 226.006 44.2398 227.958 44.9102 230 M44.4976 183.308C44.4976 185.85 44.4976 188.392 44.4976 190.934C44.4976 192.386 45.1598 193.58 45.236 194.929C45.3626 197.171 46.3436 199.077 46.3436 201.386C46.3436 203.386 46.9696 205.651 47.082 207.64C47.2519 210.649 47.082 213.707 47.082 216.72C47.082 218.709 46.7681 220.627 46.7128 222.531C46.6644 224.197 46.5515 227.596 45.5231 228.987C44.3978 230.509 43.3814 231.78 41.9952 233.143C40.9065 234.214 39.1363 236.03 37.6674 236.351C36.0326 236.709 35.0528 237.784 33.237 237.784C31.8798 237.784 29.5074 237.853 28.0682 238.167C26.4595 238.519 27.1452 242.464 27.1452 243.776C27.1452 244.869 26.7503 245.983 28.0477 246.218C29.297 246.443 30.8286 246.597 31.9448 247.146C33.2515 247.789 35.7665 247.875 37.1136 247.953C38.9451 248.059 40.8165 247.953 42.6516 247.953C46.4125 247.953 49.9446 246.177 53.543 245.39C56.4986 244.744 59.4633 241.238 61.2961 239.035C62.7886 237.241 64.2452 235.455 65.706 233.607C67.0563 231.9 65.7503 229.353 66.8341 227.433C67.9221 225.507 67.4012 222.885 68.7006 220.876C69.5853 219.509 70.3415 216.543 70.3415 214.904C70.3415 212.344 69.9723 210.017 69.9723 207.459C69.9723 205.346 71.3385 203.787 71.4491 201.83C71.6392 198.465 71.8183 195.117 71.8183 191.741C71.8183 190.363 71.6264 188.842 71.8388 187.484C72.0707 186.001 72.8422 184.426 72.9259 182.944C73.0926 179.993 72.9259 177.231 72.9259 174.228C72.9259 172.498 73.0949 169.053 72.3721 167.489C71.412 165.411 72.2308 161.914 72.1875 159.701C72.1566 158.118 71.7573 156.375 71.4696 154.818C71.1625 153.157 70.3415 151.325 70.3415 149.714C70.3415 147.93 69.673 145.392 69.2544 143.54C68.9828 142.337 68.9812 139.602 67.7571 139 M50.686 249C50.686 251.759 52.0633 260.671 49.4244 262.797C48.14 263.832 47.4849 266.911 47.0614 268.404C46.6728 269.774 46 271.2 46 272.782C46 275.947 46.5835 280.951 50.5058 280.951C53.9773 280.951 57.4305 280.588 60.9793 280.588C64.6452 280.588 68.4027 279.869 71.2326 282.403C74.3901 285.23 77 284.255 77 279.862C77 277.995 76.9536 277.112 75.6382 275.787C75.0297 275.174 72.8083 273.74 71.9535 273.689C67.3259 273.415 68.0242 277.81 66.186 280.588 M76.4217 275.001C79.2411 275.001 80.3353 274.912 82.2325 276.37C83.3985 277.267 83.4916 279.156 84.6459 279.866C85.2835 280.258 85.0526 281.311 84.0132 280.911C83.379 280.667 82.3571 280.19 81.6936 280.19C79.8056 280.19 77.9692 279.866 76 279.866 M87.1793 278C88.6366 277.713 90.0739 278.17 90.0739 276.541C90.0739 275.786 89.8021 274.862 89.1693 274.352C88.0796 273.473 86.6132 273.116 85.6516 272.244C84.6394 271.325 82.5382 271.147 81.7519 270.156C80.6455 268.761 78.2239 269.244 76.9678 268.23C75.2534 266.847 74.5154 266.955 74.5154 264.319C74.5154 262.483 75.1486 260.67 75.2391 259.028C75.3583 256.865 76.6864 254.752 76.6864 252.644C76.6864 251.657 77.0482 250.882 77.0482 249.907C77.0482 248.873 76.8211 248.361 77.9528 248.995C79.0608 249.616 81.5606 249.543 82.8374 249.543C85.0184 249.543 86.7312 249.298 88.8075 248.833C90.5731 248.438 92.2227 247.718 94.054 247.718C95.6293 247.718 97.5909 247.196 98.9386 246.441C100.54 245.544 102.71 245.765 104.265 244.8C105.937 243.762 107.718 242.658 109.432 241.698C113.263 239.552 115.863 236.428 118.739 233.206C119.299 232.577 120.414 232.055 120.467 231.138C120.553 229.674 121.218 228.166 121.533 226.74C121.915 225.006 121.844 223.478 122.357 221.734C122.968 219.655 123 217.787 123 215.612C123 213.652 122.377 211.96 122.276 210.14C122.201 208.774 120.99 206.856 120.286 205.579C119.797 204.691 119.675 203.465 119.181 202.681C118.781 202.047 118.02 201.067 117.934 200.289C117.758 198.685 115.521 195.936 114.517 194.634C113.4 193.186 112.987 191.246 111.623 189.871C109.196 187.424 107.84 183.536 105.09 181.318C104.282 180.666 104.221 179.119 103.823 178.216C103.434 177.333 102.723 176.707 102.296 175.845C101.407 174.053 100.061 172.561 99.1195 170.899C98.2605 169.384 98.2793 167.919 97.5918 166.359C97.1086 165.263 96.5466 162.314 95.6822 161.616C94.5775 160.725 95.1395 157.802 95.1395 156.427C95.1395 154.448 94.054 152.94 94.054 151.036C94.054 147.144 94.054 143.253 94.054 139.361C94.054 137.407 94.8972 135.71 95.1596 133.726C95.5225 130.981 96.8621 128.338 97.9537 125.862C98.5493 124.511 99.4566 123.122 99.8633 121.687C100.072 120.949 101.08 120.188 101.471 119.477C101.905 118.69 102.049 117.638 102.657 117.025C104.406 115.261 100.56 115.647 99.3004 115.647C97.5198 115.647 95.4334 114.552 93.5112 114.552C91.6292 114.552 89.7859 114.257 87.9834 114.187C87.2058 114.157 83.2418 113.785 82.8374 113.275C82.6459 113.034 81.1608 112.844 80.8273 112.748C80.0512 112.524 79.5455 112.104 78.9377 111.552C77.9227 110.631 76.2838 109.168 75.9828 107.802C75.729 106.651 74.6025 104.446 73.8722 103.526C73.1952 102.672 73.0681 100.155 73.0681 99.0463C73.0681 97.4239 72.653 95.4314 73.8722 94.2021C74.9897 93.0752 76.3854 92.7624 77.4904 91.6482C78.2082 90.9244 79.1055 90.3557 79.8624 89.6618C80.5177 89.0611 82.0642 88.442 82.4756 87.716C83.6893 85.5744 85.7654 86.4444 87.5411 85.6486C88.8111 85.0795 91.0564 85 92.4258 85C94.1746 85 95.9234 85 97.6722 85C99.2765 85 100.564 86.0945 102.195 86.0945C103.965 86.0945 105.468 86.8242 107.08 86.8242C110.122 86.8242 114.082 88.553 115.04 91.9319C115.662 94.127 117.211 95.2563 117.211 97.6883C117.211 99.4022 117.573 101.245 117.573 103.06C117.573 106.392 113.125 108.939 110.879 110.701C109.447 111.824 107.556 112.474 105.994 113.174C104.691 113.758 102.981 115.4 101.632 115.626C100.727 115.778 100.193 116.376 99.3004 116.376C98.3959 116.376 97.4913 116.376 96.5868 116.376C95.5229 116.376 92.0134 117.369 91.5212 116.376 M76.6921 108C79.6108 107.508 83.6572 105.895 85.3357 103.38C86.1167 102.209 87.9683 101.444 88.8353 100.023C89.524 98.8941 90.5903 96.5488 89.5943 95.3827C88.7113 94.3489 87.2444 93.1477 85.7995 93.0725C83.9423 92.9758 81.9646 92.9758 80.1074 93.0725C78.9325 93.1336 75.927 94.1459 75.1742 95.0273C74.1957 96.1729 71.3795 96.7134 71.3795 98.5814C71.3795 100.314 71 102.25 71 104.09 M82.6399 98.5256C80.8961 98.5256 80.2843 98.3238 79.1131 99.296C78.5325 99.7779 80.365 99.6812 80.598 99.6812C81.5106 99.6812 81.5794 99.4644 81.5261 98.5256C81.492 97.9225 80.3388 98.6378 81.2374 98.9964C82.4403 99.4764 83.3961 99.6812 84.6817 99.6812C85.5914 99.6812 84.2985 99.296 83.9392 99.296C82.7871 99.296 83.1568 98.9783 83.4649 98.0549C83.6713 97.436 83.4892 95.328 83.3824 96.2145C83.1607 98.0546 81.169 96.63 80.8043 98.333C80.7286 98.6866 81.4443 98.0114 81.6911 97.7553C82.2744 97.1501 80.6449 97.8465 80.4949 98.1405C80.0572 98.9982 80.6029 99.296 81.2993 99.296C81.3019 99.296 81.1145 99.6306 81.1755 99.8524C81.3149 100.359 81.619 99.4061 81.7324 99.3388C82.5128 98.8761 81.7217 98.9108 81.8974 98.9108C82.8805 98.9108 82.6399 98.2069 82.6399 97.3701 M97.1079 95.333C94.5905 95.3933 93.2367 97.4566 92.0956 99.4252C90.8463 101.58 91.4609 103.867 90.7754 106.167C90.5348 106.974 89.7263 108.082 90.0947 109.053C90.4832 110.077 91.8537 111.702 93.0238 111.702C94.4056 111.702 98.9526 112.423 99.9957 111.623C101.692 110.322 103.61 109.524 104.719 107.61C105.213 106.757 104.905 105.193 104.905 104.229C104.905 103.109 104.162 102.151 104.162 101.204C104.162 99.6133 101.391 97.0617 100.078 96.3215C98.3771 95.3625 95.5291 94.0443 94.1376 96.0447 M93.5176 97.4304C94.2599 100.627 95.6417 101 98.7624 101C99.7307 101 100.301 99.9588 100.651 99.2152C101.305 97.8235 101.031 97.5074 99.9047 96.549C98.5063 95.3594 96.5872 95.5114 94.9628 95.0727C93.0725 94.5622 92.1454 96.8891 91 97.4304 M113.345 107.289C110.198 105.528 105.467 103.406 105.215 99.4712C105.116 97.9187 104.773 95.4717 105.237 93.9828C105.892 91.8771 108.996 92.0086 110.829 92.0086C113.156 92.0086 114.477 91.8007 116.055 93.43C117.075 94.4837 117.991 96.4419 117.991 97.8721C117.991 99.8266 117.991 101.781 117.991 103.736C117.991 104.56 118.108 105.822 117.517 106.5C117.021 107.07 115.945 107.491 115.668 108 M110 97C113.493 102.588 112.364 97.2808 110.933 97.7917C108.83 98.5429 112.326 100 113 100 M94 147.051C98.6671 150.403 104.035 154 109.924 154C113.627 154 117.33 154 121.033 154C124.193 154 128.055 153.886 130.846 152.354C133.079 151.129 135.646 150.024 138.067 148.961C139.235 148.448 141.314 147.523 142.141 146.503C142.513 146.043 143.326 145.755 143.807 145.385C144.795 144.626 145.489 143.345 146.585 142.744C148.144 141.888 148.83 140.136 150.288 139.289C151.993 138.299 152.481 135.783 153.806 134.474C157.158 131.164 158.805 128.379 158.805 123.827C158.805 122.364 158.805 120.901 158.805 119.438C158.805 118.517 159.294 115.654 158.723 114.948C157.818 113.831 157.756 112.017 156.871 110.925C156.132 110.013 155.679 109.078 155.102 108.08C153.661 105.59 151.219 104.436 148.807 103.245C146.949 102.328 141.983 100.962 140.207 102.716C139.437 103.477 138.445 103.725 137.615 104.545C136.645 105.503 135.77 106.697 135.455 108.101C135.29 108.834 134.735 109.526 134.735 110.295C134.735 111.781 134.321 109.511 134.282 109.462C133.569 108.582 133.109 107.366 132.862 106.272C132.533 104.806 132.513 103.433 132.513 101.883C132.513 99.9511 133.53 100.312 134.652 99.4248C135.341 98.8805 138.173 98.8732 138.993 99.3232C140.063 99.9101 140.881 101.04 141.4 102.066 M134.232 95.3226C132.635 94.1804 131.167 93.4438 129.555 92.5635C127.766 91.5861 126.644 91.2816 127.103 89.2527C127.435 87.7831 127.743 86.8248 128.911 85.6762C130.198 84.4105 131.302 84.6543 133.109 84.6543C135.425 84.6543 136.476 91.7926 136.476 93.6671C136.476 94.1481 136.718 95.3248 136.871 95.8539C137.063 96.5117 137.715 94.765 138.16 94.2394C139.211 92.9995 139.095 90.7923 139.095 89.2527C139.095 87.5597 139.844 85.6183 139.844 83.9186C139.844 82.7312 140.345 79.9203 139.553 79.0545C138.626 78.0427 138.071 76.6149 136.643 76.2138C134.974 75.745 133.783 76.1933 132.174 76.1933C130.898 76.1933 131.188 76.0857 131.239 76.9291C131.28 77.6149 131.492 78.7117 131.904 79.218C132.074 79.4271 132.349 81.3268 132.361 81.6296C132.399 82.5572 132.735 83.3189 132.735 84.2865C132.735 85.6384 133.548 87.8875 134.149 89.0688C134.794 90.3378 136.102 92.4784 136.102 93.8511 M142.183 83C145.447 83.7435 147.452 85.7464 150.291 87.3891C151.275 87.9583 152.136 88.9791 153.182 89.5837C154.291 90.2257 156.262 91.3692 156.914 92.5097C158.221 94.795 160.931 96.7716 162.574 98.9105C163.478 100.088 164.417 101.216 165.384 102.304C166.083 103.09 166.17 105.062 166.929 105.677C167.962 106.514 167.832 109.583 167.832 110.757C167.832 112.609 168.845 114.34 168.916 116.203C169.037 119.374 170 122.575 170 125.794C170 128.662 170.006 131.718 169.257 134.369C168.193 138.139 166.715 142.282 165.645 146.073C165.294 147.317 163.946 148.604 163.317 149.751C162.519 151.204 161.334 152.718 160.246 153.957C158.059 156.449 155.838 158.668 153.202 160.744C150.669 162.738 147.764 163.994 145.354 165.946C143.465 167.476 139.523 169.399 137.126 169.685C134.551 169.991 132.134 172.245 129.359 172.245C126.434 172.245 123.499 173.421 120.688 174.054C119.466 174.329 117.968 174.44 116.715 174.44C114.44 174.44 112.287 175.044 110.031 175.171C107.045 175.339 104.033 177 101 177 M25.0833 246.973C21.6015 246.973 15.4512 247.537 13.4475 243.544C11.7224 240.107 11 237.23 11 233.259C11 229.962 11.8011 232.664 13.5278 232.878C15.016 233.063 17.2122 234.055 18.5833 234.698C19.8589 235.296 22.3054 235.843 23.6389 235.926C24.5529 235.982 25.1883 236.03 25.9861 236.497C26.8346 236.994 25.0164 236.326 24.642 236.01C23.0413 234.66 21.3599 235.373 20.4691 233.259C20.2323 232.697 20.4167 227.334 20.4691 227.334C21.8329 227.334 24.4912 230.349 25.4444 231.355C26.1285 232.076 27.0452 232.816 27.7917 233.429C28.1662 233.736 28.9622 234.755 29.4167 234.783C30.107 234.826 31.1163 234.738 31.5833 235.354C31.956 235.846 32.4522 232.834 32.5864 232.497C33.1631 231.053 32.6667 228.357 32.6667 226.783C32.6667 225.122 32.7515 226.487 33.2083 227.355C33.6966 228.282 34.1029 229.263 34.5525 230.212C35.3567 231.908 36.579 233.768 37 235.545 M89.6504 251C89.6504 253.857 89.4435 256.718 89.2968 259.468C89.2416 260.504 89.2968 261.56 89.2968 262.597C89.2968 263.736 88.3978 264.242 89.7289 264.704C91.7973 265.422 93.3768 267.435 95.6599 267.567C97.7076 267.686 99.795 267.567 101.846 267.567C103.845 267.567 105.135 265.879 106.815 265.379C108.816 264.784 110.361 263.886 112.451 263.886C114.913 263.886 115.705 264.151 117.734 265.358C119.117 266.182 119.552 269.372 119.973 270.799C120.387 272.201 115.869 271.372 115.181 270.799C113.53 269.423 111.943 269.04 109.8 269.04C107.996 269.04 108.74 268.802 108.74 267.383C108.74 265.992 109.704 265.759 108.818 266.913C108.484 267.348 108.789 269.578 108.19 269.756C107.284 270.026 105.972 269.776 105.028 269.776C103.447 269.776 103.939 269.952 103.162 270.963C102.738 271.514 102.237 272.909 101.846 273.642C101.409 274.463 100.941 275.228 100.53 276.035C99.7334 277.603 101.279 276.947 102.2 277.16C102.977 277.34 107.679 278.851 107.679 277.324C107.679 275.601 107.641 271.413 105.912 270.513 M110.133 275.856C111.124 275.856 116 276.506 116 275.045C116 273.875 115.707 271.09 114.167 270.99C112.681 270.893 111.463 270.179 109.767 270.179C107.874 270.179 106.823 269.576 105 270.584 M31.5964 88.3866C30.6225 89.0019 29.6727 89.3559 28.7472 89.4486C28.1605 89.4786 27.7646 89.3313 27.5595 89.0067C27.3544 88.682 27.2732 88.3737 27.3158 88.0818C27.3414 87.7628 27.503 87.5093 27.8006 87.3213C28.0711 87.1504 28.5317 87.0108 29.1825 86.9025C29.8873 86.76 30.3074 86.646 30.4427 86.5605C30.9567 86.2358 31.2798 85.7288 31.4121 85.0395C31.5544 84.3062 31.5166 83.4973 31.2985 82.6131C30.9309 80.9528 30.4052 79.5816 29.7215 78.4995C28.9866 77.3362 28.0281 76.2384 26.846 75.2063C25.6739 74.1299 24.3922 73.1796 23.0008 72.3553L21.5311 71.467C20.0002 70.5417 18.7975 69.8064 17.9231 69.2611C17.0757 68.6988 16.2262 68.0432 15.3746 67.2943C14.1484 66.2521 13.1507 65.1224 12.3815 63.905C11.7662 62.9311 11.3474 61.9087 11.1251 60.8379C10.9298 59.75 10.9824 58.6949 11.2826 57.6724C11.5488 56.5958 12.1823 55.7413 13.1833 55.1089C13.6702 54.8013 14.2376 54.651 14.8856 54.658C15.5164 54.6379 16.0632 54.7845 16.526 55.0977L16.3746 56.3857C15.6712 56.8301 15.0582 57.0282 14.5356 56.9798C14.0829 57.3416 13.8038 57.8585 13.6986 58.5307C13.6033 59.1587 13.6318 59.803 13.7843 60.4637C13.9467 61.0803 14.1903 61.6456 14.5151 62.1596C15.1646 63.1876 15.9664 64.1572 16.9207 65.0684C17.8848 65.9354 18.896 66.6971 19.9541 67.3534L26.384 71.2398C27.4592 71.9232 28.5167 72.7881 29.5563 73.8345C30.596 74.881 31.5004 76.0129 32.2696 77.2303C33.3976 79.0158 34.0245 80.9665 34.1501 83.0826C34.203 84.1847 34.0095 85.1965 33.5696 86.1179C33.1469 87.0663 32.4891 87.8225 31.5964 88.3866ZM47.8626 77.7689C46.6836 78.0595 45.3772 78.6578 43.9434 79.5637C43.6815 80.1077 43.307 80.5335 42.8201 80.8412C42.4954 81.0463 42.1174 81.077 41.6859 80.9332C41.2985 80.7994 41.0023 80.5702 40.7972 80.2456C39.3615 77.9731 37.5418 74.8834 35.3383 70.9763C32.9539 66.8429 31.1293 63.7752 29.8645 61.7733L29.685 61.4893C28.4459 59.8875 27.5614 58.6673 27.0316 57.8286C25.4078 55.2586 25.0694 53.6745 26.0162 53.0762C26.2867 52.9053 26.5851 52.8683 26.9112 52.965C27.2472 53.0177 27.5007 53.1792 27.6717 53.4498C27.8768 53.7744 28.1609 54.3141 28.5242 55.0687C28.8703 55.7963 29.1545 56.3359 29.3767 56.6876C30.5218 58.5002 31.5694 60.1283 32.5195 61.5721C33.4524 62.9888 34.4915 64.6034 35.6366 66.416C35.7577 66.9072 36.049 67.5181 36.5105 68.2485L36.8182 68.7355L38.7624 71.9925C39.3066 72.9736 39.9632 74.0728 40.7323 75.2901C41.9117 77.1568 42.9477 77.8081 43.8405 77.2441C43.8946 77.2099 43.9758 77.1586 44.084 77.0902C44.2021 76.9777 44.3694 76.8531 44.5859 76.7164C44.8122 76.5355 45.1148 76.3254 45.4935 76.0861C46.9544 75.1631 47.9412 75.1074 48.454 75.919C48.6249 76.1896 48.6484 76.4964 48.5246 76.8396C48.4008 77.1828 48.1801 77.4926 47.8626 77.7689ZM57.2962 71.979C56.5929 72.4234 55.7983 72.6037 54.9126 72.5198C54.0439 72.463 53.181 72.1755 52.3236 71.6573C50.4965 70.5027 48.8729 69.0114 47.4529 67.1832C46.0472 65.4974 44.8059 63.8024 43.7291 62.098C43.524 61.7734 43.3666 61.4943 43.2569 61.2608L42.7954 60.5304C42.71 60.3951 42.6537 60.336 42.6267 60.3531L42.1652 59.6227L40.4111 56.7565C39.8912 55.8737 39.1277 54.4256 38.1206 52.4123C37.4355 51.0283 36.9518 49.5738 36.6696 48.0487C36.5171 47.388 36.5042 46.8284 36.6309 46.3699C36.7405 45.8843 36.9846 45.5218 37.3634 45.2825C38.4455 44.5989 39.5476 44.1864 40.6696 44.0453C41.7746 43.8771 42.8469 43.9567 43.8865 44.284C44.8548 44.6185 45.8446 45.1666 46.8557 45.9282C47.8498 46.6628 48.7784 47.5335 49.6414 48.5401C50.5216 49.5737 51.3634 50.7263 52.1667 51.9978L52.3718 52.3224C52.9017 53.1611 53.3938 53.91 53.8481 54.5693L55.3501 56.8566C60.2726 64.6479 60.9213 69.6887 57.2962 71.979ZM56.0571 70.3772C56.5441 70.0696 56.8708 69.5982 57.0373 68.9631C57.1867 68.3009 57.156 67.5633 56.9451 66.7502C56.5874 65.0458 55.9585 63.3613 55.0582 61.6968C54.3218 60.2316 53.6374 58.9986 53.005 57.9976C52.2358 56.7802 51.1327 55.2439 49.6956 53.3887C48.2172 51.4082 47.1533 49.9039 46.5038 48.8759L46.0423 48.1455C45.3387 47.1517 44.4229 46.4811 43.2951 46.1338C42.1943 45.7695 41.184 45.8779 40.2642 46.459C39.3444 47.0401 39.069 47.9522 39.438 49.1953C39.6973 50.2049 40.2458 51.3725 41.0833 52.698C41.408 53.212 41.695 53.6363 41.9443 53.9709L42.6365 55.0666L43.7347 56.9845C44.0395 57.5868 44.4056 58.2261 44.8329 58.9024C45.7559 60.3633 46.7109 61.785 47.6979 63.1675C49.088 65.1281 50.6063 66.9321 52.2527 68.5794C53.9503 70.3078 55.2185 70.9071 56.0571 70.3772ZM68.5464 62.8839L67.5059 61.327C67.1883 60.8842 66.85 60.3787 66.4911 59.8106L65.66 58.4052C65.3908 58.1589 63.3163 55.3248 59.4365 49.9029C55.5568 44.481 53.0856 40.9891 52.0231 39.4272C50.4198 40.3644 49.3163 40.8345 48.7125 40.8374C48.2782 40.809 47.9756 40.6596 47.8047 40.389C47.6679 40.1726 47.6835 39.8978 47.8515 39.5645C48.0295 39.1872 48.2672 38.9045 48.5648 38.7164C49.3223 38.2379 50.2763 37.7108 51.4268 37.1354C52.5402 36.6211 53.5028 36.1076 54.3143 35.5949L54.639 35.3898L54.9636 35.1847C55.8023 34.6548 56.4267 34.7145 56.8369 35.3638C57.042 35.6884 57.0776 36.0444 56.9439 36.4318C56.793 36.792 56.5417 37.0833 56.19 37.3055C55.9465 37.4593 55.5692 37.6409 55.058 37.8503L54.1439 38.2008L54.2315 38.4293L54.3191 38.6579C55.8403 41.0656 58.4973 44.7618 62.2902 49.7466C65.8509 54.4238 68.4944 58.1285 70.2207 60.8609C70.4258 61.1855 70.4565 61.5636 70.3127 61.9951C70.196 62.4095 69.9618 62.7278 69.6101 62.95L68.5464 62.8839ZM84.2088 53.8969C83.289 54.478 81.419 52.5367 78.5988 48.073L77.178 45.7343L76.0392 43.842L75.9623 43.7203L75.7059 43.3145C75.5962 43.081 75.4474 42.8154 75.2594 42.5178C75.2252 42.4637 75.1419 42.4217 75.0094 42.3918C74.877 42.362 74.7937 42.32 74.7595 42.2659L74.7339 42.2253C74.6328 42.3648 74.4064 42.5457 74.0547 42.7679C73.703 42.9901 73.236 43.2095 72.6536 43.426C72.4742 43.5015 71.9986 43.7074 71.2269 44.0436L74.1753 48.7102C74.6197 49.4136 75.361 50.4971 76.3993 51.9608C77.4206 53.3974 78.1619 54.4809 78.6234 55.2114C78.8798 55.6172 78.9938 56.0372 78.9654 56.4715C78.9369 56.9059 78.7469 57.2341 78.3952 57.4563C77.8812 57.7811 77.1998 57.5113 76.351 56.6471C75.485 55.7558 74.5308 54.4851 73.4881 52.8349L71.4926 49.4966C70.9385 48.5598 70.3367 47.5773 69.6872 46.5493L69.2514 45.8594L68.8925 45.2913C68.619 44.8585 68.426 44.583 68.3135 44.4648L68.1853 44.2619L66.82 41.8314C66.1705 40.8034 65.1642 39.3005 63.8012 37.3228C62.4381 35.3451 61.4318 33.8423 60.7823 32.8143C60.5772 32.4896 60.506 32.1372 60.5686 31.757C60.6312 31.3768 60.8248 31.0841 61.1494 30.879C62.0151 30.3321 62.9607 30.8702 63.9862 32.4934L67.0842 37.5765C67.9873 39.1256 69.0285 40.8335 70.2078 42.7002C70.6991 42.5791 71.4722 42.1852 72.5273 41.5186L74.0287 40.57C73.9803 40.3735 73.9048 40.1941 73.8022 40.0318C72.9818 38.7332 71.6871 36.8638 69.9181 34.4233C68.2247 32.1623 66.9079 30.2879 65.9678 28.8C65.7798 28.5024 65.7342 28.1905 65.831 27.8644C65.9377 27.4942 66.1534 27.2065 66.478 27.0014C66.6674 26.8817 66.9807 26.7785 67.4178 26.6915L67.8856 26.6231C70.3127 30.4646 73.6869 35.5057 78.0082 41.7463L84.8599 51.7821C85.0992 52.1609 85.1384 52.5525 84.9776 52.9569C84.8438 53.3442 84.5875 53.6576 84.2088 53.8969ZM96.0796 37.937C95.809 38.1079 95.3384 37.9321 94.6676 37.4096C93.9797 36.8601 93.2 35.8955 92.3283 34.5158C92.0206 34.0288 91.4665 33.0919 90.666 31.7051C90.0877 30.6699 89.414 29.5437 88.6449 28.3263L84.359 21.7226L80.0732 15.1188C79.7998 14.686 79.7449 14.2096 79.9085 13.6899C80.0551 13.143 80.3448 12.7329 80.7777 12.4594C81.0482 12.2885 81.338 12.2379 81.647 12.3076C81.956 12.3773 82.2045 12.561 82.3925 12.8586C83.8966 15.2392 85.8039 18.5575 88.1143 22.8134C90.6711 27.5193 92.5648 30.8461 93.7954 32.7939C94.7013 34.2277 95.3323 35.2864 95.6884 35.9698C96.0544 36.6091 96.2517 37.0712 96.2803 37.356C96.3358 37.6237 96.2689 37.8173 96.0796 37.937ZM99.7333 45.3375C99.4086 45.5426 99.0035 45.5904 98.5179 45.4808C98.0594 45.3542 97.6934 45.0744 97.4199 44.6416C97.1122 44.1546 97.0096 43.6328 97.1121 43.076C97.1974 42.4921 97.47 42.0549 97.9299 41.7643C98.4169 41.4567 98.9288 41.3982 99.4657 41.589C100.013 41.7355 100.465 42.0929 100.824 42.661C101.423 43.6078 101.059 44.5 99.7333 45.3375Z';
+
+  function clicked() {
+    var slothArrays = MorphSVGPlugin.stringToRawPath(sloth);
+    state.glassBottle.path = slothArrays;
+    renderAnimals();
+  }
+
+  function slothReveal() {
+    select('#sloth-button').on('mousedown', clicked);
+  }
 
   var dataset00Grid = 'M11 66.5 L787 66.5 M35.5 14 L35.5 381 M98.5 14 L98.5 381 M166.5 14 L166.5 381 M239.5 14 L239.5 381 M295.5 14 L295.5 381 M369.5 14 L369.5 381 M450.5 14 L450.5 381 M522.5 14 L522.5 381 M592.5 14 L592.5 381 M634.5 14 L634.5 381 M723.5 14 L723.5 381';
 
@@ -28570,7 +30272,7 @@
 
   var part2Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<h1>A conceptual model</h1>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-5\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Using such physiochemical components as our inputs, we could boldly assume these properties are associated with our output &mdash; wine quality &mdash; meaning a certain composition of these properties associates with a high-quality wine (however we define quality in detail)");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-6\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    while a different configuration of properties associates with a lower quality wine.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-7\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We might hope to find a combination that yields the highest possible quality, but what actually matters for the model is to establish reliable relationships within the data");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <div id=\"slider-tool\">");t.b("\n" + i);t.b("    <input type=\"range\" class=\"lolli-slider\" id=\"slider-alcohol\" name=\"alcohol\" min=\"0\" max=\"1\" step=\"0.01\"/>");t.b("\n" + i);t.b("    <label for=\"slider-alcohol\">Alcohol</label>");t.b("\n" + i);t.b("    <input type=\"range\" class=\"lolli-slider\" id=\"slider-acids\" name=\"acids\" min=\"0\" max=\"1\" step=\"0.01\"/>");t.b("\n" + i);t.b("    <label for=\"slider-acids\">Acids</label>");t.b("\n" + i);t.b("    <input type=\"range\" class=\"lolli-slider\" id=\"slider-sugars\" name=\"sugars\" min=\"0\" max=\"1\" step=\"0.01\"/>");t.b("\n" + i);t.b("    <label for=\"slider-sugars\">Sugars</label>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-8\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    so it can &mdash; in our case &mdash; <span class=\"highlight\">express wine quality as a function of its properties</span> entirely.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-9\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We would have a <span class=\"highlight\">mathematical model</span> that takes a wine's properties as input");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-10\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    and returns some sort of estimate as to whether this wine is leaning towards being good or not so good. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section no-trigger\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Inside this black box, the model reduces relationships between individual data columns to an equation &mdash; our model equations.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We would possibly want to reduce our wine problem to something like this:");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <div class=\"image-wrap\">");t.b("\n" + i);t.b("    <img src=\"../../static/equation@2x.png\" alt=\"wine quality equation\">");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("    This is a rather simple envelope’s backside, but in essence it’s an equation that relates some inputs to an output. In our case it relates the configuration of the wine's components to its quality.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We have the inputs weighted by some input-specific factor which tells the model how much impact the respective property has on the output. The greater the weights → the more impact they have. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-11\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    The benefit of this equation is that we can take it with us and throw any combination of wine properties at it in order to get an estimate about its quality &mdash; as per its specific definition &mdash; without knowing anything about it prior.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    But how does the model get these weights? How does it learn which property drives quality to what degree?");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    This is where we need to take our model by the hand and teach it.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }});
 
-  var part3Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<h1>Learning by example</h1>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-12\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We want it to learn how to tell a good wine from a less good wine; how to predict &mdash; in this case <span class=\"highlight\">classify</span> &mdash; each wine. But the model doesn't have our senses. It can't see, taste, or feel a wine, and we can’t be there for it in the future, to pre-taste each wine. We need to teach it to recognise a good wine by example, so it can stand on its own data columns.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("     This process is called <a href=\"https://www.analyticsvidhya.com/blog/2020/04/supervised-learning-unsupervised-learning/\" target=\"_blank\">supervised learning</a> and we all know its powers from our own childhood. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-13\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Think back to the days when you learned your animal names. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    You were probably just sitting in a proudly self-concocted puddle of peas, mash and apple juice leafing through a picture book of animal drawings, while your father tried to teach you what a sloth looks like.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-14\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Any of these shapes could have been a sloth,");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-15\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    but your father calmly supervised your learning,");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-16\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    by labelling the non-sloths");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-17\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    and celebrating the actual sloths!");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-18\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    And even though not every sloth looks the same,");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-19\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    after many examples, you learned the basic features that make up a sloth. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-20\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Now, although you sometimes weren't sure whether that thing you looked at was a sloth indeed &mdash; possibly because the picture book was a bit rubbish &mdash; you learned to give it a good guess at least. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    You scanned the configuration of lines and shapes that made up the animal and gauged how likely it is for this thing to be a sloth.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    That's exactly what a mathematical model does, too: ");t.b("\n" + i);t.b("    <ol>");t.b("\n" + i);t.b("      <li>you give it <span class=\"highlight\">examples</span> (many at best) </li>");t.b("\n" + i);t.b("      <li>you <span class=\"highlight\">label</span> them with what you want your model to learn </li>");t.b("\n" + i);t.b("      <li>and let it detect <span class=\"highlight\">patterns</span>...</li>");t.b("\n" + i);t.b("      <li>that help your concluding  <span class=\"highlight\">classification</span>.</li>");t.b("\n" + i);t.b("    </ol>");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-21\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    So &mdash; moving back to our wine example...");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-22\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    we're interested in classifying wines into");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-23\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    ...high-quality");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-24\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    ...and low-quality wines.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    But whatever we do, a single bottle won’t be enough.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-25\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Just like a single animal drawing won't teach a child what a sloth is, a model needs as many wines as we can get hold of.");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("    Let's get some...");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-26\">");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-27\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Each wine in this dataset is labelled as either a high or a low-quality wine. This is the dataset we train the model with, our <a href=\"https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data\" target=\"_blank\">training set</a>. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Training sets are omniscient. They have all model input variables as well as the model output variable &mdash; Quality in our case. After we trained the model it shouldn't need these labels anymore and we can test it on a dataset without any labels &mdash; a <a href=\"https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data\" target=\"_blank\">test set</a>.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-28\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    In a next step of the analysis, the dataset splits into the Quality groups and the algorithm would identify how features differ for each group and how they correlate with the output variable. How, for example, higher quality wines might have a higher alcohol level than lower quality wines. Or how lower amounts of sulphur dioxides might increase quality, or whatever relationships the model uncovers in your data.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Lastly it would formulate these results in a weighted model equation.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section no-trigger\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    This is the process in broad, conceptual terms. To build an actual model, we need a real, sizeable dataset with labelled data!");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }});
+  var part3Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<h1>Learning by example</h1>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-12\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We want it to learn how to tell a good wine from a less good wine; how to predict &mdash; in this case <span class=\"highlight\">classify</span> &mdash; each wine. But the model doesn't have our senses. It can't see, taste, or feel a wine, and we can’t be there for it in the future, to pre-taste each wine. We need to teach it to recognise a good wine by example, so it can stand on its own data columns.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("     This process is called <a href=\"https://www.analyticsvidhya.com/blog/2020/04/supervised-learning-unsupervised-learning/\" target=\"_blank\">supervised learning</a> and we all know its powers from our own childhood. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-13\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Think back to the days when you learned your animal names. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    You were probably just sitting in a proudly self-concocted puddle of peas, mash and apple juice leafing through a picture book of animal drawings, while your father tried to teach you what a sloth looks like.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-14\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Any of these shapes could have been a sloth,");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-15\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    but your father calmly supervised your learning,");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-16\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    by labelling the non-sloths");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-17\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    and celebrating the actual sloths!");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-18\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    And even though not every sloth looks the same,");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-19\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    after many examples, you learned the basic features that make up a sloth. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-20\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Now, although you sometimes weren't sure whether that thing you looked at was a sloth indeed &mdash; possibly because the picture book was a bit rubbish &mdash; you learned to give it a good guess at least. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    You scanned the configuration of lines and shapes that made up the animal and gauged how likely it is for this thing to be a sloth.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    That's exactly what a mathematical model does, too: ");t.b("\n" + i);t.b("    <ol>");t.b("\n" + i);t.b("      <li>you give it <span class=\"highlight\">examples</span> (many at best) </li>");t.b("\n" + i);t.b("      <li>you <span class=\"highlight\">label</span> them with what you want your model to learn </li>");t.b("\n" + i);t.b("      <li>and let it detect <span class=\"highlight\">patterns</span>...</li>");t.b("\n" + i);t.b("      <li>that help your concluding  <span class=\"highlight\">classification</span>.</li>");t.b("\n" + i);t.b("    </ol>");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <button id=\"sloth-button\">Sloth or no sloth?</button>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-21\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    So &mdash; moving back to our wine example...");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-22\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    we're interested in classifying wines into");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-23\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    ...high-quality");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-24\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    ...and low-quality wines.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    But whatever we do, a single bottle won’t be enough.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-25\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Just like a single animal drawing won't teach a child what a sloth is, a model needs as many wines as we can get hold of.");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("    Let's get some...");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-26\">");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-27\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Each wine in this dataset is labelled as either a high or a low-quality wine. This is the dataset we train the model with, our <a href=\"https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data\" target=\"_blank\">training set</a>. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Training sets are omniscient. They have all model input variables as well as the model output variable &mdash; Quality in our case. After we trained the model it shouldn't need these labels anymore and we can test it on a dataset without any labels &mdash; a <a href=\"https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data\" target=\"_blank\">test set</a>.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-28\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    In a next step of the analysis, the dataset splits into the Quality groups and the algorithm would identify how features differ for each group and how they correlate with the output variable. How, for example, higher quality wines might have a higher alcohol level than lower quality wines. Or how lower amounts of sulphur dioxides might increase quality, or whatever relationships the model uncovers in your data.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Lastly it would formulate these results in a weighted model equation.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section no-trigger\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    This is the process in broad, conceptual terms. To build an actual model, we need a real, sizeable dataset with labelled data!");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }});
 
   var part4Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<h1>The data we have</h1>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-29\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    If you are a winery (or at least work for one), you might have datasets for all your past wines you produced, tasted and labelled. As such, you have valuable data-encoded experience you could use as base data for classification.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-30\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We don't have that at hands here, but there's a rather <a href=\"https://archive.ics.uci.edu/ml/datasets/wine+quality\" target=\"_blank\">well equipped and tested dataset</a> available for our purposes showing a total of 1,600 wines from Portugal,");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-31\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    each row representing a different wine, showing the wine's properties");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-32\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    as well as their <i>Quality</i> rating.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Each rating is based on at least three evaluations from wine experts ranging from 0 (🥀) to 10 (🏆). We’ll simplify this later to a binary outcome &mdash; just <span class=\"good\">high</span> or <span class=\"bad\">low quality</span> &mdash; but for now, this is what we have.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section no-trigger\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    The other eleven variables in here are the physiochemical properties, our model shall learn to associate with quality:");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-33 section-34 section-35\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    A set of components describing the acidity of the wine,");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-36 section-37\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("   Sugar and chlorides,");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-38\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    <span class=\"highlight\">Total Sulfur Dioxide</span>, which can be used to prevent oxidation and microbial spoilage (there's also Free Sulfur Dioxide)");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-39 section section-40\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    <span class=\"highlight\">Density</span> and the wine's <span class=\"highlight\">pH value</span>");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-41 section-42\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Sulphates and, lastly, there is <span class=\"highlight\">Alcohol</span>, which probably doesn’t need an introduction.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-43\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    All these wines are red wines from the <a href=\"https://en.wikipedia.org/wiki/Vinho_Verde\" target=\"_blank\">Vinho Verde</a> region in the north west of Portugal. Each wine was analysed, and quality assessed between 2004 and 2007 by the <span class=\"highlight\">Viticulture Commission of the Vinho Verde Region</span>. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    The Commission is concerned with guaranteeing the quality and authenticity of regional wines by <a href=\"https://portal.vinhoverde.pt/pt/estatisticas\" target=\"_blank\">certifying</a> the wine's origin and making sure the wine's components lie within <a href=\"https://portal.vinhoverde.pt/pt/produtos-regras-de-conformidade/GVT\" target=\"_blank\">legislated value ranges</a>. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    As such, <span class=\"highlight\">\"quality\"</span> is indeed defined as a measure of taste but strictly limited to a sample of Vinho Verde wines of a specific period. Wherever we take this model and whatever other wine's we might test with it, we should be aware of this context. Any model built on this data won't generalise to every wine under the sun.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section no-trigger\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Ok. We have some data, but we don't know much about it yet. A good start to any type of data analysis is to profile the base data &mdash; getting a sense of the measures' shape and correlations. Let's do this now...");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }});
 
@@ -28584,7 +30286,7 @@
 
   var part9Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div id=\"outro-modal-inner\">");t.b("\n" + i);t.b("  ");t.b("\n" + i);t.b("  <div id=\"outro-close\">");t.b("\n" + i);t.b("    <img id=\"outro-close-image\" src=\"../../static/close-grey.png\" alt=\"close\">");t.b("\n" + i);t.b("  </div>");t.b("\n");t.b("\n" + i);t.b("  <div id=\"outro-modal-text\">");t.b("\n" + i);t.b("    <h3>What next?</h3>");t.b("\n");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      This little exploration was supposed to give you an idea of how machines can learn, enlighten and possibly help making and gauging wine. We predicted red wine quality using a dataset full of physiochemical properties of  Vinho Verde wines with a simple linear model. ");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      As a next step it'd be interesting to swap out any or all of these components:");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      What other <span class=\"highlight\">outputs</span> would be helpful to predict or classify? Maybe a different quality definition or indeed a different outcome variable altogether like specific taste features, sales figures, or other measures of success or failure.");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      What other <span class=\"highlight\">data sources</span> do we have at hands? What metrics do we have in these datasets? Wineries might have structured data going back several years, logging physiochemical properties as well as information on varietal and growing conditions.");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      And lastly, what <span class=\"highlight\">model</span> might be most instructive to use? Will a simple linear model suffice to capture the associations? Do we need a non-linear model like for example <a href=\"https://en.wikipedia.org/wiki/Support_vector_machine\" target=\"_blank\">Support Vector Machines</a> or <a href=\"https://en.wikipedia.org/wiki/Artificial_neural_network\" target=\"_blank\">Neural Networks</a> &mdash; harder to reason about but possibly providing higher accuracy?");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      Let's see and take this as the beginning of a conversation...");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      Santé 🍷");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("  </div>");t.b("\n");t.b("\n" + i);t.b("  <div id=\"credits\">");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      The dataset and a discussion around the original model built comes from the paper: <i>P. Cortez, A. Cerdeira, F. Almeida, T. Matos and J. Reis. <a href=\"https://scinapse.io/papers/2103459159\" target=\"_blank\">Modeling wine preferences by data mining from physicochemical properties.</a> In Decision Support Systems, Elsevier, 47(4):547-553, 2009</i>. ");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      However, this paper wasn't the only analytical adventure based on the data. The dataset aquired a life of its own thereafter, being adopted and embraced by the data science and machine learning community, so you can find a lot of analyses out there wrangling and modelling this very dataset.");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      Much thanks to <a href=\"https://www.linkedin.com/in/shawn-zizzo-109783/\" target=\"_blank\">Shawn Zizzo</a> for kicking this thing off! Big thanks also to Krista Ehrenclou for the most detailed, valuable and wise feedback about all the wine related aspects in particular as well as <a href=\"https://twitter.com/martgnz\" target=\"_blank\">Martin Gonzales</a> and <a href=\"https://www.behance.net/g-gaborieau-bookatme\" target=\"_blank\">Geoffroy Gaborieau</a> for keeping me honest on the visual and design side.");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("      Built with a lot of help from <a href=\"https://greensock.com/\" target=\"_blank\">gsap</a>, <a href=\"https://roughjs.com/\" target=\"_blank\">roughjs</a>, <a href=\"http://d3js.org/\" target=\"_blank\">d3</a> and <a href=\"https://www.r-project.org/about.html\" target=\"_blank\">R</a>.");t.b("\n" + i);t.b("    </p>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("</div>  ");t.b("\n");t.b("\n");t.b("\n");return t.fl(); },partials: {}, subs: {  }});
 
-  gsapWithCSS.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools); // Helpers.
+  gsapWithCSS.registerPlugin(MorphSVGPlugin$1, DrawSVGPlugin, ScrollTrigger, GSDevTools); // Helpers.
 
   function setModelWeightMap(array) {
     var mapResult = map();
@@ -28776,11 +30478,11 @@
         height: 0
       }
     }, {
-      name: 'animalSloth2',
-      path: animalSloth2,
+      name: 'animalSloth2a',
+      path: animalSloth2a,
       fit: {
         width: 0,
-        height: 0.9
+        height: 0.7
       }
     }]; // Add the paths to the DOM.
 
@@ -28934,7 +30636,9 @@
       return "main-section ".concat(d.id);
     }).html(function (d) {
       return d.html;
-    }); // Add model base.
+    }); // Set up the sloth button interaction.
+
+    slothReveal(); // Add model base.
     // needs to come at the bitter end to stop at top and become scrollable.
 
     var modelApp = select('#text-container').append('div').attr('id', 'model-app');
