@@ -8,10 +8,13 @@ function clicked() {
   const slothArrays = MorphSVGPlugin.stringToRawPath(sloth);
   state.glassBottle.path = slothArrays;
   renderAnimals();
+
+  select('#sloth-reveal').classed('show', true);
+  select('#sloth-reveal-delay').classed('show', true);
 }
 
 function slothReveal() {
-  select('#sloth-button').on('mousedown', clicked);
+  select('.sloth-button').on('mousedown', clicked);
 }
 
 export default slothReveal;

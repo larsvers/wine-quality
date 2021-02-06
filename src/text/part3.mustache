@@ -2,10 +2,10 @@
 
 <div class="section section-12">
   <p>
-    We want it to learn how to tell a good wine from a less good wine; how to predict &mdash; in this case <span class="highlight">classify</span> &mdash; each wine. But the model doesn't have our senses. It can't see, taste, or feel a wine, and we can’t be there for it in the future, to pre-taste each wine. We need to teach it to recognise a good wine by example, so it can stand on its own data columns.
+  In order to teach a predictive model to identify a good wine from a less good wine, we have to take our model by the hand and teach it. The model doesn't have our senses &mdash; it can't see, taste, or feel a wine, and we can’t be there for it in the future, to pre-taste each wine.
   </p>
   <p>
-     This process is called <a href="https://www.analyticsvidhya.com/blog/2020/04/supervised-learning-unsupervised-learning/" target="_blank">supervised learning</a> and we all know its powers from our own childhood. 
+    We all know this process of <a href="https://www.analyticsvidhya.com/blog/2020/04/supervised-learning-unsupervised-learning/" target="_blank">supervised learning</a> from our own childhood.
   </p>
 </div>
 
@@ -26,7 +26,7 @@
 
 <div class="section section-15">
   <p>
-    but your father calmly supervised your learning,
+    but your father or mother calmly supervised your learning,
   </p>
 </div>
 
@@ -59,7 +59,22 @@
     Now, although you sometimes weren't sure whether that thing you looked at was a sloth indeed &mdash; possibly because the picture book was a bit rubbish &mdash; you learned to give it a good guess at least. 
   </p>
   <p>
-    You scanned the configuration of lines and shapes that made up the animal and gauged how likely it is for this thing to be a sloth.
+    What's your guess with this specimen over there <span class="arrow"></span>?
+  </p>
+  <div id="sloth-wrap">
+    <button class="sloth-button">Totally a sloth!</button>
+    <button class="sloth-button">No idea</button>
+    <button class="sloth-button">Anything but</button>
+  </div>
+  <p>
+    <span id="sloth-reveal">It is a sloth!</span> 
+    <span id="sloth-reveal-delay">maybe.</span>
+  </p>
+</div>
+
+<div class="section no-trigger">
+  <p>
+    What you probably did here is, you scanned the configuration of lines and shapes that made up the animal and gauged how likely it is for this thing to be a sloth.
   </p>
   <p>
     That's exactly what a mathematical model does, too: 
@@ -70,7 +85,7 @@
       <li>that help your concluding  <span class="highlight">classification</span>.</li>
     </ol>
   </p>
-  <button id="sloth-button">Sloth or no sloth?</button>
+
 </div>
 
 <div class="section section-21">
@@ -118,13 +133,13 @@
     Each wine in this dataset is labelled as either a high or a low-quality wine. This is the dataset we train the model with, our <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">training set</a>. 
   </p>
   <p>
-    Training sets are omniscient. They have all model input variables as well as the model output variable &mdash; Quality in our case. After we trained the model it shouldn't need these labels anymore and we can test it on a dataset without any labels &mdash; a <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">test set</a>.
+    Training sets have all the model inputs as well as  the model output variable &mdash; the quality ranking in our case. They know it all so they can train the model. But after the model is trained it shouldn’t need these labels and we can test it out with another dataset &mdash; a <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">test set</a> &mdash; consisting only of wines with inputs and no outputs.
   </p>
 </div>
 
 <div class="section section-28">
   <p>
-    In a next step of the analysis, the dataset splits into the Quality groups and the algorithm would identify how features differ for each group and how they correlate with the output variable. How, for example, higher quality wines might have a higher alcohol level than lower quality wines. Or how lower amounts of sulphur dioxides might increase quality, or whatever relationships the model uncovers in your data.
+    The dataset is split into high and low quality wines by an algorithm that identifies how the characteristics of each group correlate with the output variable (for example, higher quality wines might have a higher alcohol level than lower quality wines), then it formulate these results in a weighted model equation.
   </p>
   <p>
     Lastly it would formulate these results in a weighted model equation.

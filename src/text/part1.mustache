@@ -6,42 +6,27 @@
 
 <div class="section section-1">
   <p>
-    Before we dive into our conceptual model, let's note that "wine quality" is a highly imprecise term and can mean many things depending on the context it's used in and the criteria with which it was measured.
+    Before we dive into our conceptual model, let's note that "wine quality" is a highly imprecise term. “Quality” to a sommelier might mean that a wine has legs and benefits from aeration. “Quality” to you might mean it’s under $10, with a twist off top.
   </p>
   <p>
-    A casual wine drinker defines wine quality different from a wine expert and might even judge the same wine differently when drunk at different occasions. Low-quality expensive wines might be better than cheap wines deemed good. A wine region might be interested to keep a base standard of quality for its wines, it loosely defines on regular tastings of sample wines.
-  </p>
-  <p>
-    Hence, a quality predicting model is unlikely to rank every wine out there on a universally approved quality scale. Reality is too complex, contexts are too different, taste is too subjective and — as a sense — not fully understood to capture such perfection mathematically.
-  </p>
-</div>
-
-<div class="section no-trigger">
-  <p>
-    So, assuming we wanted to predict a wine's quality, we first need to define exactly what we mean by "quality" &mdash; the <span class="highlight">output</span> of our prediction model.
-  </p>
-  <p>
-    Equally important, we would need <span class="highlight">model inputs</span> in the form of measurable information about the wine we can use to build a prediction with.
+    A quality predicting model is unlikely to rank every wine out there on a universally approved scale — our output (or quality ranking) needs to be neatly defined and depends on our inputs (or the wine we’re using to establish a baseline).
   </p>
 </div>
 
 <div class="section section-2">
   <p>
-    These inputs could be as abstract as the shape of the wine bottle, which, might not be linked heavily to any concept of quality but can indeed tell us about the <a href="https://www.wsetglobal.com/knowledge-centre/blog/2019/june/13/the-definitive-guide-to-wine-bottle-shapes-and-sizes/">wine's region</a> at least.
+    The inputs need to be in the form of measurable information, things like: <a href="https://www.wsetglobal.com/knowledge-centre/blog/2019/june/13/the-definitive-guide-to-wine-bottle-shapes-and-sizes/">the shape of the wine bottle</a>, 
   </p>
 </div>
 
 <div class="section section-3">
   <p>
-    Information about the brand, the vintage and the varietal might be better predictors of taste-related quality. 
-  </p>
-  <p>
-    In case you know your wines, this label information can be enough for you to get an idea of the wine's quality prior to tasting it, so we might also be able to teach a model about labels.
+    the vintage year, or the grape varietal.
   </p>
 </div>
 
 <div class="section section-4">
   <p>
-    We could also try to describe the very liquid and decompose it into measurable, <span class="highlight">physiochemical properties</span> like for example alcohol, sugars, acids, etc.
+    In our model, we’ll describe the very liquid and decompose it into its we’re going to focus on physiochemical properties, like sugars, acids, and yes, alcohol.
   </p>
 </div>

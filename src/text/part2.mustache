@@ -2,7 +2,7 @@
 
 <div class="section section-5">
   <p>
-    Using such physiochemical components as our inputs, we could boldly assume these properties are associated with our output &mdash; wine quality &mdash; meaning a certain composition of these properties associates with a high-quality wine (however we define quality in detail)
+    Now we can assume these inputs are related to our output, meaning a certain composition of physiochemical properties are associated with a high quality outcome.
   </p>
 </div>
 
@@ -14,7 +14,7 @@
 
 <div class="section section-7">
   <p>
-    We might hope to find a combination that yields the highest possible quality, but what actually matters for the model is to establish reliable relationships within the data
+    Try it for yourself....
   </p>
   <div id="slider-tool">
     <input type="range" class="lolli-slider" id="slider-alcohol" name="alcohol" min="0" max="1" step="0.01"/>
@@ -24,7 +24,11 @@
     <input type="range" class="lolli-slider" id="slider-sugars" name="sugars" min="0" max="1" step="0.01"/>
     <label for="slider-sugars">Sugars</label>
   </div>
+  <p>
+    Moving these model inputs, we might hope to find a combination that yields the highest possible quality, but the only thing that matters for the model is to establish reliable relationships within the data
+  </p>
 </div>
+
 
 <div class="section section-8">
   <p>
@@ -46,10 +50,7 @@
 
 <div class="section no-trigger">
   <p>
-    Inside this black box, the model reduces relationships between individual data columns to an equation &mdash; our model equations.
-  </p>
-  <p>
-    We would possibly want to reduce our wine problem to something like this:
+    The model reduces relationships between individual data columns to an equation that looks something like this:
   </p>
   <div class="image-wrap">
     <img src="../../static/equation@2x.png" alt="wine quality equation">
@@ -64,12 +65,6 @@
 
 <div class="section section-11">
   <p>
-    The benefit of this equation is that we can take it with us and throw any combination of wine properties at it in order to get an estimate about its quality &mdash; as per its specific definition &mdash; without knowing anything about it prior.
-  </p>
-  <p>
     But how does the model get these weights? How does it learn which property drives quality to what degree?
-  </p>
-  <p>
-    This is where we need to take our model by the hand and teach it.
   </p>
 </div>

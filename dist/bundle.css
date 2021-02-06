@@ -296,6 +296,24 @@ svg.absolute {
         .main-section .image-wrap img {
           max-width: 60%; } }
 
+.sloth-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center; }
+
+span#sloth-reveal {
+  opacity: 0;
+  transition: opacity 250ms; }
+
+span#sloth-reveal-delay {
+  opacity: 0;
+  transition: opacity 250ms 1s; }
+
+span#sloth-reveal.show,
+span#sloth-reveal-delay.show {
+  opacity: 1; }
+
 a {
   position: relative;
   color: #666;
