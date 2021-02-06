@@ -7,15 +7,6 @@
   <p>
     For our full model we draw a curve not only for one but for eleven predictors, which is pretty impossible to display in a single visual as you can imagine. 
   </p>
-  <p>
-    We’re also skipping the details here on how to find this best curve. We do this with an optimisation process that finds the curve closest to the data. For logistic regression we would typically use an optimisation called <a href="https://machinelearningmastery.com/what-is-maximum-likelihood-estimation-in-machine-learning/" target="_blank">maximum likelihood</a>. 
-  </p>
-  <p>
-    Lastly, we would always check the accuracy of the model, by testing it on labelled data without giving the labels away &mdash; the <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">test set</a> mentioned earlier. This very logistic regression model, for example, achieved an accuracy of 79%, meaning that 79% of all cases got predicted correctly. 
-  </p>
-  <p>
-    Spending more time on model selection and engineering <a href="http://cs229.stanford.edu/proj2019aut/data/assignment_308875_raw/25892857.pdf" target="_blank">can in fact get this up to 95%</a>.
-  </p>
 </div>
 
 <div class="section section-61">
@@ -38,19 +29,16 @@
     In this case, Alcohol appears to have the biggest impact on Quality, followed by Volatile Acidity and the amount of sulphates in the wine. 
   </p>
   <p>
-    As a winemaker or -friend, you might disagree with this ranking. The Random Forest model calculates it based on each variable's ability to split the wines as clearly as possible into one of the two output classes. Results contradicting your experience or intuition are ideally used to dig deeper, possibly finding other variables driving this ranking or even a data issue.
+    You might disagree with this ranking. That's fine &mdash; numbers can only tell us so much. Your experience or intuition can be used to question the model, add or remove variables. 
   </p>
-  <p>
-    Combining these model rankings with your expertise can also be used to remove variables that don't add much value or reduce readability or even accuraccy. Either manually or automatically &mdash; often part to the modelling as so called <a href="https://www.analyticsvidhya.com/blog/2018/04/fundamentals-deep-learning-regularization-techniques/" target="_blank">"regularisation"</a>.
-  </p>
+  {{! <p>
+    Variable removal can also be done automatically with a process called <a href="https://www.analyticsvidhya.com/blog/2018/04/fundamentals-deep-learning-regularization-techniques/" target="_blank">regularisation</a> throwing out variables not adding much to the model's overall accuraccy.
+  </p> }}
 </div>
 
 <div class="section no-trigger">
   <p>
-    Used together, a model, perceived and model generated variable importance can flag the state of the wine quality as well as potentially providing informed ideas as to whether, where and what changes might help improve overall quality, possibly during the process of wine making.
-  </p>
-  <p>
-    As such, you can think of each predictor &mdash; each variable in your data &mdash; as a <span class="highlight">model screw</span> you can adjust to achieve the highest quality wine &mdash; in the model's opinion, that is. 
+    But assuming we're happy with this, you can think of each predictor &mdash; each variable in your data &mdash; as a <span class="highlight">model knob</span> you can adjust to achieve the highest quality wine &mdash; in the model's opinion, that is. 
   </p>
 </div>
 
@@ -69,13 +57,13 @@
     <span class="arrow"></span> This wine over there isn't that great yet. 
   </p>
   <p>
-    It's only 5% full &mdash; which means its physiochemical properties indicate only a 5% chance of it being good. This is what you get when taking the average value for each wine property.
+    It's only 5% full &mdash; which means its physiochemical properties indicate only a 5% chance of it being good. This is what you get when taking the average value for each wine property, represented by the vertical line in the distribution chart below.
   </p>
   <p>
-    You can change this though by scrolling down to our little quality simulator. Each property is represented by a little chart showing its distribution as well as a handle to change this property's level in the wine. Use it to add or decrease any of the properties in the wine and see how it affects the modelled wine quality.
+    Drag the handle to add or decrease any of the properties in the wine and see how it affects the modelled wine quality.
   </p>
   <p>
-    Over to you now to produce a winner &mdash; or a washout...
+    Over to you now to produce a winner &mdash; or a washout... Bottoms up!
   </p>
 </div>
 

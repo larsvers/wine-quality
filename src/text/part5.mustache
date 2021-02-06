@@ -13,29 +13,32 @@
   <p>
     Here’s <span class="highlight">Alcohol</span>. Most wines are between 9 and 12% with quite a few bottles around the 9.5% mark. This is low for reds, which tend to be <a href="https://winefolly.com/tips/alcohol-content-in-wine/" target="_blank">between 12 and 15%</a>.
   </p>
+  <p>
+    We can look at other characteristics like
+  </p>
 </div>
 
 <div class="section section-46">
   <p>
-    <span class="highlight">Density</span> is in a classic, pyramid or normally distributed shape with a mean of 0.997. A low density can indicate a wine on the dry side but dryness is complex and can be impacted by a multitude of other factors.
+    <span class="highlight">Density</span>,
   </p>
 </div>
 
 <div class="section section-47">
   <p>
-    <span class="highlight">Fixed Acids</span> &mdash; representing the total acidity in the wine.
+    <span class="highlight">Fixed Acids</span>
   </p>
 </div>
 
 <div class="section section-48">
   <p>
-    The average <span class="highlight">pH</span> value of a wine is 3.3 &mdash; quite low in comparison to your <a href="https://winefolly.com/deep-dive/understanding-acidity-in-wine/" target="_blank">average reds</a> However, this could be representative for the Vinho Verde region known for higher acidity.
+    <span class="highlight">pH</span> and more.
   </p>
 </div>
 
 <div class="section section-49">
   <p>
-    There are other measures, but one key variable in our data is of course...
+    But one key variable in our data is of course:
   </p>
 </div>
 
@@ -50,7 +53,7 @@
     Here’s how the Commisssion's wine assessors marked all wines on a scale from 0 to 10. 
   </p>
   <p>
-    Let's note that no wine got worse than 3 or better than 8 and most wines clustered around the 5 or 6 mark with an average of 5.6.
+    no wine got worse than 3 or better than 8 and most wines clustered around the 5 or 6 mark with an average of 5.6.
   </p>
 </div>
 
@@ -66,26 +69,26 @@
 
 <div class="section section-51">
   <p>
-    wines of <span class="bad">lower quality</span> and wines of <span class="good">high quality</span>.
+    wines of <span class="bad">lower quality</span> (anything rated below 7) and wines of <span class="good">high quality</span> (wines rated 7 and above).
   </p>
   <p>
-    The top two marks given are likely to describe the best wines in the data. Judging from the distribution, the few wines with marks 3 and 4 are deemed the lowest quality wines, while the majority of mediocre wines mingle in the centre. 
+    Given that most wines fall into the middle of this distribution, wines rated as “high-quality” really do mean that they’re good from the judges perspective.
     </p>
     <p>
-    As such, "high-quality" for this dataset really does mean good from the judges' perspective, while "low-quality" includes average wines as well as truly low-quality wines resulting in a proportionally larger class. Models don't particularly like this imbalance and we would typically counter this with <a href="https://ieeexplore.ieee.org/document/7475021" target="_blank">helpful techniques</a>; but we'll keep it simple here.
+    Models don't particularly like this imbalance and we would typically counter this with <a href="https://ieeexplore.ieee.org/document/7475021" target="_blank">helpful techniques</a>; but we'll keep it simple here.
   </p>
   
 </div>
 
 <div class="section no-trigger">
   <p>
-    We can now check how our variables distribute across these two simple categories. Looking at for example <span class="highlight">Volatile Acidity</span>...
+    We can now check how our variables distribute across these two simple categories. First, let’s look at <span class="highlight">Volatile Acidity</span>...
   </p>
 </div>
 
 <div class="section section-52">
   <p>
-    we see how the blue, better wines predominantly sport lower levels and &mdash; reversely &mdash; the worse wines have the highest levels of volatile acidity, potentially impacting taste in a negative way.
+    The blue, better wines predominantly sport lower levels and &mdash; reversely &mdash; the worse wines have the highest levels of volatile acidity, potentially impacting taste in a negative way.
   </p>
   <p>
     We can look at the same data in a scatter plot,
@@ -100,7 +103,7 @@
 
 <div class="section section-54">
   <p>
-    Another variable of potential interest is <span class="highlight">Alcohol</span>...
+    Then let's look at <span class="highlight">Alcohol</span>.
   </p>
 </div>
 
@@ -116,8 +119,5 @@
 <div class="section section-55">
   <p>
     The scatter plot also shows the general trend. The higher the alcohol → the better the wine.
-  </p>
-  <p>
-    Great! We know there are some associations between the physiochemical properties and the wine quality. Let's see if it's enough to build a model.
   </p>
 </div>

@@ -2,64 +2,32 @@
 
 <div class="section section-29">
   <p>
-    If you are a winery (or at least work for one), you might have datasets for all your past wines you produced, tasted and labelled. As such, you have valuable data-encoded experience you could use as base data for classification.
+    Moving from theory to practice, we first need a dataset.
   </p>
 </div>
 
 <div class="section section-30">
   <p>
-    We don't have that at hands here, but there's a rather <a href="https://archive.ics.uci.edu/ml/datasets/wine+quality" target="_blank">well equipped and tested dataset</a> available for our purposes showing a total of 1,600 wines from Portugal,
+    We’ll use <a href="https://archive.ics.uci.edu/ml/datasets/wine+quality" target="_blank">this dataset</a> of 1,600 wines from Portugal ,
   </p>
 </div>
 
 <div class="section section-31">
   <p>
-    each row representing a different wine, showing the wine's properties
+    with each row representing a wine
   </p>
 </div>
 
 <div class="section section-32">
   <p>
-    as well as their <i>Quality</i> rating.
-  </p>
-  <p>
-    Each rating is based on at least three evaluations from wine experts ranging from 0 (🥀) to 10 (🏆). We’ll simplify this later to a binary outcome &mdash; just <span class="good">high</span> or <span class="bad">low quality</span> &mdash; but for now, this is what we have.
+    that received a quality rating, which is based on at least three evaluations from wine experts, ranging from 0 (🥀) to 10 (🏆)
   </p>
 </div>
 
-<div class="section no-trigger">
-  <p>
-    The other eleven variables in here are the physiochemical properties, our model shall learn to associate with quality:
-  </p>
-</div>
 
-<div class="section section-33 section-34 section-35">
+<div class="section section-33 section-34 section-35 section-36 section-37 section-38 section-39 section-40 section-41 section-42">
   <p>
-    A set of components describing the acidity of the wine,
-  </p>
-</div>
-
-<div class="section section-36 section-37">
-  <p>
-   Sugar and chlorides,
-  </p>
-</div>
-
-<div class="section section-38">
-  <p>
-    <span class="highlight">Total Sulfur Dioxide</span>, which can be used to prevent oxidation and microbial spoilage (there's also Free Sulfur Dioxide)
-  </p>
-</div>
-
-<div class="section section-39 section section-40">
-  <p>
-    <span class="highlight">Density</span> and the wine's <span class="highlight">pH value</span>
-  </p>
-</div>
-
-<div class="section section-41 section-42">
-  <p>
-    Sulphates and, lastly, there is <span class="highlight">Alcohol</span>, which probably doesn’t need an introduction.
+    as well as the wine’s specific physiochemical property values.
   </p>
 </div>
 
@@ -68,15 +36,15 @@
     All these wines are red wines from the <a href="https://en.wikipedia.org/wiki/Vinho_Verde" target="_blank">Vinho Verde</a> region in the north west of Portugal. Each wine was analysed, and quality assessed between 2004 and 2007 by the <span class="highlight">Viticulture Commission of the Vinho Verde Region</span>. 
   </p>
   <p>
-    The Commission is concerned with guaranteeing the quality and authenticity of regional wines by <a href="https://portal.vinhoverde.pt/pt/estatisticas" target="_blank">certifying</a> the wine's origin and making sure the wine's components lie within <a href="https://portal.vinhoverde.pt/pt/produtos-regras-de-conformidade/GVT" target="_blank">legislated value ranges</a>. 
+    The Commission is concerned with guaranteeing the quality and authenticity of regional wines by <a href="https://portal.vinhoverde.pt/pt/estatisticas" target="_blank">certifying</a> the wine's origin and making sure the wine's properties stay within <a href="https://portal.vinhoverde.pt/pt/produtos-regras-de-conformidade/GVT" target="_blank">legislated value ranges</a>. 
   </p>
   <p>
-    As such, <span class="highlight">"quality"</span> is indeed defined as a measure of taste but strictly limited to a sample of Vinho Verde wines of a specific period. Wherever we take this model and whatever other wine's we might test with it, we should be aware of this context. Any model built on this data won't generalise to every wine under the sun.
+    As such, <span class="highlight">"quality"</span> is indeed defined as a measure of taste but strictly limited to a sample of Vinho Verde wines of a specific period. We should be aware of this context and remember that this data won't generalise to every wine under the sun.
   </p>
 </div>
 
 <div class="section no-trigger">
   <p>
-    Ok. We have some data, but we don't know much about it yet. A good start to any type of data analysis is to profile the base data &mdash; getting a sense of the measures' shape and correlations. Let's do this now...
+    Now that we have the data, we need to get a sense of the base shape and correlations.
   </p>
 </div>
