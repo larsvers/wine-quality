@@ -145,9 +145,8 @@ svg.absolute {
         width: 40%; } }
 
 #title-text {
-  margin: 0 0 2rem;
-  font-family: 'Nanum Myeongjo';
-  min-height: 100vh; }
+  margin: 0 0 3rem;
+  font-family: 'Nanum Myeongjo'; }
   #title-text #title-header h2 {
     font-size: 12vw;
     margin: 0;
@@ -176,12 +175,15 @@ svg.absolute {
     position: relative;
     visibility: hidden;
     z-index: -1; }
-  #title-text h3 {
+  #title-text h3,
+  #title-text h4 {
     text-align: center;
     font-family: 'Amatic SC';
     font-size: 3vw;
     margin: 0px;
     color: #2a1835; }
+  #title-text h4 {
+    font-size: 2vw; }
 
 #intro-text {
   width: 90%;
@@ -271,8 +273,8 @@ svg.absolute {
     .main-section .section ul {
       list-style-type: decimal; }
   .main-section .section.empty {
-    padding-top: 25vh;
-    padding-bottom: 25vh; }
+    padding-top: 0;
+    padding-bottom: 0; }
   .main-section .section:last-child {
     padding-bottom: 2rem; }
   .main-section .section.tight-top {

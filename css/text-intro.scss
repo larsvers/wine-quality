@@ -30,9 +30,8 @@
 
 // Title
 #title-text {
-  margin: 0 0 2rem;
+  margin: 0 0 3rem;
   font-family: 'Nanum Myeongjo';
-  min-height: 100vh;
 
   // Wave.
   #title-header h2 {
@@ -83,12 +82,17 @@
     z-index: -1;
   }
 
-  h3 {
+  h3,
+  h4 {
     text-align: center;
     font-family: 'Amatic SC';
     font-size: 3vw;
     margin: 0px;
     color: #2a1835;
+  }
+
+  h4 {
+    font-size: 2vw;
   }
 }
 

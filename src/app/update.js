@@ -15,7 +15,6 @@ import setupLolliSlider from '../lollislider/lollislider';
 import buildModelControls from '../model/buildModel';
 
 // Tweens
-import { tweenIntroIn, tweenIntroOut } from '../tweens/intro';
 import tweenBottleWave, { startWave, stopWave } from '../tweens/bottleWave';
 import tweenWineScape from '../tweens/wineScape';
 import tweenGlassBottle from '../tweens/glassBottle';
@@ -203,14 +202,6 @@ function clearAllContexts() {
 // Set scroll.
 function setScrollBase() {
   const { start, end, endContainer } = getTriggerPositions();
-
-  ScrollTrigger.create({
-    trigger: '#container-intro',
-    start: '10px top',
-    id: 'intro',
-    onEnter: () => tweenIntroIn(),
-    onLeaveBack: () => tweenIntroOut(),
-  });
 
   ScrollTrigger.create({
     trigger: '.section-0',

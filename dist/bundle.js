@@ -3124,16 +3124,6 @@
     return fetch(input, init).then(responseJson);
   }
 
-  function parser(type) {
-    return function(input, init)  {
-      return text(input, init).then(function(text) {
-        return (new DOMParser).parseFromString(text, type);
-      });
-    };
-  }
-
-  var xml = parser("application/xml");
-
   function ascending$1(a, b) {
     return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
   }
@@ -22697,52 +22687,6 @@
     select('#model-app-wrap').selectAll('.model-value-control').data(controlData).join('div').attr('class', 'model-value-control').each(buildControl);
   }
 
-  var gsapWithCSS$1 = gsap.registerPlugin(CSSPlugin) || gsap,
-      // to protect from tree shaking
-  TweenMaxWithCSS$1 = gsapWithCSS$1.core.Tween;
-
-  function tweenIntroIn() {
-    // Hack as moving the #brand's xPercent doesn't work in Safari.
-    var w = window.innerWidth;
-    var left = w < 750 ? '90%' : '95%';
-    gsapWithCSS$1.timeline({
-      defaults: {
-        duration: 1,
-        ease: 'sine.inOut'
-      }
-    }).fromTo('#brand p', {
-      opacity: 1,
-      fontSize: '0.8em'
-    }, {
-      opacity: 0,
-      fontSize: '0em',
-      duration: 0.3
-    }).to('#brand', {
-      left: left
-    }, 0) // move right
-    .to('#logo path', {
-      fill: '#ccc'
-    }, 0);
-  }
-
-  function tweenIntroOut() {
-    gsapWithCSS$1.timeline({
-      defaults: {
-        duration: 1,
-        ease: 'sine.inOut'
-      }
-    }).to('#brand p', {
-      opacity: 1,
-      fontSize: '0.8em',
-      delay: 0.7,
-      duration: 0.3
-    }).to('#brand', {
-      left: '50%'
-    }, 0).to('#logo path', {
-      fill: 'rgba(41, 14, 56, 0.5)'
-    }, 0);
-  }
-
   function drawScape(ctx, img, t, alpha) {
     ctx.clearRect(0, 0, state.width, state.height);
     ctx.save();
@@ -28609,6 +28553,10 @@
     tweenIn(); // tweenOut(); // not needed but here for if and when required.
   }
 
+  var gsapWithCSS$1 = gsap.registerPlugin(CSSPlugin) || gsap,
+      // to protect from tree shaking
+  TweenMaxWithCSS$1 = gsapWithCSS$1.core.Tween;
+
   var position = {};
   var lw$1 = 20;
   var lh = 3;
@@ -28858,17 +28806,6 @@
         end = _getTriggerPositions.end,
         endContainer = _getTriggerPositions.endContainer;
 
-    ScrollTrigger.create({
-      trigger: '#container-intro',
-      start: '10px top',
-      id: 'intro',
-      onEnter: function onEnter() {
-        return tweenIntroIn();
-      },
-      onLeaveBack: function onLeaveBack() {
-        return tweenIntroOut();
-      }
-    });
     ScrollTrigger.create({
       trigger: '.section-0',
       start: start,
@@ -30238,9 +30175,9 @@
   compiler.template = compiler.Template;
   var hogan = compiler;
 
-  var part0Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("\n" + i);t.b("<div id=\"title-image\">");t.b("\n" + i);t.b("  <img src=\"../../static/bush.png\">");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div id=\"title-text\">");t.b("\n" + i);t.b("  <div id=\"title-header\">");t.b("\n" + i);t.b("  <h2>Wine Quality</h2>");t.b("\n" + i);t.b("  <h2>Wine Quality</h2>");t.b("\n" + i);t.b("  <h2>hidden placeholder element keeping the height</h2>");t.b("\n" + i);t.b("</div>");t.b("\n" + i);t.b("<h3 id=\"title-subheader\">How to teach a model to taste</h3>");t.b("\n" + i);t.b("  <div class=\"scroll-arrow\">↓<br/><span class=\"lowlight\">scroll</span></div>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div id=\"intro-text\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Mention predictive modeling to the general public and you’re likely to conjure memes of complex mathematical equations swirling. Mention wine, and you get a much different reaction. One can be intimidating, the other inviting. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    In this piece, we’re going to try to close that gap. So grab some liquid courage in your favorite aged grape variety and get ready for MATH.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }});
+  var part0Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("\n" + i);t.b("<div id=\"title-image\">");t.b("\n" + i);t.b("  <img src=\"../../static/bush.png\">");t.b("\n" + i);t.b("</div>");t.b("\n" + i);t.b("<div id=\"title-text\">");t.b("\n" + i);t.b("  <div id=\"title-header\">");t.b("\n" + i);t.b("    <h2>Wine Quality</h2>");t.b("\n" + i);t.b("    <h2>Wine Quality</h2>");t.b("\n" + i);t.b("    <h2>hidden placeholder element keeping the height</h2>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("  <h3 id=\"title-subheader\">How to teach a model to taste</h3>");t.b("\n" + i);t.b("  <h4>by Lars Verspohl</h4>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div id=\"intro-text\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Mention predictive modeling to the general public and you’re likely to conjure memes of complex mathematical equations swirling. Mention wine, and you get a much different reaction. One can be intimidating, the other inviting. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    In this piece, we’re going to try to close that gap. We’ll build a statistical model trying to predict a wine’s quality by its properties. So grab some liquid courage in your favorite aged grape variety and get ready for MATH.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"scroll-arrow\">↓<br/><span class=\"lowlight\">scroll</span></div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }});
 
-  var part1Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"section section-0 empty\">");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<h1>How to describe a wine?</h1>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-1\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Before we dive into our conceptual model, let's note that \"wine quality\" is a highly imprecise term. “Quality” to a sommelier might mean that a wine has legs and benefits from aeration. “Quality” to you might mean it’s under $10, with a twist off top.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    A quality predicting model is unlikely to rank every wine out there on a universally approved scale — our output (or quality ranking) needs to be neatly defined and depends on our inputs (or the wine we’re using to establish a baseline).");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-2\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    The inputs need to be in the form of measurable information, things like: <a href=\"https://www.wsetglobal.com/knowledge-centre/blog/2019/june/13/the-definitive-guide-to-wine-bottle-shapes-and-sizes/\">the shape of the wine bottle</a>, ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-3\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    the vintage year, or the grape varietal.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-4\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    In our model, we’ll describe the very liquid and decompose it into its physiochemical properties, like sugars, acids, and yes, alcohol.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }});
+  var part1Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"section section-0 empty\">");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<h1>How to describe a wine?</h1>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-1\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Before diving into building any predictive model we might want to define what we predict. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    In our case, let's note that \"wine quality\" is a highly imprecise term. “Quality” to a sommelier might mean that a wine has legs and benefits from aeration. “Quality” to you might mean it’s under $10, with a twist off top.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    A quality predicting model is unlikely to rank every wine out there on a universally approved scale. Our output &mdash; or quality ranking &mdash; needs to be neatly defined and depends on our inputs &mdash; or the wine parameters we’re using to establish a baseline.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-2\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    The inputs need to be in the form of measurable information, things like: <a href=\"https://www.wsetglobal.com/knowledge-centre/blog/2019/june/13/the-definitive-guide-to-wine-bottle-shapes-and-sizes/\">the shape of the wine bottle</a>, ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-3\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    the vintage year, or the grape varietal.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-4\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    In our model, we’ll describe the very liquid and decompose it into its physiochemical properties, like sugars, acids, and yes, alcohol.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }});
 
   var part2Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<h1>A conceptual model</h1>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-5\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Now we can assume these inputs are related to our output, meaning a certain composition of physiochemical properties are associated with a high quality outcome.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-6\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    while a different configuration of properties associates with a lower quality wine.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-7\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Try it for yourself....");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <div id=\"slider-tool\">");t.b("\n" + i);t.b("    <input type=\"range\" class=\"lolli-slider\" id=\"slider-alcohol\" name=\"alcohol\" min=\"0\" max=\"1\" step=\"0.01\"/>");t.b("\n" + i);t.b("    <label for=\"slider-alcohol\">Alcohol</label>");t.b("\n" + i);t.b("    <input type=\"range\" class=\"lolli-slider\" id=\"slider-acids\" name=\"acids\" min=\"0\" max=\"1\" step=\"0.01\"/>");t.b("\n" + i);t.b("    <label for=\"slider-acids\">Acids</label>");t.b("\n" + i);t.b("    <input type=\"range\" class=\"lolli-slider\" id=\"slider-sugars\" name=\"sugars\" min=\"0\" max=\"1\" step=\"0.01\"/>");t.b("\n" + i);t.b("    <label for=\"slider-sugars\">Sugars</label>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Moving these model inputs, we might hope to find a combination that yields the highest possible quality, but the only thing that matters for the model is to establish reliable relationships within the data");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-8\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    so it can &mdash; in our case &mdash; <span class=\"highlight\">express wine quality as a function of its properties</span> entirely.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-9\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We would have a <span class=\"highlight\">mathematical model</span> that takes a wine's properties as input");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-10\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    and returns some sort of estimate as to whether this wine is leaning towards being good or not so good. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section no-trigger\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    The model reduces relationships between individual data columns to an equation that looks something like this:");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <div class=\"image-wrap\">");t.b("\n" + i);t.b("    <img src=\"../../static/equation@2x.png\" alt=\"wine quality equation\">");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("    <p>");t.b("\n" + i);t.b("    This is a rather simple envelope’s backside, but in essence it’s an equation that relates some inputs to an output. In our case it relates the configuration of the wine's components to its quality.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We have the inputs weighted by some input-specific factor which tells the model how much impact the respective property has on the output. The greater the weights → the more impact they have. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-11\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    But how does the model get these weights? How does it learn which property drives quality to what degree?");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }});
 
@@ -30548,11 +30485,8 @@
     state.modelBottle.maxLength = bottlePathInfo.length;
   }
 
-  function buildStory(logoSvg) {
-    // Logo.
-    // SVG dimensions controlled by CSS (overwriting given attributes).
-    select('#logo').node().append(logoSvg.documentElement); // Intro text.
-
+  function buildStory() {
+    // Intro text.
     var introContainer = select('#container-intro');
     var introHtml = part0Html.render();
     introContainer.html(introHtml); // Main text.
@@ -30600,18 +30534,17 @@
 
 
   function ready(_ref) {
-    var _ref2 = _slicedToArray(_ref, 7),
+    var _ref2 = _slicedToArray(_ref, 6),
         wineScape = _ref2[0],
-        logo = _ref2[1],
-        globeData = _ref2[2],
-        wineData = _ref2[3],
-        varImpData = _ref2[4],
-        modelIntercept = _ref2[5],
-        modelWeights = _ref2[6];
+        globeData = _ref2[1],
+        wineData = _ref2[2],
+        varImpData = _ref2[3],
+        modelIntercept = _ref2[4],
+        modelWeights = _ref2[5];
 
     // Make sure all variable names are lower case! This is not checked in the app.
     prepareVisuals(globeData, wineData, varImpData, modelIntercept, modelWeights);
-    buildStory(logo);
+    buildStory();
     update(wineScape); // Debounced resize.
 
     var debounced = lodash_debounce(function () {
@@ -30623,13 +30556,12 @@
   function init$1() {
     window.addEventListener('load', removeSpinner);
     var wineScape = image('../../static/wine-scape.png');
-    var logo = xml('../../static/vinoez.svg');
     var globeData = json('../../data/world-simple.json');
     var wineData = csv$1('../../data/winedata.csv', autoType);
     var varImpData = csv$1('../../data/importance.csv', autoType);
     var modelIntercept = csv$1('../../data/model-intercept.csv', autoType);
     var modelWeights = csv$1('../../data/model-weights.csv', autoType);
-    Promise.all([wineScape, logo, globeData, wineData, varImpData, modelIntercept, modelWeights]).then(ready);
+    Promise.all([wineScape, globeData, wineData, varImpData, modelIntercept, modelWeights]).then(ready);
   }
 
   init$1();
