@@ -210,12 +210,8 @@ function setScrollBase() {
     trigger: '#container-intro',
     start: '10px top',
     id: 'intro',
-    onEnter() {
-      tweenIntroIn();
-    },
-    onLeaveBack() {
-      tweenIntroOut();
-    },
+    onEnter: () => tweenIntroIn(),
+    onLeaveBack: () => tweenIntroOut(),
   });
 
   ScrollTrigger.create({
@@ -710,19 +706,6 @@ function setScrollBase() {
     id: 'modelWaveInit',
     onLeaveBack: () => stopModelWave(),
     onUpdate: self => updateModelWave(self),
-  });
-
-  ScrollTrigger.create({
-    trigger: '#model-app',
-    start: 'top bottom',
-    end: 'top top+=5px',
-    id: 'scrollBreak',
-    // Fade the outro button in and out.
-    onEnter: () => gsap.to('#outro', { left: '2vw' }),
-    onLeaveBack: () => gsap.to('#outro', { left: '-20vw' }),
-    // Lock/unlock the model app scroll during main scroll.
-    onLeave: () => select('#model-app').style('overflow', 'scroll'),
-    onEnterBack: () => select('#model-app').style('overflow', 'hidden'),
   });
 }
 

@@ -249,6 +249,8 @@ svg.absolute {
     box-shadow: none;
     opacity: 0.95;
     z-index: 30; }
+    .main-section h1.tight-top {
+      margin-top: 15vh; }
     @media (min-width: 800px) {
       .main-section h1 {
         font-size: 1.5em;
@@ -273,6 +275,10 @@ svg.absolute {
     padding-bottom: 25vh; }
   .main-section .section:last-child {
     padding-bottom: 2rem; }
+  .main-section .section.tight-top {
+    padding-top: 1rem; }
+  .main-section .section.tight-bottom {
+    padding-bottom: 5rem; }
   .main-section .image-wrap {
     position: relative;
     width: 100%;
@@ -371,81 +377,7 @@ span.arrow::after {
     span.arrow::after {
       content: '←'; } }
 
-#outro {
-  position: absolute;
-  left: -20vw;
-  bottom: 2vh;
-  width: 40px;
-  cursor: pointer;
-  z-index: 1000; }
-  #outro img {
-    display: block;
-    max-width: 100%;
-    border-radius: 50%;
-    box-shadow: 1px 1px 3px;
-    transition: all 0.5s; }
-
-#outro img:hover {
-  box-shadow: 2px 2px 4px;
-  background: #ece7d7; }
-
-#outro-modal-outer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(27, 17, 31, 0.2);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 30;
-  opacity: 0;
-  pointer-events: none; }
-
-#outro-modal-inner {
-  width: 90vw;
-  height: 80vh;
-  position: relative;
-  overflow: scroll;
-  background: url("../static/paper-crease.jpg");
-  border-radius: 2px;
-  box-shadow: 3px 3px 1px #8a827c; }
-  @media (min-width: 800px) {
-    #outro-modal-inner {
-      width: 80vw; } }
-  #outro-modal-inner #outro-close {
-    position: sticky;
-    top: 2%;
-    left: 92%;
-    width: 1.25rem;
-    transition: transform 0.5s;
-    cursor: pointer; }
-    @media (min-width: 800px) {
-      #outro-modal-inner #outro-close {
-        left: 95%; } }
-    #outro-modal-inner #outro-close img {
-      max-width: 100%; }
-  #outro-modal-inner #outro-close:hover {
-    transform: scale(1.25); }
-
-#outro-modal-text {
-  margin: 5rem auto 3rem;
-  width: 80%;
-  background-color: radial-gradient(rgba(255, 255, 255, 0.3), transparent);
-  font-size: 1.2em; }
-  @media (min-width: 800px) {
-    #outro-modal-text {
-      width: 60%; } }
-  #outro-modal-text h3 {
-    font-weight: 300;
-    text-align: center;
-    margin: 2em; }
-
 #credits {
-  width: 60%;
-  margin: 3rem auto 5rem;
-  padding-top: 3rem;
   font-size: 0.9em;
   border-top: 5px solid transparent;
   border-image: url("../static/border-horiz.png") 30 stretch; }
@@ -539,7 +471,7 @@ how to remove the virtical space around the range input in IE*/
   font-size: 0.8em; }
 
 #model-app {
-  overflow: scroll; }
+  padding: 0 1em; }
 
 #model-app-header {
   position: sticky;
@@ -548,7 +480,8 @@ how to remove the virtical space around the range input in IE*/
   padding-bottom: 2vh;
   margin-bottom: 2rem;
   background: url("../static/paper-orange.jpg");
-  opacity: 0.95; }
+  opacity: 0.95;
+  box-shadow: 0px 2px 0px #777; }
   @media (min-width: 800px) {
     #model-app-header {
       z-index: 10; } }

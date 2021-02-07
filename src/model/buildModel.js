@@ -4,8 +4,6 @@ import state from '../app/state';
 import buildControl from './densityControl';
 
 function buildModelControls() {
-  select('#model-app').style('height', `${state.height}px`);
-
   // Sort the controls by their variable importance.
   const order = state.varImp.data.map(d => d.variable);
   const controlData = state.model.values.entries();
@@ -21,7 +19,3 @@ function buildModelControls() {
 }
 
 export default buildModelControls;
-
-// 1. We want at least 2 controls sided by side.
-//    Hence the minimum would be 0.5% of the width.
-//    However, we give it a little leeway here with 0.475

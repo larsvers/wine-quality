@@ -112,36 +112,6 @@ function removeSpinner() {
   }, 750);
 }
 
-function modalOpen() {
-  selectAll('#container, #outro').style('pointer-events', 'none');
-
-  select('#outro-modal-outer')
-    .style('pointer-events', 'all')
-    .transition()
-    .style('opacity', 1);
-
-  // So totally unnecessary...
-  // eslint-disable-next-line no-unused-expressions
-  Math.round(Math.random())
-    ? gsap.fromTo('#outro-modal-inner', { left: '-100vw' }, { left: '0vw' })
-    : gsap.fromTo('#outro-modal-inner', { top: '-100vh' }, { top: '0vh' });
-}
-
-function modalClose(e) {
-  if (
-    e.target !== select('#outro-modal-outer').node() &&
-    e.target !== select('#outro-close-image').node()
-  )
-    return;
-
-  select('#outro-modal-outer')
-    .transition()
-    .style('opacity', 0)
-    .style('pointer-events', 'none');
-
-  selectAll('#container, #outro').style('pointer-events', 'all');
-}
-
 // Build funcs.
 function prepareVisuals(
   globeData,
@@ -401,12 +371,10 @@ function buildStory(logoSvg) {
   modelApp.append('div').attr('id', 'model-app-wrap');
 
   // Outro.
-  select('#outro-modal-outer').html(part9Html.render());
-
-  document.querySelector('#outro').addEventListener('click', modalOpen);
-  document
-    .querySelector('#outro-modal-outer')
-    .addEventListener('click', modalClose);
+  container
+    .append('section')
+    .attr('class', 'main-section part-9x')
+    .html(part9Html.render());
 }
 
 // Main func.

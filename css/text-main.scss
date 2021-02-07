@@ -25,6 +25,10 @@
 
     z-index: 30;
 
+    &.tight-top {
+      margin-top: 15vh;
+    }
+
     @media #{$tablet-up} {
       font-size: 1.5em;
       opacity: 1;
@@ -60,6 +64,14 @@
 
   .section:last-child {
     padding-bottom: 2rem;
+  }
+
+  .section.tight-top {
+    padding-top: 1rem;
+  }
+
+  .section.tight-bottom {
+    padding-bottom: 5rem;
   }
 
   .image-wrap {
@@ -175,6 +187,7 @@ span.bad {
 p.tight-top {
   margin-top: 0.25em;
 }
+
 p.tight-bottom {
   margin-bottom: 0.25em;
 }

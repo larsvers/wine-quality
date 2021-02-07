@@ -1,8 +1,5 @@
 #model-app {
-  // Disallow scroll until the user scrolled the div to
-  // the very top (ScrollTrigger then chnages to `scroll`)
-  // overflow: hidden;
-  overflow: scroll;
+  padding: 0 1em;
 }
 
 #model-app-header {
@@ -13,6 +10,7 @@
   margin-bottom: 2rem;
   background: url('../static/paper-orange.jpg');
   opacity: 0.95;
+  box-shadow: 0px 2px 0px $colour-font-header; // border doesn't show sometimes 🤷‍♂️
 
   @media #{$tablet-up} {
     z-index: 10;
