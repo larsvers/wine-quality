@@ -3,9 +3,7 @@
 /* eslint-disable no-param-reassign */
 
 // External.
-import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
-import { select } from 'd3-selection/src';
 import { timeout } from 'd3-timer';
 import cloneDeep from 'lodash.clonedeep';
 import rough from 'roughjs/bundled/rough.esm';
@@ -291,10 +289,11 @@ function setScrollBase() {
     },
   });
 
+  // trigger bottom for the 2nd lolli update a little different.
   ScrollTrigger.create({
     trigger: '.section-7',
     start,
-    end,
+    end: 'center bottom',
     id: 'lolliUpdate2',
     onUpdate({ progress }) {
       // Lines.

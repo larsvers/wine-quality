@@ -14,7 +14,7 @@
     Think back to the days when you learned your animal names. 
   </p>
   <p>
-    You were probably just sitting in a proudly self-concocted puddle of peas, mash and apple juice leafing through a picture book of animal drawings, while your father tried to teach you what a sloth looks like.
+    You were probably just sitting in a proudly self-concocted puddle of peas, mash and apple juice leafing through a picture book of animal drawings, while your parents tried to teach you what a sloth looks like.
   </p>
 </div>
 
@@ -26,7 +26,7 @@
 
 <div class="section section-15">
   <p>
-    but your father or mother calmly supervised your learning,
+    but your parents calmly supervised your learning,
   </p>
 </div>
 
@@ -59,7 +59,13 @@
     Now, although you sometimes weren't sure whether that thing you looked at was a sloth indeed &mdash; possibly because the picture book was a bit rubbish &mdash; you learned to give it a good guess at least. 
   </p>
   <p>
-    So... what's your guess with this specimen over there <span class="arrow"></span>?
+    Soooo...
+  </p>
+</div>
+
+<div class="section no-trigger">
+  <p>
+    what's your guess with this specimen over there <span class="arrow"></span>?
   </p>
   <div id="sloth-wrap">
     <button class="sloth-button">Totally a sloth!</button>
@@ -133,13 +139,16 @@
     Each wine in this dataset is labelled as either a high or a low-quality wine. This is the dataset we train the model with, our <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">training set</a>. 
   </p>
   <p>
-    Training sets have all the model inputs as well as  the model output variable &mdash; the quality ranking in our case. They know it all so they can train the model. But after the model is trained it shouldn’t need these labels and we can test it out with another dataset &mdash; a <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">test set</a> &mdash; consisting only of wines with inputs and no outputs.
+    Training sets are all-knowing. They have all the model inputs as well as  the model output variable &mdash; the quality ranking in our case &mdash;  so they can train the model. 
+  </p>
+  <p>
+    After the model is trained it shouldn’t need these labels and we can test how accurate it predicts each case with another dataset &mdash; a <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">test set</a> &mdash; consisting only of wines with inputs and no outputs.
   </p>
 </div>
 
 <div class="section section-28">
   <p>
-    The dataset is split into high and low quality wines by an algorithm that identifies how the characteristics of each group correlate with the output variable (for example, higher quality wines might have a higher alcohol level than lower quality wines), then it formulate these results in a weighted model equation.
+    To calculate the model, the algorithm first splits the dataset into high and low quality wines before identifying how the characteristics of each group correlate with the output variable. For example, higher quality wines might have a higher alcohol level than lower quality wines. 
   </p>
   <p>
     Lastly it would formulate these results in a weighted model equation.
