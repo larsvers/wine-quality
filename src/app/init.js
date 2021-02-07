@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-return-assign */
 // Libs.
-import { select, selectAll } from 'd3-selection/src/index';
+import { select } from 'd3-selection/src/index';
 import { timeout } from 'd3-timer';
 import 'd3-transition';
 import { csv, image, json, xml } from 'd3-fetch/src/index';
