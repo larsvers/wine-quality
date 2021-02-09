@@ -1,3 +1,4 @@
+/* eslint-disable no-multi-assign */
 /* eslint-disable prefer-destructuring */
 import { gsap } from 'gsap/all';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
@@ -46,6 +47,8 @@ function setDimensions() {
     .range([state.lolli.area.top, state.lolli.area.bottom]);
 }
 
+const colScale = scaleLinear().range(['#CE6A8C', '#1773C9']);
+
 // Canvas draw function.
 function drawLolliChart(ctx, t) {
   const rough = state.rough.chart;
@@ -62,6 +65,12 @@ function drawLolliChart(ctx, t) {
     const { offset } = datapoint.text;
     const { paths } = datapoint.text;
 
+    ctx.save();
+    if (d === 'quality') {
+      ctx.strokeStyle = ctx.fillStyle = colScale(xValue);
+    } else {
+      ctx.strokeStyle = ctx.fillStyle = 'black';
+    }
     // Line.
     ctx.beginPath();
     rough.line(
@@ -85,7 +94,7 @@ function drawLolliChart(ctx, t) {
     ctx.fill();
 
     // Text.
-    ctx.save();
+    // ctx.strokeStyle = ctx.fillStyle = 'black';
     ctx.translate(state.lolli.x(0), state.lolli.y(d) + 2);
     ctx.lineWidth = 0.5;
     ctx.setLineDash([length - offset, offset]);

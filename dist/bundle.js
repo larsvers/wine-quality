@@ -19749,7 +19749,7 @@
     ctx.clearRect(0, 0, state.width, state.height);
   }
 
-  /* eslint-disable prefer-destructuring */
+  /* eslint-disable no-multi-assign */
   state.lolli.area = {
     top: undefined,
     right: undefined,
@@ -19776,8 +19776,9 @@
 
     state.lolli.x = linear$1([0, 1], [state.lolli.area.left, state.lolli.area.right]);
     state.lolli.y = point$1().domain(state.lolli.keys).range([state.lolli.area.top, state.lolli.area.bottom]);
-  } // Canvas draw function.
+  }
 
+  var colScale = linear$1().range(['#CE6A8C', '#1773C9']); // Canvas draw function.
 
   function drawLolliChart(ctx, t) {
     var rough = state.rough.chart;
@@ -19790,7 +19791,15 @@
       var xValue = datapoint.value;
       var length = datapoint.text.length;
       var offset = datapoint.text.offset;
-      var paths = datapoint.text.paths; // Line.
+      var paths = datapoint.text.paths;
+      ctx.save();
+
+      if (d === 'quality') {
+        ctx.strokeStyle = ctx.fillStyle = colScale(xValue);
+      } else {
+        ctx.strokeStyle = ctx.fillStyle = 'black';
+      } // Line.
+
 
       ctx.beginPath();
       rough.line(state.lolli.x(0), state.lolli.y(d), state.lolli.x(xValue), state.lolli.y(d), {
@@ -19802,8 +19811,8 @@
       ctx.beginPath();
       ctx.arc(state.lolli.x(xValue), state.lolli.y(d), datapoint.radius, 0, 2 * Math.PI);
       ctx.fill(); // Text.
+      // ctx.strokeStyle = ctx.fillStyle = 'black';
 
-      ctx.save();
       ctx.translate(state.lolli.x(0), state.lolli.y(d) + 2);
       ctx.lineWidth = 0.5;
       ctx.setLineDash([length - offset, offset]);
