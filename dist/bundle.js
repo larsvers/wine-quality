@@ -21760,8 +21760,8 @@
 
   var intercept = 0;
   var weights = map();
-  weights.set('acids', -2);
-  weights.set('sugars', 2);
+  weights.set('acids', -3);
+  weights.set('sugars', 1.5);
   weights.set('alcohol', 3); // The model values.
 
   var values = map();
@@ -30281,7 +30281,7 @@
     state.lolli.data = {
       alcohol: {
         value: 0,
-        values: [0, 0.6, 0.3, 0.5, 0],
+        values: [0, 0.6, 0.05, 0.5, 0],
         radius: 0,
         text: lolliTextPaths[0],
         offset: {
@@ -30291,7 +30291,7 @@
       },
       acids: {
         value: 0,
-        values: [0, 0.3, 0.7, 0.5, 0],
+        values: [0, 0.3, 0.95, 0.5, 0],
         radius: 0,
         text: lolliTextPaths[1],
         offset: {
@@ -30301,7 +30301,7 @@
       },
       sugars: {
         value: 0,
-        values: [0, 0.7, 0.6, 0.5, 0],
+        values: [0, 0.7, 0.2, 0.5, 0],
         radius: 0,
         text: lolliTextPaths[2],
         offset: {
@@ -30311,7 +30311,7 @@
       },
       quality: {
         value: 0,
-        values: [0, 0.93, 0.43, 0.82, 0],
+        values: [0, 0.88, 0.08, 0.68, 0],
         radius: 0,
         text: lolliTextPaths[3],
         offset: {

@@ -170,7 +170,7 @@ function prepareVisuals(
   state.lolli.data = {
     alcohol: {
       value: 0,
-      values: [0, 0.6, 0.3, 0.5, 0],
+      values: [0, 0.6, 0.05, 0.5, 0],
       radius: 0,
       text: lolliTextPaths[0],
       offset: {
@@ -180,7 +180,7 @@ function prepareVisuals(
     },
     acids: {
       value: 0,
-      values: [0, 0.3, 0.7, 0.5, 0],
+      values: [0, 0.3, 0.95, 0.5, 0],
       radius: 0,
       text: lolliTextPaths[1],
       offset: {
@@ -190,7 +190,7 @@ function prepareVisuals(
     },
     sugars: {
       value: 0,
-      values: [0, 0.7, 0.6, 0.5, 0],
+      values: [0, 0.7, 0.2, 0.5, 0],
       radius: 0,
       text: lolliTextPaths[2],
       offset: {
@@ -200,7 +200,7 @@ function prepareVisuals(
     },
     quality: {
       value: 0,
-      values: [0, 0.93, 0.43, 0.82, 0],
+      values: [0, 0.88, 0.08, 0.68, 0],
       radius: 0,
       text: lolliTextPaths[3],
       offset: {

@@ -8,8 +8,8 @@ import getProbability from '../model/probability';
 // Our fantasy lr model parameters.
 const intercept = 0;
 const weights = map();
-weights.set('acids', -2);
-weights.set('sugars', 2);
+weights.set('acids', -3);
+weights.set('sugars', 1.5);
 weights.set('alcohol', 3);
 
 // The model values.
