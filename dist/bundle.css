@@ -96,6 +96,18 @@ button {
     #brand #logo path {
       fill: rgba(41, 14, 56, 0.5); }
 
+#ie-note {
+  box-sizing: border-box;
+  position: relative;
+  z-index: 100;
+  width: 50%;
+  margin: 3rem auto;
+  background: #f3efe5;
+  padding: 2rem 4rem;
+  border-radius: 6px;
+  box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.2);
+  border: 1px solid #993355; }
+
 #svg-container {
   visibility: hidden;
   position: absolute;
