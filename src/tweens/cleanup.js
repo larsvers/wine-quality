@@ -3,6 +3,7 @@ import { max } from 'd3-array/src/index';
 import { gsap } from 'gsap/all';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
 import state from '../app/state';
+import { drawBlackBox } from './blackBox';
 
 // Vars (helper and tweenables).
 const inputProperties = ['alcohol', 'acids', 'sugars'];
@@ -98,34 +99,6 @@ function bezWithArrowheads(
   }
 
   ctx.stroke();
-}
-
-// Canvas draw function.
-function drawBlackBox(ctx, t) {
-  ctx.clearRect(0, 0, state.width, state.height);
-  ctx.save();
-  // Scaling and translating with some added "pulse" to
-  // suck up the predictors and spit out the dependent.
-  ctx.translate(t.x, t.y);
-  ctx.scale(t.scale, t.scale);
-
-  // Draw box (animate)
-  ctx.strokeStyle = 'white';
-  ctx.lineWidth = 0.1;
-  state.blackBox.box.paths.forEach(path => {
-    ctx.setLineDash([
-      state.blackBox.box.length - state.blackBox.box.offset,
-      state.blackBox.box.offset,
-    ]);
-    ctx.stroke(path);
-  });
-
-  // Draw text (don't animate).
-  ctx.strokeStyle = 'black';
-  ctx.lineWidth = 0.5;
-  state.blackBox.model.paths.forEach(path => ctx.stroke(path));
-
-  ctx.restore();
 }
 
 function drawProperties(ctx, t, inputVars, outputVars) {

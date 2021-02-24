@@ -21,7 +21,7 @@ function renderPath() {
     state.ctx.glassBottle.save();
     state.ctx.glassBottle.globalAlpha = state.glassBottle.alpha; // 1
     state.ctx.glassBottle.strokeStyle = '#000000';
-    state.ctx.glassBottle.lineWidth = 0.7;
+    state.ctx.glassBottle.lineWidth = 1.2;
     // We clear the canvas before we draw each column (and the grid).
     state.ctx.glassBottle.clearRect(0, 0, state.width, state.height);
     // We draw the grid and each dataset column with their very own

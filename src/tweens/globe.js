@@ -84,7 +84,7 @@ function drawGlobe(ctx) {
     gradientValues.distance * 6
   );
 
-  // Add colour steops.
+  // Add colour steps.
   colours.forEach(d => grad.addColorStop(d.stop, d.colour));
 
   ctx.fillStyle = grad;
@@ -103,9 +103,20 @@ function drawGlobe(ctx) {
     stroke: state.bottleColour.bad.stop1,
   });
 
+  // Label and arrow.
+  ctx.globalAlpha = aaScale(state.globe.scroll.progress);
+  ctx.fillStyle = state.bottleColour.bad.stop0;
+  ctx.font = 'bold 30px Amatic SC';
+  ctx.textAlign = 'end';
+  ctx.textBaseline = 'top';
+  ctx.shadowOffsetX = 3;
+  ctx.shadowOffsetY = 3;
+  ctx.shadowBlur = 4;
+  ctx.shadowColor = 'rgba(0,0,0,0.3)';
+  ctx.fillText('Portugal', point2.x, point2.y + 10);
+
   ctx.lineWidth = 5;
   ctx.strokeStyle = state.bottleColour.bad.stop0;
-  ctx.globalAlpha = aaScale(state.globe.scroll.progress);
   bezWithArrowheads(ctx, point0, point1, point2, undefined, 15, false, true);
 
   ctx.restore();
@@ -194,7 +205,7 @@ function prepScales() {
   rScale = scaleLinear().domain([0, 0.3, 0.7, 1]).range([-50, -1, 1, 100]);
 
   // The globe's globalAlpha scale.
-  gaScale = scaleLinear().domain([0, 0.1, 0.99, 1]).range([0, 1, 1, 0]);
+  gaScale = scaleLinear().domain([0, 0.1, 0.9, 1]).range([0, 1, 1, 0]);
 
   // The arrow's globalAlpha scale.
   aaScale = scaleLinear()

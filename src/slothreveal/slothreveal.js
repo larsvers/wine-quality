@@ -12,8 +12,8 @@ function clicked() {
   select('#sloth-reveal').classed('show', true);
   select('#sloth-reveal-delay').classed('show', true);
 
-  selectAll('.sloth-button').classed('clicked', false);
-  select(this).classed('clicked', true);
+  selectAll('.sloth-button').classed('clicked-true clicked-false', false);
+  select(this).classed(`clicked-${this.dataset.answer}`, true);
 }
 
 function slothReveal() {

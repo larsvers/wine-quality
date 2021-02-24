@@ -1,3 +1,12 @@
+#slider-tool {
+  margin-bottom: 2rem;
+
+  label {
+    font-family: 'Amatic SC';
+    font-weight: bold;
+    font-size: 1.2em;
+  }
+}
 .lolli-slider {
   width: 100%;
   margin: 6.5px 0;
@@ -8,7 +17,7 @@
   outline: none;
 }
 .lolli-slider::-webkit-slider-runnable-track {
-  background: #000000;
+  background: $colour-black;
   border: 0;
   width: 100%;
   height: 1px;
@@ -18,7 +27,7 @@
   margin-top: -6.5px;
   width: 16px;
   height: 16px;
-  background: #000000;
+  background: $colour-black;
   border: 0;
   border-radius: 13px;
   cursor: pointer;
@@ -28,7 +37,7 @@
   background: #0a0a0a;
 }
 .lolli-slider::-moz-range-track {
-  background: #000000;
+  background: $colour-black;
   border: 0;
   width: 100%;
   height: 3px;
@@ -37,7 +46,7 @@
 .lolli-slider::-moz-range-thumb {
   width: 16px;
   height: 16px;
-  background: #000000;
+  background: $colour-black;
   border: 0;
   border-radius: 13px;
   cursor: pointer;
@@ -52,17 +61,17 @@
   cursor: pointer;
 }
 .lolli-slider::-ms-fill-lower {
-  background: #000000;
+  background: $colour-black;
   border: 0;
 }
 .lolli-slider::-ms-fill-upper {
-  background: #000000;
+  background: $colour-black;
   border: 0;
 }
 .lolli-slider::-ms-thumb {
   width: 16px;
   height: 16px;
-  background: #000000;
+  background: $colour-black;
   border: 0;
   border-radius: 13px;
   cursor: pointer;
@@ -70,7 +79,7 @@
   /*Needed to keep the Edge thumb centred*/
 }
 .lolli-slider:focus::-ms-fill-lower {
-  background: #000000;
+  background: $colour-black;
 }
 .lolli-slider:focus::-ms-fill-upper {
   background: #0a0a0a;
@@ -83,8 +92,4 @@ how to remove the virtical space around the range input in IE*/
     margin: 0;
     /*Edge starts the margin from the thumb, not the track as other browsers do*/
   }
-}
-
-#slider-tool label {
-  font-size: 0.8em;
 }

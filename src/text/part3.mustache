@@ -65,16 +65,18 @@
 
 <div class="section no-trigger">
   <p>
-    what's your guess with this specimen over there <span class="arrow"></span>?
+    <span class="highlight large">
+      what's your guess with this specimen over there <span class="arrow"></span>?
+    </span>
   </p>
   <div id="sloth-wrap">
-    <button class="sloth-button">Totally a sloth!</button>
-    <button class="sloth-button">No idea</button>
-    <button class="sloth-button">Anything but</button>
+    <button class="sloth-button" data-answer="true">Totally a sloth!</button>
+    <button class="sloth-button" data-answer="false">No idea</button>
+    <button class="sloth-button" data-answer="false">Anything but</button>
   </div>
   <p>
-    <span id="sloth-reveal">It is a sloth!</span> 
-    <span id="sloth-reveal-delay">possibly...</span>
+    <span class="sloth-answer" id="sloth-reveal">It is a sloth!</span> 
+    <span class="sloth-answer" id="sloth-reveal-delay">(possibly)</span>
   </p>
 </div>
 
@@ -108,13 +110,13 @@
 
 <div class="section section-23">
   <p>
-    ...high-quality
+    <span class="good highlight">...high-quality</span
   </p>
 </div>
 
 <div class="section section-24">
   <p>
-    ...and low-quality wines.
+    ...and <span class="bad highlight">low-quality</span> wines.
   </p>
   <p>
     But whatever we do, a single bottle won’t be enough.
@@ -136,7 +138,7 @@
 
 <div class="section section-27">
   <p>
-    Each wine in this dataset is labelled as either a high or a low-quality wine. This is the dataset we train the model with, our <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">training set</a>. 
+    Each wine in this dataset is labelled as either a <span class="good">high</span> or a <span class="bad">low-quality</span> wine. This is the dataset we train the model with, our <a href="https://developers.google.com/machine-learning/crash-course/training-and-test-sets/splitting-data" target="_blank">training set</a>. 
   </p>
   <p>
     Training sets are all-knowing. They have all the model inputs as well as  the model output variable &mdash; the quality ranking in our case &mdash;  so they can train the model. 
@@ -148,7 +150,7 @@
 
 <div class="section section-28">
   <p>
-    To calculate the model, the algorithm first splits the dataset into high and low quality wines before identifying how the characteristics of each group correlate with the output variable. For example, higher quality wines might have a higher alcohol level than lower quality wines. 
+    To calculate the model, the algorithm first splits the dataset into <span class="good">high</span> and <span class="bad">low quality</span> wines before identifying how the characteristics of each group correlate with the output variable. For example, higher quality wines might have a higher alcohol level than lower quality wines. 
   </p>
   <p>
     Lastly it would formulate these results in a weighted model equation.

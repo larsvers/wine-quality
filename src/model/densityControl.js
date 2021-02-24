@@ -40,7 +40,7 @@ function kernelEpanechnikov(k) {
 }
 
 // Control build function.
-function buildControl(datapoint) {
+function buildControl(datapoint, i) {
   // Get the datum's values.
   const variable = datapoint.key;
   let { value } = datapoint;
@@ -95,6 +95,32 @@ function buildControl(datapoint) {
     .attr('y2', height)
     .style('stroke-width', 1)
     .style('stroke', '#000');
+
+  // Build axis labels only for first chart.
+  if (i === 0) {
+    const axisLabel = g
+      .append('g')
+      .attr('class', 'axis-label')
+      .style('font-family', 'Signika')
+      .style('font-size', 12)
+      .style('fill', '#555');
+
+    axisLabel
+      .append('text')
+      .text('less')
+      .attr('x', 0)
+      .attr('y', height)
+      .attr('dy', '1em')
+      .style('text-anchor', 'start');
+
+    axisLabel
+      .append('text')
+      .text('more')
+      .attr('x', width)
+      .attr('y', height)
+      .attr('dy', '1em')
+      .style('text-anchor', 'end');
+  }
 
   // Density data.
   const k =
@@ -168,7 +194,7 @@ function buildControl(datapoint) {
     .attr('x', d => d.x)
     .attr('y', d => d.y)
     .attr('class', 'label')
-    .attr('dy', '0.7em')
+    .attr('dy', i ? '0.7em' : '0.9em')
     .attr('text-anchor', 'middle')
     .attr('dominant-baseline', 'hanging')
     .style('font-family', 'Signika')

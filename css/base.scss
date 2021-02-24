@@ -12,13 +12,17 @@ body {
 button {
   margin: 1em;
   font-size: 0.7em;
-  color: #555;
+  color: $colour-font;
 }
 
 #loading {
   width: 100vw;
   height: 100vh;
-  background: url('../static/paper-orange.jpg');
+  background: radial-gradient(
+    circle 65vw at 0% 0%,
+    $colour-bg-01,
+    $colour-bg-02
+  );
 
   display: flex;
   justify-content: center;
@@ -48,7 +52,11 @@ button {
   // Scroll
   overflow-y: scroll;
   overflow-x: hidden;
-  background: url('../static/paper-orange.jpg');
+  background: radial-gradient(
+    circle 65vw at 0% 0%,
+    $colour-bg-01,
+    $colour-bg-02
+  );
 }
 
 #container-inner {
@@ -84,7 +92,12 @@ button {
   // To make the text invisible, this needs to be above the later
   // text div with an opaque background.
   z-index: 20;
-  background: url('../static/paper-orange.jpg');
+
+  background: radial-gradient(
+    circle 65vw at 0% 0%,
+    $colour-bg-01,
+    $colour-bg-02
+  );
 
   // Border
   border-bottom: 2px solid transparent;
@@ -167,5 +180,5 @@ button {
   padding: 2rem 4rem;
   border-radius: 6px;
   box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.2);
-  border: 1px solid #993355;
+  border: 1px solid $colour-bad;
 }

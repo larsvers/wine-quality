@@ -8,13 +8,16 @@
   h1 {
     position: sticky;
     top: 0;
+
     padding-top: 2vh;
     padding-bottom: 2vh;
+    padding-left: 1rem;
     margin-top: 30vh;
     margin-right: 1.5vh;
 
-    font-size: 1.2em;
-    font-weight: 100;
+    font-family: 'Amatic SC';
+    font-weight: bold;
+    font-size: 2em;
     color: $colour-font-header;
     text-align: end;
 
@@ -30,9 +33,11 @@
     }
 
     @media #{$tablet-up} {
-      font-size: 1.5em;
+      font-size: 2.5em;
       opacity: 1;
-      background: url('../static/paper-orange.jpg');
+      background: $colour-bg-02;
+      text-align: start;
+
       box-shadow: 0px 2px 0px $colour-font-header; // border doesn't show sometimes 🤷‍♂️
     }
   }
@@ -109,7 +114,12 @@
   justify-content: center;
 }
 
+span.sloth-answer {
+  display: inline-block;
+}
+
 span#sloth-reveal {
+  font-weight: 500;
   opacity: 0;
   transition: opacity 250ms;
 }
@@ -122,6 +132,19 @@ span#sloth-reveal-delay {
 span#sloth-reveal.show,
 span#sloth-reveal-delay.show {
   opacity: 1;
+  animation: pulse 750ms ease-out;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 button.sloth-button {
@@ -138,11 +161,17 @@ button.sloth-button {
 
   &:hover {
     box-shadow: 2px 8px 4px -5px rgba(0, 0, 0, 0.3);
-    background: rgba(243, 243, 233, 1);
+    background: rgb(255, 255, 234);
   }
 
-  &.clicked {
-    background: rgba(243, 243, 233, 1);
+  &.clicked-true {
+    background: #c4d0ff;
+    font-weight: bold;
+  }
+  &.clicked-false {
+    background: #ce6a8c;
+    font-weight: bold;
+    color: white;
   }
 }
 
@@ -150,8 +179,12 @@ button.sloth-button {
 a {
   position: relative;
   color: $colour-link-font;
-  box-shadow: inset 0 -0.2em 20px 0 $colour-link-bg;
+  box-shadow: inset 0 -0.5em 5px 0 $colour-link-bg-dark;
   transition: all 0.3s;
+}
+
+a.subtle {
+  box-shadow: inset 0 -0.2em 5px 0 $colour-link-bg-dark;
 }
 
 a:link,
@@ -161,15 +194,25 @@ a:active {
   text-decoration: none;
 }
 
+a.subtle:hover {
+  color: $colour-link-hover;
+  font-weight: 700;
+  box-shadow: inset 0 -0.2em 5px 0 $colour-link-bg;
+}
+
 a:hover {
   color: $colour-link-hover;
   font-weight: 300;
-  box-shadow: inset 0 -0.2em 5px 0 $colour-link-bg;
+  box-shadow: inset 0 -0.2em 20px 0 $colour-link-bg;
 }
 
 // Specific.
 span.highlight {
   font-weight: 500;
+}
+
+span.larger {
+  font-size: larger;
 }
 
 span.good {

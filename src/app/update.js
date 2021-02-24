@@ -3,7 +3,10 @@
 /* eslint-disable no-param-reassign */
 
 // External.
+import { gsap } from 'gsap/all';
 import { ScrollTrigger } from 'gsap/src/ScrollTrigger';
+import { CustomWiggle } from 'gsap/src/CustomWiggle';
+import { CustomEase } from 'gsap/src/CustomEase';
 import { timeout } from 'd3-timer';
 import cloneDeep from 'lodash.clonedeep';
 import rough from 'roughjs/bundled/rough.esm';
@@ -61,6 +64,8 @@ import { stopWaveMarkers } from '../tweens/modelWaveMarker';
 
 import { renderLolliChart } from '../tweens/lolliChart';
 
+gsap.registerPlugin(CustomEase, CustomWiggle);
+
 // Helpers.
 function isMobile() {
   return window.innerWidth < state.tabletUp;
@@ -103,6 +108,8 @@ ScrollTrigger.defaults({
   toggleActions: 'play none none reverse',
   markers: false,
 });
+
+CustomWiggle.create('sliderWiggle', { wiggles: 4 });
 
 function updateDimensions() {
   const container = document.querySelector('#canvas-main-container');
@@ -249,6 +256,36 @@ function setScrollBase() {
     start,
     end,
     id: 'bottleWave',
+  });
+
+  ScrollTrigger.create({
+    trigger: '#slider-tool',
+    start: 'top 75%',
+    onEnter() {
+      gsap.to('#slider-alcohol', {
+        duration: 0.5,
+        rotation: 4,
+        scale: 1.1,
+        x: 10,
+        ease: 'sliderWiggle',
+      });
+      gsap.to('#slider-acids', {
+        duration: 0.5,
+        delay: 0.1,
+        rotation: 4,
+        scale: 1.1,
+        x: 10,
+        ease: 'sliderWiggle',
+      });
+      gsap.to('#slider-sugars', {
+        duration: 0.5,
+        delay: 0.2,
+        rotation: 4,
+        scale: 1.1,
+        x: 10,
+        ease: 'sliderWiggle',
+      });
+    },
   });
 
   ScrollTrigger.create({

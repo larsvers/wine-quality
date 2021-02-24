@@ -49,8 +49,12 @@ function drawBlackBox(ctx, t) {
 
   // Draw text (don't animate).
   ctx.strokeStyle = 'black';
-  ctx.lineWidth = 0.5;
-  state.blackBox.model.paths.forEach(path => ctx.stroke(path));
+  // ctx.fillStyle = 'black';
+  ctx.lineWidth = 1;
+  state.blackBox.model.paths.forEach(path => {
+    ctx.stroke(path);
+    // ctx.fill(path);
+  });
 
   ctx.restore();
 }
@@ -249,4 +253,4 @@ function tweenBlackBox() {
 }
 
 export default tweenBlackBox;
-export { arrows };
+export { arrows, drawBlackBox };

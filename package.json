@@ -36,6 +36,7 @@
     "rollup-plugin-scss": "^2.5.0"
   },
   "dependencies": {
+    "caniuse-lite": "^1.0.30001192",
     "d3-array": "^1.2.4",
     "d3-collection": "^1.0.7",
     "d3-drag": "^1.2.5",
