@@ -264,7 +264,6 @@ function setScrollBase() {
     onEnter() {
       gsap.to('#slider-alcohol', {
         duration: 0.5,
-        rotation: 4,
         scale: 1.1,
         x: 10,
         ease: 'sliderWiggle',
@@ -272,7 +271,6 @@ function setScrollBase() {
       gsap.to('#slider-acids', {
         duration: 0.5,
         delay: 0.1,
-        rotation: 4,
         scale: 1.1,
         x: 10,
         ease: 'sliderWiggle',
@@ -280,7 +278,6 @@ function setScrollBase() {
       gsap.to('#slider-sugars', {
         duration: 0.5,
         delay: 0.2,
-        rotation: 4,
         scale: 1.1,
         x: 10,
         ease: 'sliderWiggle',
