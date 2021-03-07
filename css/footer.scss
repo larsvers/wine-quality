@@ -5,47 +5,28 @@ footer {
   background: linear-gradient($colour-bg-02, $colour-bg-03);
 }
 
-footer #stories {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 2rem;
-}
-
-footer .story {
-  width: 10rem;
-  position: relative;
-  margin: 1rem;
-
-  @media #{$phone-up} {
-    width: 14rem;
-  }
-
-  img {
-    width: 100%;
-    box-shadow: 0 0;
-    transition: all 0.3s;
-
-    &:hover {
-      box-shadow: 2px 2px $colour-link-font;
-    }
-  }
-
-  p {
-    margin: 0.3rem 0;
-    font-weight: bold;
-    color: $colour-link-font;
-  }
-}
-
 footer .footer-company__about {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 
+  a {
+    box-shadow: 0 0;
+  }
+
   img {
-    width: 9rem;
+    width: 6rem;
+  }
+}
+
+footer .footer-company__description {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  h3 {
+    margin-bottom: 0;
   }
 
   p {

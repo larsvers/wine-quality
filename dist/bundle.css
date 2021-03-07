@@ -585,38 +585,23 @@ footer {
   margin-top: 1rem;
   background: linear-gradient(#f5eddb, #f7d5a2); }
 
-footer #stories {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 2rem; }
-
-footer .story {
-  width: 10rem;
-  position: relative;
-  margin: 1rem; }
-  @media (min-width: 450px) {
-    footer .story {
-      width: 14rem; } }
-  footer .story img {
-    width: 100%;
-    box-shadow: 0 0;
-    transition: all 0.3s; }
-    footer .story img:hover {
-      box-shadow: 2px 2px #111; }
-  footer .story p {
-    margin: 0.3rem 0;
-    font-weight: bold;
-    color: #111; }
-
 footer .footer-company__about {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center; }
+  footer .footer-company__about a {
+    box-shadow: 0 0; }
   footer .footer-company__about img {
-    width: 9rem; }
-  footer .footer-company__about p {
+    width: 6rem; }
+
+footer .footer-company__description {
+  display: flex;
+  flex-direction: column;
+  align-items: center; }
+  footer .footer-company__description h3 {
+    margin-bottom: 0; }
+  footer .footer-company__description p {
     max-width: 80%;
     text-align: center; }
 

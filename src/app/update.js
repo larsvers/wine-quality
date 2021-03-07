@@ -736,6 +736,14 @@ function setScrollBase() {
     onLeaveBack: () => stopModelWave(),
     onUpdate: self => updateModelWave(self),
   });
+
+  ScrollTrigger.create({
+    trigger: 'footer',
+    start: 'top bottom',
+    id: 'footer',
+    onEnter: () => gsap.to('#side-logo', { opacity: 0 }),
+    onLeaveBack: () => gsap.to('#side-logo', { opacity: 1 }),
+  });
 }
 
 function setScroll() {
