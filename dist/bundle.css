@@ -353,6 +353,7 @@ span#sloth-reveal {
   transition: opacity 250ms; }
 
 span#sloth-reveal-delay {
+  font-size: 0.7em;
   opacity: 0;
   transition: opacity 250ms 1s; }
 
@@ -590,7 +591,7 @@ svg.control {
 footer {
   padding: 1rem;
   margin-top: 1rem;
-  background: linear-gradient(#f5eddb, #f9e2ca); }
+  background: linear-gradient(#f5eddb, #f7d5a2); }
 
 footer #stories {
   display: flex;
