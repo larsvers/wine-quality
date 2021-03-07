@@ -30632,7 +30632,7 @@
   compiler.template = compiler.Template;
   var hogan = compiler;
 
-  var part0Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("\n" + i);t.b("<div id=\"pudding-logo\">");t.b("\n" + i);t.b("  <a href=\"https://pudding.cool\" target=\"_blank\" rel=\"noreferrer\">");t.b("\n" + i);t.b("    <img inline src=\"../../static/pudding-logo.svg\"/>");t.b("\n" + i);t.b("  </a>");t.b("\n" + i);t.b("</div>");t.b("\n" + i);t.b("<div id=\"title-image\">");t.b("\n" + i);t.b("  <img src=\"../../static/grape-tree.png\" alt='grapevine'>");t.b("\n" + i);t.b("</div>");t.b("\n" + i);t.b("<div id=\"title-text\">");t.b("\n" + i);t.b("  <div id=\"title-header\">");t.b("\n" + i);t.b("    <h2>Wine & Math</h2>");t.b("\n" + i);t.b("    <h2>Wine & Math</h2>");t.b("\n" + i);t.b("    <h2>hidden placeholder element keeping the height</h2>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("  <h3 id=\"title-subheader\">A Model Pairing</h3>");t.b("\n" + i);t.b("  <h4><a class=\"subtle\" href=\"https://pudding.cool/author/lars-verspohl\">by Lars Verspohl<a></h4>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div id=\"intro-text\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Mention predictive modeling to the general public and you’re likely to conjure memes of complex mathematical equations swirling. Mention wine, and you get a much different reaction. One can be intimidating, the other inviting. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    In this piece, we’re going to try to close that gap. We’ll build a statistical model trying to predict a wine’s quality by its properties. So grab some liquid courage in your favorite aged grape variety and get ready for MATH.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"scroll-arrow\">↓<br/><span class=\"lowlight\">scroll</span></div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }});
+  var part0Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("\n" + i);t.b("<div id=\"pudding-logo\">");t.b("\n" + i);t.b("  <a href=\"https://pudding.cool\" target=\"_blank\" rel=\"noreferrer\">");t.b("\n" + i);t.b("    <img inline src=\"../../static/pudding/logo-full.svg\"/>");t.b("\n" + i);t.b("  </a>");t.b("\n" + i);t.b("</div>");t.b("\n" + i);t.b("<div id=\"title-image\">");t.b("\n" + i);t.b("  <img src=\"../../static/grape-tree.png\" alt='grapevine'>");t.b("\n" + i);t.b("</div>");t.b("\n" + i);t.b("<div id=\"title-text\">");t.b("\n" + i);t.b("  <div id=\"title-header\">");t.b("\n" + i);t.b("    <h2>Wine & Math</h2>");t.b("\n" + i);t.b("    <h2>Wine & Math</h2>");t.b("\n" + i);t.b("    <h2>hidden placeholder element keeping the height</h2>");t.b("\n" + i);t.b("  </div>");t.b("\n" + i);t.b("  <h3 id=\"title-subheader\">A Model Pairing</h3>");t.b("\n" + i);t.b("  <h4><a class=\"subtle\" href=\"https://pudding.cool/author/lars-verspohl\">by Lars Verspohl<a></h4>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div id=\"intro-text\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Mention predictive modeling to the general public and you’re likely to conjure memes of complex mathematical equations swirling. Mention wine, and you get a much different reaction. One can be intimidating, the other inviting. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    In this piece, we’re going to try to close that gap. We’ll build a statistical model trying to predict a wine’s quality by its properties. So grab some liquid courage in your favorite aged grape variety and get ready for MATH.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"scroll-arrow\">↓<br/><span class=\"lowlight\">scroll</span></div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }});
 
   var part1Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div class=\"section section-0 empty\">");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<h1>How to describe a wine</h1>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-1\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Before diving into building any predictive model we might want to define what we predict. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    In our case, let's note that \"wine quality\" is a highly imprecise term. “Quality” to a sommelier might mean that a wine has legs and benefits from aeration. “Quality” to you might mean it’s under $10, with a twist off top.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    A quality predicting model is unlikely to rank every wine out there on a universally approved scale. Our output &mdash; or quality ranking &mdash; needs to be neatly defined and depends on our inputs &mdash; or the wine parameters we’re using to establish a baseline.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-2\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    The inputs need to be in the form of measurable information, things like: <a href=\"https://www.wsetglobal.com/knowledge-centre/blog/2019/june/13/the-definitive-guide-to-wine-bottle-shapes-and-sizes/\">the shape of the wine bottle</a>, ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-3\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    the vintage year, or the grape varietal.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section section-4\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    In our model, we’ll describe the very liquid and decompose it into its physiochemical properties, like sugars, acids, and yes, alcohol.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");return t.fl(); },partials: {}, subs: {  }});
 
@@ -30651,6 +30651,8 @@
   var part8Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<h1>Quality simulator</h1>");t.b("\n" + i);t.b("<h3>Adjust the handles to make your wine</h3>");return t.fl(); },partials: {}, subs: {  }});
 
   var part9Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<h1 class=\"tight-top\">What next?</h1>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section tight-bottom\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Hopefully, this exploration helped make machine learning a little more palatable and showed how technology can be used to rate what’s in your glass.");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    We used a simple linear model to predict red wine quality using a dataset full physiochemical properties of Vinho Verde wines. As a next step it might be interesting to swap out any or all of these components:");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    <span class=\"highlight\">Output</span>. Our model looked at what properties defined <span class=\"good\">high quality</span> wines, but what happens if instead of quality we wanted to predict specific taste features or sales figures. What inputs get us there?");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    <span class=\"highlight\">Dataset</span>. We looked at one dataset of red wines from Vinho Verde. What happens when we look at datasets from other wineries with different characteristics?");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    <span class=\"highlight\">Model type</span>. We used a linear model, what happens when we use a non-linear model, like <a href=\"https://en.wikipedia.org/wiki/Support_vector_machine\" target=\"_blank\">Support Vector Machines</a> or <a href=\"https://en.wikipedia.org/wiki/Artificial_neural_network\" target=\"_blank\">Neural Networks</a>? Those models might prove more accurate, but could also be overly complex.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Maybe for another day...");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Santé 🍷");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");t.b("\n");t.b("\n" + i);t.b("<div class=\"section tight-top\" id=\"credits\">");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    The dataset and the original model can be found in the paper: <i>P. Cortez, A. Cerdeira, F. Almeida, T. Matos and J. Reis. <a href=\"https://scinapse.io/papers/2103459159\" target=\"_blank\">Modeling wine preferences by data mining from physicochemical properties.</a> In Decision Support Systems, Elsevier, 47(4):547-553, 2009</i>. ");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    This paper, however, wasn't the only analytical adventure based on the data. The dataset aquired a life of its own thereafter, being adopted and embraced by the data science and machine learning community, so you can find a lot of analyses out there wrangling and modelling this very dataset.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("  <p>");t.b("\n" + i);t.b("    Much thanks to <a href=\"https://www.linkedin.com/in/shawn-zizzo-109783/\" target=\"_blank\">Shawn Zizzo</a> for kicking this thing off! Big thanks also to Krista Ehrenclou for the most detailed, valuable and wise feedback about all the wine related aspects in particular as well as <a href=\"https://twitter.com/martgnz\" target=\"_blank\">Martin Gonzales</a> and <a href=\"https://www.behance.net/g-gaborieau-bookatme\" target=\"_blank\">Geoffroy Gaborieau</a> for keeping me honest on the visual and design side.");t.b("\n" + i);t.b("  </p>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }});
+
+  var part10Html = new hogan.Template({code: function (c,p,i) { var t=this;t.b(i=i||"");t.b("<div id=\"stories\"></div>");t.b("\n");t.b("\n" + i);t.b("<div class='footer-company'>");t.b("\n" + i);t.b("	<div class='footer-company__about'>");t.b("\n" + i);t.b("		<img inline src='../../static/pudding/logo-full.svg'>");t.b("\n" + i);t.b("		<p class='footer-company__description'>");t.b("\n" + i);t.b("			<a href='https://pudding.cool' target=\"_blank\" rell=\"moreferrer\">The Pudding</a> ");t.b("\n" + i);t.b("			is a digital publication that explains ideas debated in culture with visual essays.");t.b("\n" + i);t.b("		</p>");t.b("\n" + i);t.b("	</div>");t.b("\n" + i);t.b("	<div class='footer-company__cta'>");t.b("\n" + i);t.b("		<ul class='footer-company__cta-list'>");t.b("\n" + i);t.b("			<li>");t.b("\n" + i);t.b("				<a href='https://facebook.com/pudding.viz/' target=\"_blank\" rell=\"moreferrer\">");t.b("\n" + i);t.b("					<img inline src='../../static/pudding/facebook.svg'>");t.b("\n" + i);t.b("					<p>FACEBOOK</p>");t.b("\n" + i);t.b("				</a>");t.b("\n" + i);t.b("			</li>");t.b("\n" + i);t.b("			<li>");t.b("\n" + i);t.b("				<a href='https://twitter.com/puddingviz/' target=\"_blank\" rell=\"moreferrer\">");t.b("\n" + i);t.b("					<img inline src='../../static/pudding/twitter.svg'>");t.b("\n" + i);t.b("					<p>TWITTER</p>");t.b("\n" + i);t.b("				</a>");t.b("\n" + i);t.b("			</li>");t.b("\n" + i);t.b("			<li>");t.b("\n" + i);t.b("				<a href='https://www.instagram.com/the.pudding' target=\"_blank\" rell=\"moreferrer\">");t.b("\n" + i);t.b("					<img inline src='../../static/pudding/instagram.svg'>");t.b("\n" + i);t.b("					<p>INSTAGRAM</p>");t.b("\n" + i);t.b("				</a>");t.b("\n" + i);t.b("			</li>");t.b("\n" + i);t.b("			<li>");t.b("\n" + i);t.b("				<a href='https://patreon.com/thepudding/' target=\"_blank\" rell=\"moreferrer\">");t.b("\n" + i);t.b("					<img inline src='../../static/pudding/patreon.svg'>");t.b("\n" + i);t.b("					<p>PATREON</p>");t.b("\n" + i);t.b("				</a>");t.b("\n" + i);t.b("			</li>");t.b("\n" + i);t.b("			<li>");t.b("\n" + i);t.b("				<a href='https://pudding.cool/about' target=\"_blank\" rell=\"moreferrer\">");t.b("\n" + i);t.b("					<img inline src='../../static/pudding/info.svg'>");t.b("\n" + i);t.b("					<p>ABOUT</p>");t.b("\n" + i);t.b("				</a>");t.b("\n" + i);t.b("			</li>");t.b("\n" + i);t.b("			<li>");t.b("\n" + i);t.b("				<a href='https://pudding.cool/privacy/' target=\"_blank\" rell=\"moreferrer\">");t.b("\n" + i);t.b("					<img inline src='../../static/pudding/lock.svg'>");t.b("\n" + i);t.b("					<p>PRIVACY</p>");t.b("\n" + i);t.b("				</a>");t.b("\n" + i);t.b("			</li>");t.b("\n" + i);t.b("			<li>");t.b("\n" + i);t.b("				<a href='http://eepurl.com/czym6f' target=\"_blank\" rell=\"moreferrer\">");t.b("\n" + i);t.b("					<img inline src='../../static/pudding/mail.svg'>");t.b("\n" + i);t.b("					<p>NEWSLETTER</p>");t.b("\n" + i);t.b("				</a>");t.b("\n" + i);t.b("			</li>");t.b("\n" + i);t.b("			<li>");t.b("\n" + i);t.b("				<a href='https://pudding.cool/feed/index.xml' target=\"_blank\" rell=\"moreferrer\">");t.b("\n" + i);t.b("					<img inline src='../../static/pudding/rss.svg'>");t.b("\n" + i);t.b("					<p>RSS</p>");t.b("\n" + i);t.b("				</a>");t.b("\n" + i);t.b("			</li>");t.b("\n" + i);t.b("		</ul>");t.b("\n" + i);t.b("	</div>");t.b("\n" + i);t.b("</div>");return t.fl(); },partials: {}, subs: {  }});
 
   gsapWithCSS.registerPlugin(MorphSVGPlugin$1, DrawSVGPlugin, ScrollTrigger, GSDevTools); // Helpers.
 
@@ -30942,7 +30944,7 @@
     state.modelBottle.maxLength = bottlePathInfo.length;
   }
 
-  function buildStory() {
+  function buildStory(puddingStories) {
     // Intro text.
     var introContainer = select('#container-intro');
     var introHtml = part0Html.render();
@@ -30986,22 +30988,39 @@
     modelApp.append('div').attr('id', 'model-app-header').html(part8Html.render());
     modelApp.append('div').attr('id', 'model-app-wrap'); // Outro.
 
-    container.append('section').attr('class', 'main-section part-9x').html(part9Html.render());
+    container.append('section').attr('class', 'main-section part-9').html(part9Html.render()); // Footer.
+
+    select('footer').html(part10Html.render());
+    var picked = puddingStories.filter( // TODO update before live
+    // (d, i) => i < 5 && d.url !== '2021/03/wine'
+    function (d, i) {
+      return i < 4;
+    });
+    var stories = select('#stories').selectAll('div').data(picked).join('div').attr('class', 'story').append('a').attr('href', function (d) {
+      return "https://pudding.cool/".concat(d.url);
+    }).attr('target', '_blank').attr('rel', 'noreferrer');
+    stories.append('div').attr('class', 'image').append('img').attr('alt', 'story image').attr('src', function (d) {
+      return "https://pudding.cool/common/assets/thumbnails/640/".concat(d.image, ".jpg");
+    });
+    stories.append('p').html(function (d) {
+      return d.hed;
+    });
   } // Main func.
 
 
   function ready(_ref) {
-    var _ref2 = _slicedToArray(_ref, 6),
+    var _ref2 = _slicedToArray(_ref, 7),
         wineScape = _ref2[0],
         globeData = _ref2[1],
         wineData = _ref2[2],
         varImpData = _ref2[3],
         modelIntercept = _ref2[4],
-        modelWeights = _ref2[5];
+        modelWeights = _ref2[5],
+        puddingStories = _ref2[6];
 
     // Make sure all variable names are lower case! This is not checked in the app.
     prepareVisuals(globeData, wineData, varImpData, modelIntercept, modelWeights);
-    buildStory();
+    buildStory(puddingStories);
     update(wineScape); // Debounced resize.
 
     var debounced = lodash_debounce(function () {
@@ -31018,7 +31037,9 @@
     var varImpData = csv$1('../../data/importance.csv', autoType);
     var modelIntercept = csv$1('../../data/model-intercept.csv', autoType);
     var modelWeights = csv$1('../../data/model-weights.csv', autoType);
-    Promise.all([wineScape, globeData, wineData, varImpData, modelIntercept, modelWeights]).then(ready);
+    var date = Date.now();
+    var puddingStories = json("https://pudding.cool/assets/data/stories.json?v=".concat(date));
+    Promise.all([wineScape, globeData, wineData, varImpData, modelIntercept, modelWeights, puddingStories]).then(ready);
   }
 
   init$1();

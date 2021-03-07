@@ -70,6 +70,7 @@ import part6Html from '../text/part6.mustache';
 import part7Html from '../text/part7.mustache';
 import part8Html from '../text/part8-model.mustache';
 import part9Html from '../text/part9-outro.mustache';
+import part10Html from '../text/part10-footer.mustache';
 
 // Gsap register.
 gsap.registerPlugin(MorphSVGPlugin, DrawSVGPlugin, ScrollTrigger, GSDevTools);
@@ -322,7 +323,7 @@ function prepareVisuals(
   state.modelBottle.maxLength = bottlePathInfo.length;
 }
 
-function buildStory() {
+function buildStory(puddingStories) {
   // Intro text.
   const introContainer = select('#container-intro');
   const introHtml = part0Html.render();
@@ -369,8 +370,39 @@ function buildStory() {
   // Outro.
   container
     .append('section')
-    .attr('class', 'main-section part-9x')
+    .attr('class', 'main-section part-9')
     .html(part9Html.render());
+
+  // Footer.
+  select('footer').html(part10Html.render());
+
+  const picked = puddingStories.filter(
+    // TODO update before live
+    // (d, i) => i < 5 && d.url !== '2021/03/wine'
+    (d, i) => i < 4
+  );
+
+  const stories = select('#stories')
+    .selectAll('div')
+    .data(picked)
+    .join('div')
+    .attr('class', 'story')
+    .append('a')
+    .attr('href', d => `https://pudding.cool/${d.url}`)
+    .attr('target', '_blank')
+    .attr('rel', 'noreferrer');
+
+  stories
+    .append('div')
+    .attr('class', 'image')
+    .append('img')
+    .attr('alt', 'story image')
+    .attr(
+      'src',
+      d => `https://pudding.cool/common/assets/thumbnails/640/${d.image}.jpg`
+    );
+
+  stories.append('p').html(d => d.hed);
 }
 
 // Main func.
@@ -381,10 +413,11 @@ function ready([
   varImpData,
   modelIntercept,
   modelWeights,
+  puddingStories,
 ]) {
   // Make sure all variable names are lower case! This is not checked in the app.
   prepareVisuals(globeData, wineData, varImpData, modelIntercept, modelWeights);
-  buildStory();
+  buildStory(puddingStories);
 
   update(wineScape);
 
@@ -402,7 +435,10 @@ function init() {
   const varImpData = csv('../../data/importance.csv', autoType);
   const modelIntercept = csv('../../data/model-intercept.csv', autoType);
   const modelWeights = csv('../../data/model-weights.csv', autoType);
-
+  const date = Date.now();
+  const puddingStories = json(
+    `https://pudding.cool/assets/data/stories.json?v=${date}`
+  );
   Promise.all([
     wineScape,
     globeData,
@@ -410,6 +446,7 @@ function init() {
     varImpData,
     modelIntercept,
     modelWeights,
+    puddingStories,
   ]).then(ready);
 }
 

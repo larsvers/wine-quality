@@ -71,6 +71,9 @@ button {
   // for the children width (not strictlye necessary as they are in vw)
   position: relative;
 
+  border-bottom: 3px solid transparent;
+  border-image: url('../static/border-horiz.png') 30 stretch;
+
   @media #{$tablet-up} {
     flex-direction: row;
   }
