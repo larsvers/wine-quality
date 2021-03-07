@@ -29254,9 +29254,18 @@
       start: start,
       end: end,
       id: 'wineScape',
+      onEnter: function onEnter() {
+        gsapWithCSS.to('#side-logo', {
+          opacity: 1
+        });
+      },
       onLeaveBack: function onLeaveBack() {
         // Stop all and clear all contexts if users scroll up to top.
-        timeout$1(clearAllContexts, 50);
+        timeout$1(clearAllContexts, 50); // Fade out side logo.
+
+        gsapWithCSS.to('#side-logo', {
+          opacity: 0
+        });
       }
     });
     ScrollTrigger.create({

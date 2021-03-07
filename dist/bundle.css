@@ -75,28 +75,17 @@ button {
 .wrapper {
   position: relative; }
 
-#brand {
+#side-logo {
   position: absolute;
+  width: 5rem;
   bottom: 1rem;
-  left: 50%;
-  transform: translate(-50%, 0%); }
-  #brand p {
-    text-align: center;
-    margin: 0 0 0.25em;
-    font-size: 0.8em;
-    color: rgba(41, 14, 56, 0.5); }
-  #brand a {
-    box-shadow: inset 0 -0.2em 20px 0 #eae2e8; }
-  #brand a:hover {
-    box-shadow: inset 0 -0.6em 6px 0 #d2c1cd; }
-  #brand #logo {
-    margin: 0 auto;
-    width: 70px; }
-    #brand #logo svg {
-      width: 100%;
-      height: 100%; }
-    #brand #logo path {
-      fill: rgba(41, 14, 56, 0.5); }
+  right: 1rem;
+  z-index: 30;
+  opacity: 0; }
+  #side-logo a {
+    box-shadow: 0 0; }
+  #side-logo img {
+    width: 100%; }
 
 #ie-note {
   box-sizing: border-box;

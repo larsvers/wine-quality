@@ -228,9 +228,14 @@ function setScrollBase() {
     start,
     end,
     id: 'wineScape',
+    onEnter() {
+      gsap.to('#side-logo', { opacity: 1 });
+    },
     onLeaveBack() {
       // Stop all and clear all contexts if users scroll up to top.
       timeout(clearAllContexts, 50);
+      // Fade out side logo.
+      gsap.to('#side-logo', { opacity: 0 });
     },
   });
 
