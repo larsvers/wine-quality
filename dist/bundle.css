@@ -140,11 +140,14 @@ svg.absolute {
   margin-bottom: 20vh;
   position: relative; }
 
-#pudding-logo {
-  max-width: 9rem;
-  margin: 1rem auto 2rem; }
-  #pudding-logo a {
+#top-logo {
+  max-width: 5rem;
+  margin: 1rem auto 2rem;
+  position: relative; }
+  #top-logo a {
     box-shadow: 0 0; }
+  #top-logo img {
+    width: 100%; }
 
 #title-image {
   width: 100%;

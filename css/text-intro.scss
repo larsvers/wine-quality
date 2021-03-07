@@ -5,12 +5,17 @@
   position: relative;
 }
 
-#pudding-logo {
-  max-width: 9rem;
+#top-logo {
+  max-width: 5rem;
   margin: 1rem auto 2rem;
+  position: relative;
 
   a {
     box-shadow: 0 0;
+  }
+
+  img {
+    width: 100%;
   }
 }
 
