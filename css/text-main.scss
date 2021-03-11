@@ -9,7 +9,7 @@
     position: sticky;
     top: 0;
 
-    padding-top: 2vh;
+    padding-top: 1vh;
     padding-bottom: 2vh;
     padding-left: 1rem;
     margin-top: 30vh;
@@ -30,6 +30,9 @@
 
     &.tight-top {
       margin-top: 15vh;
+    }
+    @media #{$phone-up} {
+      padding-top: 2vh;
     }
 
     @media #{$tablet-up} {
