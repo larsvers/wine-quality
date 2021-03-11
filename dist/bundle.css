@@ -148,7 +148,7 @@ svg.absolute {
 
 #title-image {
   width: 100%;
-  padding: 4rem 0 2rem;
+  padding: 0;
   top: 0;
   z-index: 10;
   box-shadow: 0px 0px 0px #ccc; }
@@ -158,6 +158,7 @@ svg.absolute {
     margin: auto; }
     @media (min-width: 800px) {
       #title-image img {
+        padding: 4rem 0 2rem;
         width: 60%; } }
     @media (min-width: 1200px) {
       #title-image img {
@@ -173,7 +174,7 @@ svg.absolute {
   margin: 0 0 3rem;
   font-family: 'Amatic SC'; }
   #title-text #title-header h2 {
-    font-size: 6rem;
+    font-size: 5rem;
     margin: 0;
     position: absolute;
     left: 50%;
@@ -341,8 +342,11 @@ svg.absolute {
 #sloth-wrap {
   width: 100%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: center; }
+  @media (min-width: 450px) {
+    #sloth-wrap {
+      flex-direction: column; } }
 
 span.sloth-answer {
   display: inline-block; }
@@ -373,7 +377,7 @@ span#sloth-reveal-delay.show {
 button.sloth-button {
   max-width: 250px;
   padding: 1rem 1rem;
-  margin: 0.25rem 1rem;
+  margin: 0.25rem 0.7rem;
   background: rgba(247, 245, 222, 0);
   outline: none;
   border: solid 2px #41403e;
@@ -381,6 +385,9 @@ button.sloth-button {
   box-shadow: 10px 10px 15px -5px rgba(0, 0, 0, 0.2);
   cursor: pointer;
   transition: all 0.3s ease; }
+  @media (min-width: 450px) {
+    button.sloth-button {
+      margin: 0.25rem 1rem; } }
   button.sloth-button:hover {
     box-shadow: 2px 8px 4px -5px rgba(0, 0, 0, 0.3);
     background: #ffffea; }
@@ -454,9 +461,15 @@ span.arrow::after {
 #slider-tool {
   margin-bottom: 2rem; }
   #slider-tool label {
+    display: inline-block;
+    margin: 0.5rem 0 0.75rem;
     font-family: 'Amatic SC';
     font-weight: bold;
     font-size: 1.2em; }
+    @media (min-width: 800px) {
+      #slider-tool label {
+        display: inline;
+        margin: 0; } }
 
 .lolli-slider {
   width: 100%;
@@ -475,14 +488,20 @@ span.arrow::after {
   cursor: pointer; }
 
 .lolli-slider::-webkit-slider-thumb {
-  margin-top: -6.5px;
-  width: 16px;
-  height: 16px;
+  width: 30px;
+  height: 30px;
+  margin-top: -15px;
   background: #000;
   border: 0;
-  border-radius: 13px;
+  border-radius: 25px;
   cursor: pointer;
   -webkit-appearance: none; }
+  @media (min-width: 800px) {
+    .lolli-slider::-webkit-slider-thumb {
+      width: 16px;
+      height: 16px;
+      margin-top: -6.5px;
+      border-radius: 13px; } }
 
 .lolli-slider:focus::-webkit-slider-runnable-track {
   background: #0a0a0a; }
@@ -495,12 +514,17 @@ span.arrow::after {
   cursor: pointer; }
 
 .lolli-slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
   background: #000;
   border: 0;
   border-radius: 13px;
   cursor: pointer; }
+  @media (min-width: 800px) {
+    .lolli-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 13px; } }
 
 .lolli-slider::-ms-track {
   background: transparent;
@@ -520,14 +544,19 @@ span.arrow::after {
   border: 0; }
 
 .lolli-slider::-ms-thumb {
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
   background: #000;
   border: 0;
   border-radius: 13px;
   cursor: pointer;
   margin-top: 0px;
   /*Needed to keep the Edge thumb centred*/ }
+  @media (min-width: 800px) {
+    .lolli-slider::-ms-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 13px; } }
 
 .lolli-slider:focus::-ms-fill-lower {
   background: #000; }

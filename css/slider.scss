@@ -2,20 +2,30 @@
   margin-bottom: 2rem;
 
   label {
+    display: inline-block;
+    margin: 0.5rem 0 0.75rem;
     font-family: 'Amatic SC';
     font-weight: bold;
     font-size: 1.2em;
+
+    @media #{$tablet-up} {
+      display: inline;
+      margin: 0;
+    }
   }
 }
+
 .lolli-slider {
   width: 100%;
   margin: 6.5px 0;
   background-color: transparent;
   -webkit-appearance: none;
 }
+
 .lolli-slider:focus {
   outline: none;
 }
+
 .lolli-slider::-webkit-slider-runnable-track {
   background: $colour-black;
   border: 0;
@@ -23,19 +33,29 @@
   height: 1px;
   cursor: pointer;
 }
+
 .lolli-slider::-webkit-slider-thumb {
-  margin-top: -6.5px;
-  width: 16px;
-  height: 16px;
+  width: 30px;
+  height: 30px;
+  margin-top: -15px;
   background: $colour-black;
   border: 0;
-  border-radius: 13px;
+  border-radius: 25px;
   cursor: pointer;
   -webkit-appearance: none;
+
+  @media #{$tablet-up} {
+    width: 16px;
+    height: 16px;
+    margin-top: -6.5px;
+    border-radius: 13px;
+  }
 }
+
 .lolli-slider:focus::-webkit-slider-runnable-track {
   background: #0a0a0a;
 }
+
 .lolli-slider::-moz-range-track {
   background: $colour-black;
   border: 0;
@@ -43,14 +63,22 @@
   height: 3px;
   cursor: pointer;
 }
+
 .lolli-slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
   background: $colour-black;
   border: 0;
   border-radius: 13px;
   cursor: pointer;
+
+  @media #{$tablet-up} {
+    width: 16px;
+    height: 16px;
+    border-radius: 13px;
+  }
 }
+
 .lolli-slider::-ms-track {
   background: transparent;
   border-color: transparent;
@@ -60,30 +88,42 @@
   height: 3px;
   cursor: pointer;
 }
+
 .lolli-slider::-ms-fill-lower {
   background: $colour-black;
   border: 0;
 }
+
 .lolli-slider::-ms-fill-upper {
   background: $colour-black;
   border: 0;
 }
+
 .lolli-slider::-ms-thumb {
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
   background: $colour-black;
   border: 0;
   border-radius: 13px;
   cursor: pointer;
   margin-top: 0px;
   /*Needed to keep the Edge thumb centred*/
+
+  @media #{$tablet-up} {
+    width: 16px;
+    height: 16px;
+    border-radius: 13px;
+  }
 }
+
 .lolli-slider:focus::-ms-fill-lower {
   background: $colour-black;
 }
+
 .lolli-slider:focus::-ms-fill-upper {
   background: #0a0a0a;
 }
+
 /*TODO: Use one of the selectors from https://stackoverflow.com/a/20541859/7077589 and figure out
 how to remove the virtical space around the range input in IE*/
 @supports (-ms-ime-align: auto) {
