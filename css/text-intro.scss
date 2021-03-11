@@ -101,21 +101,13 @@
   h4 {
     text-align: center;
     font-family: 'Amatic SC';
-    font-size: 2.4rem;
+    font-size: 2.2rem;
     margin: 0px;
     color: #2a1835;
-
-    @media #{$tablet-up} {
-      font-size: 2.2rem;
-    }
   }
 
   h4 {
-    font-size: 1.8rem;
-
-    @media #{$tablet-up} {
-      font-size: 1.6rem;
-    }
+    font-size: 1.6rem;
   }
 }
 

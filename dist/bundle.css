@@ -203,18 +203,11 @@ svg.absolute {
   #title-text h4 {
     text-align: center;
     font-family: 'Amatic SC';
-    font-size: 2.4rem;
+    font-size: 2.2rem;
     margin: 0px;
     color: #2a1835; }
-    @media (min-width: 800px) {
-      #title-text h3,
-      #title-text h4 {
-        font-size: 2.2rem; } }
   #title-text h4 {
-    font-size: 1.8rem; }
-    @media (min-width: 800px) {
-      #title-text h4 {
-        font-size: 1.6rem; } }
+    font-size: 1.6rem; }
 
 #intro-text {
   width: 90%;
