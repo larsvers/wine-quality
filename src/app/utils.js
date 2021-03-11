@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 /* eslint-disable no-param-reassign */
 /* eslint-disable import/no-mutable-exports */
 import { max, extent } from 'd3-array/src/index';
@@ -200,10 +201,9 @@ function bezWithArrowheads(
   let ex;
   let ey;
   function pointsToNormalisedVec(p, pp) {
-    let len;
     norm.y = pp.x - p.x;
     norm.x = -(pp.y - p.y);
-    len = Math.sqrt(norm.x * norm.x + norm.y * norm.y);
+    const len = Math.sqrt(norm.x * norm.x + norm.y * norm.y);
     norm.x /= len;
     norm.y /= len;
     return norm;
@@ -309,6 +309,10 @@ function clear(ctx) {
   ctx.clearRect(0, 0, state.width, state.height);
 }
 
+function isMobile() {
+  return window.innerWidth < state.tabletUp;
+}
+
 export {
   slugify,
   prettyLabel,
@@ -325,4 +329,5 @@ export {
   drawPoints,
   getGradient,
   clear,
+  isMobile,
 };

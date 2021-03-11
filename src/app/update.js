@@ -13,7 +13,7 @@ import rough from 'roughjs/bundled/rough.esm';
 
 // Internal.
 import state from './state';
-import { resizeCanvas, getTransform, clear } from './utils';
+import { clear, getTransform, isMobile, resizeCanvas } from './utils';
 import setupLolliSlider from '../lollislider/lollislider';
 import buildModelControls from '../model/buildModel';
 
@@ -67,10 +67,6 @@ import { renderLolliChart } from '../tweens/lolliChart';
 gsap.registerPlugin(CustomEase, CustomWiggle);
 
 // Helpers.
-function isMobile() {
-  return window.innerWidth < state.tabletUp;
-}
-
 function getTriggerPositions() {
   const visual = document.querySelector('#visual-container');
   const visualHeight = parseInt(window.getComputedStyle(visual).height, 10);

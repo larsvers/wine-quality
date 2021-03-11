@@ -6,7 +6,7 @@ import { max } from 'd3-array';
 import { scaleLinear, scalePoint } from 'd3-scale';
 
 import state from '../app/state';
-import { prettyLabel } from '../app/utils';
+import { isMobile, prettyLabel } from '../app/utils';
 
 // Module scope.
 const area = {
@@ -23,11 +23,13 @@ let yScale;
 const r = 5;
 const lw = 2;
 const title = { alpha: 0 };
+let fontSize = '16px Signika';
 
 // Set up / prep.
 function setDimensions() {
+  const heightFactor = isMobile() ? 0.125 : 0.1;
   const marginHorz = state.width * 0.1;
-  const marginVert = state.height * 0.1;
+  const marginVert = state.height * heightFactor;
 
   area.top = Math.floor(marginVert * 2);
   area.right = Math.floor(state.width - marginHorz);
@@ -35,6 +37,8 @@ function setDimensions() {
   area.left = Math.floor(marginHorz);
   area.width = Math.floor(area.right - area.left);
   area.height = Math.floor(area.bottom - area.top);
+
+  fontSize = isMobile() ? '12px Signika' : '16px Signika';
 }
 
 function augmentData() {
@@ -97,11 +101,11 @@ function drawImportanceChart(ctx) {
     ctx.stroke();
 
     // Text.
-    ctx.font = '16px Signika';
+    ctx.font = fontSize;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
     const text = d.variable === 'ph' ? 'pH' : prettyLabel(d.variable);
-    ctx.fillText(text, xScale(0), yScale(d.variable) + 5);
+    ctx.fillText(text, xScale(0), yScale(d.variable) + 7);
     ctx.restore();
   });
 

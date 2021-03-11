@@ -19914,7 +19914,7 @@
     return linearish(scale);
   }
 
-  /* eslint-disable no-param-reassign */
+  /* eslint-disable no-useless-escape */
 
   function prettyLabel(string) {
     var capitals = string.charAt(0).toUpperCase() + string.slice(1);
@@ -20082,10 +20082,9 @@
     var ey;
 
     function pointsToNormalisedVec(p, pp) {
-      var len;
       norm.y = pp.x - p.x;
       norm.x = -(pp.y - p.y);
-      len = Math.sqrt(norm.x * norm.x + norm.y * norm.y);
+      var len = Math.sqrt(norm.x * norm.x + norm.y * norm.y);
       norm.x /= len;
       norm.y /= len;
       return norm;
@@ -20171,6 +20170,10 @@
 
   function clear(ctx) {
     ctx.clearRect(0, 0, state.width, state.height);
+  }
+
+  function isMobile() {
+    return window.innerWidth < state.tabletUp;
   }
 
   /* eslint-disable no-multi-assign */
@@ -28753,17 +28756,20 @@
   var lw = 2;
   var title = {
     alpha: 0
-  }; // Set up / prep.
+  };
+  var fontSize = '16px Signika'; // Set up / prep.
 
   function setDimensions$1() {
+    var heightFactor = isMobile() ? 0.125 : 0.1;
     var marginHorz = state.width * 0.1;
-    var marginVert = state.height * 0.1;
+    var marginVert = state.height * heightFactor;
     area.top = Math.floor(marginVert * 2);
     area.right = Math.floor(state.width - marginHorz);
     area.bottom = Math.floor(state.height - marginVert);
     area.left = Math.floor(marginHorz);
     area.width = Math.floor(area.right - area.left);
     area.height = Math.floor(area.bottom - area.top);
+    fontSize = isMobile() ? '12px Signika' : '16px Signika';
   }
 
   function augmentData() {
@@ -28816,11 +28822,11 @@
       });
       ctx.stroke(); // Text.
 
-      ctx.font = '16px Signika';
+      ctx.font = fontSize;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       var text = d.variable === 'ph' ? 'pH' : prettyLabel(d.variable);
-      ctx.fillText(text, xScale$2(0), yScale$2(d.variable) + 5);
+      ctx.fillText(text, xScale$2(0), yScale$2(d.variable) + 7);
       ctx.restore();
     });
     ctx.restore();
@@ -28989,7 +28995,7 @@
   var lh = 3;
   var pad$1 = 5;
   var perc = format('.0%');
-  var fontSize = 8; // Draw and render.
+  var fontSize$1 = 8; // Draw and render.
 
   function drawWaveMarkers(ctx, t, path) {
     var rough = state.rough.chart;
@@ -29014,15 +29020,15 @@
     ctx.stroke(); // Main text (probability).
 
     ctx.textBaseline = 'middle';
-    ctx.font = "".concat(fontSize, "px Signika");
+    ctx.font = "".concat(fontSize$1, "px Signika");
     ctx.fillText("".concat(perc(state.model.probability), " likely to be good"), position.x + lw$1 + pad$1, position.y + 1); // Subtitle (tips).
 
-    ctx.font = "".concat(Math.floor(fontSize * 0.9), "px Signika");
+    ctx.font = "".concat(Math.floor(fontSize$1 * 0.9), "px Signika");
     ctx.fillStyle = state.modelBottle.infoColour; // This is an array of text with each element getting its own line...
 
     state.modelBottle.info.forEach(function (d, i) {
       var sublineOffset = i === 0 ? 2 : 0;
-      ctx.fillText(d, position.x + lw$1 + pad$1, position.y + (i + 1) * (fontSize + 2) + sublineOffset);
+      ctx.fillText(d, position.x + lw$1 + pad$1, position.y + (i + 1) * (fontSize$1 + 2) + sublineOffset);
     }); // Clip.
 
     ctx.globalCompositeOperation = 'destination-out';
@@ -29103,10 +29109,6 @@
 
   /* eslint-disable no-return-assign */
   gsapWithCSS.registerPlugin(CustomEase, CustomWiggle); // Helpers.
-
-  function isMobile() {
-    return window.innerWidth < state.tabletUp;
-  }
 
   function getTriggerPositions() {
     var visual = document.querySelector('#visual-container');

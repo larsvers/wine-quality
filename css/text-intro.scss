@@ -16,7 +16,6 @@
 
 #title-image {
   width: 100%;
-  padding: 0;
   top: 0;
   z-index: 10;
   box-shadow: 0px 0px 0px #ccc;
@@ -27,7 +26,6 @@
     margin: auto;
 
     @media #{$tablet-up} {
-      padding: 4rem 0 2rem;
       width: 60%;
     }
 
