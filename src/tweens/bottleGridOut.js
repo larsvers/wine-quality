@@ -19,6 +19,7 @@ function renderBottleGridSorted() {
     );
   });
 }
+
 function defineTweenBottleGridOut() {
   const tl = gsap.timeline({ onUpdate: renderBottleGridSorted });
 

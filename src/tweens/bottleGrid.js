@@ -9,7 +9,7 @@ import { range } from 'd3-array/src';
 import state from '../app/state';
 
 import gridLayout from '../layouts/grid';
-import { getGradient } from '../app/utils';
+import { getGradient, isMobile } from '../app/utils';
 
 const smallBottleScale = 0.15;
 let xScale;
@@ -32,12 +32,14 @@ function setScales() {
   const yBottleCorrection =
     (state.glassBottle.bottleBox.height / 2) * smallBottleScale;
 
+  const topFactor = isMobile() ? 0.2 : 0.1;
+
   xScale = scaleLinear().range([
     state.width * 0.1 - xBottleCorrection,
     state.width * 0.9 - xBottleCorrection,
   ]);
   yScale = scaleLinear().range([
-    state.height * 0.1 - yBottleCorrection,
+    state.height * topFactor - yBottleCorrection,
     state.height * 0.9 - yBottleCorrection,
   ]);
 }

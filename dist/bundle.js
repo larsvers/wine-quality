@@ -24137,8 +24137,9 @@
     // Get scales (also determining the space for our visual)
     var xBottleCorrection = state.glassBottle.bottleBox.width / 2 * smallBottleScale;
     var yBottleCorrection = state.glassBottle.bottleBox.height / 2 * smallBottleScale;
+    var topFactor = isMobile() ? 0.2 : 0.1;
     xScale = linear$1().range([state.width * 0.1 - xBottleCorrection, state.width * 0.9 - xBottleCorrection]);
-    yScale = linear$1().range([state.height * 0.1 - yBottleCorrection, state.height * 0.9 - yBottleCorrection]);
+    yScale = linear$1().range([state.height * topFactor - yBottleCorrection, state.height * 0.9 - yBottleCorrection]);
   }
 
   function prepData() {
