@@ -400,6 +400,7 @@ function setScrollBase() {
     onLeave() {
       stopWave();
       clear(state.ctx.bottleWave);
+      clear(state.ctx.blackBox); // extra clean for Safari.
     },
     onEnterBack: startWave,
   });

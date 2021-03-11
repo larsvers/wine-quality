@@ -49,11 +49,9 @@ function drawBlackBox(ctx, t) {
 
   // Draw text (don't animate).
   ctx.strokeStyle = 'black';
-  // ctx.fillStyle = 'black';
   ctx.lineWidth = 1;
   state.blackBox.model.paths.forEach(path => {
     ctx.stroke(path);
-    // ctx.fill(path);
   });
 
   ctx.restore();

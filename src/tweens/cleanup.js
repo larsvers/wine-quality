@@ -190,7 +190,7 @@ function defineTweenCleanup() {
   // Things to tween.
   const tl = gsap.timeline({ onUpdate: renderCleanup });
 
-  // Arrown tweens.
+  // Arrow tweens.
   bottleWidth = state.glassBottle.bottleBox.width;
   letterHeight = max(
     state.lolli.data[outputProperties[0]].text.dims,

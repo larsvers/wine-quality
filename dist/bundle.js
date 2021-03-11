@@ -23368,11 +23368,10 @@
       ctx.stroke(path);
     }); // Draw text (don't animate).
 
-    ctx.strokeStyle = 'black'; // ctx.fillStyle = 'black';
-
+    ctx.strokeStyle = 'black';
     ctx.lineWidth = 1;
     state.blackBox.model.paths.forEach(function (path) {
-      ctx.stroke(path); // ctx.fill(path);
+      ctx.stroke(path);
     });
     ctx.restore();
   }
@@ -23732,7 +23731,7 @@
     // Things to tween.
     var tl = gsapWithCSS.timeline({
       onUpdate: renderCleanup
-    }); // Arrown tweens.
+    }); // Arrow tweens.
 
     bottleWidth$1 = state.glassBottle.bottleBox.width;
     letterHeight$1 = max(state.lolli.data[outputProperties$1[0]].text.dims, function (d) {
@@ -29423,6 +29422,7 @@
       onLeave: function onLeave() {
         stopWave();
         clear(state.ctx.bottleWave);
+        clear(state.ctx.blackBox); // extra clean for Safari.
       },
       onEnterBack: startWave
     }); // Setting up all the scrolltriggers for the animals.
