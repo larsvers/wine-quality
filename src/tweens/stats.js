@@ -21,7 +21,12 @@ import state from '../app/state';
 import frequency from '../layouts/frequency';
 import labels from '../layouts/labels';
 import { txScale, tyScale } from './globe';
-import { prettyLabel, getLinearScale, euclideanDistance } from '../app/utils';
+import {
+  prettyLabel,
+  getLinearScale,
+  euclideanDistance,
+  isMobile,
+} from '../app/utils';
 
 // Module scope.
 const dotRadius = 1.5;
@@ -33,6 +38,7 @@ let xScale;
 let yScale;
 let sim;
 const tickPadding = 20;
+let yLabelAlign = 'left';
 
 // Regression line data.
 let lrLine;
@@ -58,10 +64,13 @@ function tweenStatsAlpha(value, dur = 0.5) {
 // Scales and Data
 // ---------------
 function getScales() {
+  yLabelAlign = isMobile() ? 'center' : 'left';
+  const horzFactor = isMobile() ? 0.32 : 0.3;
+  const vertFactor = isMobile() ? 0.32 : 0.3;
   margin = {
     top: state.height * 0.3,
-    right: state.width * 0.3,
-    bottom: state.height * 0.3,
+    right: state.width * vertFactor,
+    bottom: state.height * horzFactor,
     left: state.width * 0.3,
   };
 
@@ -394,6 +403,7 @@ function drawStats(ctx) {
 
       // Draw each tick.
       ctx.fillStyle = '#555555';
+      // eslint-disable-next-line no-loop-func
       labelLayout.ticks.forEach((tick, j) => {
         // Base info.
         const x = tick.value.x;
@@ -426,7 +436,7 @@ function drawStats(ctx) {
           }
           if (currentVar.axis === 'y') {
             ctx.font = tickFontConfig;
-            ctx.textAlign = 'left';
+            ctx.textAlign = yLabelAlign;
             ctx.textBaseline = 'middle';
             ctx.fillText(label, x, y);
 

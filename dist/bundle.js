@@ -28014,7 +28014,8 @@
   var xScale$1;
   var yScale$1;
   var sim;
-  var tickPadding = 20; // Regression line data.
+  var tickPadding = 20;
+  var yLabelAlign = 'left'; // Regression line data.
 
   var lrLine;
   var start$1 = [];
@@ -28041,10 +28042,13 @@
 
 
   function getScales() {
+    yLabelAlign = isMobile() ? 'center' : 'left';
+    var horzFactor = isMobile() ? 0.32 : 0.3;
+    var vertFactor = isMobile() ? 0.32 : 0.3;
     margin$1 = {
       top: state.height * 0.3,
-      right: state.width * 0.3,
-      bottom: state.height * 0.3,
+      right: state.width * vertFactor,
+      bottom: state.height * horzFactor,
       left: state.width * 0.3
     };
     xScale$1 = linear$1().range([margin$1.left, state.width - margin$1.right]);
@@ -28344,7 +28348,8 @@
 
           var labelLayout = currentVar.labelLayout; // Draw each tick.
 
-          ctx.fillStyle = '#555555';
+          ctx.fillStyle = '#555555'; // eslint-disable-next-line no-loop-func
+
           labelLayout.ticks.forEach(function (tick, j) {
             // Base info.
             var x = tick.value.x;
@@ -28374,7 +28379,7 @@
 
               if (currentVar.axis === 'y') {
                 ctx.font = tickFontConfig;
-                ctx.textAlign = 'left';
+                ctx.textAlign = yLabelAlign;
                 ctx.textBaseline = 'middle';
                 ctx.fillText(label, x, y);
                 var x1TickLine = labelLayout.bbox.xMin;
