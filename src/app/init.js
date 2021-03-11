@@ -377,9 +377,7 @@ function buildStory(puddingStories) {
   select('footer').html(part10Html.render());
 
   const picked = puddingStories.filter(
-    // TODO update before live
-    // (d, i) => i < 5 && d.url !== '2021/03/wine'
-    (d, i) => i < 4
+    (d, i) => i < 5 && d.url !== '2021/03/wine-model'
   );
 
   const stories = select('#stories')
