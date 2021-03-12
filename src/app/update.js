@@ -161,7 +161,7 @@ function updateTransforms() {
   // There's no mathemtacial connection between the bottle's
   // ideal height and the aspect ratio, but using the ar
   // fits quite nicely in this case.
-  const sizeFactor = isMobile() ? 140 : 100;
+  const sizeFactor = isMobile() ? 150 : 100;
   state.glassBottle.bottleTop = Math.min(
     Math.floor((state.width / state.height) * 100) / sizeFactor,
     0.8
