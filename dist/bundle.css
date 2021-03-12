@@ -50,7 +50,7 @@ button {
   position: sticky;
   top: 0;
   align-self: flex-start;
-  height: 60vh;
+  height: 55vh;
   width: 100vw;
   z-index: 20;
   background: radial-gradient(circle 65vw at 0% 0%, #ffecd9, #f5eddb);

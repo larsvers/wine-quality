@@ -11,7 +11,7 @@ import state from '../app/state';
 import gridLayout from '../layouts/grid';
 import { getGradient, isMobile } from '../app/utils';
 
-const smallBottleScale = 0.15;
+const smallBottleScale = isMobile() ? 0.1 : 0.15;
 let xScale;
 let yScale;
 let gradientGood;
