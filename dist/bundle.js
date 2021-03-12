@@ -29200,7 +29200,8 @@
     // ideal height and the aspect ratio, but using the ar
     // fits quite nicely in this case.
 
-    state.glassBottle.bottleTop = Math.min(Math.floor(state.width / state.height * 100) / 110, 0.8);
+    var sizeFactor = isMobile() ? 120 : 100;
+    state.glassBottle.bottleTop = Math.min(Math.floor(state.width / state.height * 100) / sizeFactor, 0.8);
     state.glassBottle.bottleLeft = 0.25;
     state.transform.bottle = getTransform(state.glassBottle.bottleBox, {
       width: 0,
